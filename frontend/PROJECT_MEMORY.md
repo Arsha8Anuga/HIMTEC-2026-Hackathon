@@ -11,3 +11,12 @@ Batas diketahui: KPSP questionnaire belum aktif; reference wfl_wfh belum siap; W
 Versi: patch 001 fondasi seluruh layar. File utama App.vue, lib/api.ts, components/GrowthChart.vue, style.css. API error mempertahankan pesan/fields backend, abort 12 detik, tidak retry POST. Dokumen ini memori berkas lokal, bukan klaim memori permanen asisten.
 
 Paket ZIP diekstrak dari akar monorepo dan berisi frontend/. Patch berikutnya hanya mengemas berkas berubah; tambahkan nomor, daftar berkas, hasil uji, dan instruksi rollback. Jangan memasukkan .env, node_modules, data pasien atau token. Cadangkan berkas yang ditimpa sebelum ekstraksi.
+
+## Patch 002 (0.2.0)
+- Normalisasi request ada di src/lib/forms.ts. Angka kosong opsional -> null, angka terisi -> number. Jangan memakai coercion truthy yang mengubah nol.
+- Load halaman memiliki nomor versi; respons lama diabaikan. Growth memakai versi terpisah dan laporan selalu meminta lhfa.
+- Status/riwayat/KPSP laporan dimuat independen via allSettled; kegagalan status tidak menghentikan kurva. Kurva SVG emit ready sebelum tombol print aktif. Jika kurva gagal, pengguna memilih eksplisit cetak tanpa kurva.
+- API memeriksa envelope dan 204; field validasi dan input tetap dipertahankan saat gagal.
+- Panduan: API query category/age_months, status memfilter related_codes. Tidak mengarang materi.
+- npm test: 10 tes Playwright dengan Chrome lokal dan API mock; lulus pada sesi ini, viewport 360/768/1440. Bukan end-to-end dengan Go/WHO. npm run build lulus.
+- OTP masih belum diimplementasikan; tetap mode demo. Tidak mengubah engine/backend/kontrak.
