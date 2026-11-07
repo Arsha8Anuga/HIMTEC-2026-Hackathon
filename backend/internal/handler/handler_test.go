@@ -173,3 +173,29 @@ func TestMissingEngineRouteHasActionableMessage(t *testing.T) {
 		t.Fatalf("wrong failure: %d %s", rec.Code, rec.Body.String())
 	}
 }
+
+func TestMeasurementReferenceBoundariesAfterPositionCorrection(t *testing.T) {
+	for _, tc := range []struct {
+		days     int
+		position string
+		length   float64
+	}{
+		{100, "recumbent", 45.0},
+		{730, "standing", 44.3},
+		{730, "standing", 109.3},
+		{731, "standing", 65.0},
+		{731, "recumbent", 65.7},
+		{731, "recumbent", 120.7},
+	} {
+		day, _ := service.ParseDate(service.Today())
+		child := model.Child{BirthDate: day.AddDate(0, 0, -tc.days).Format("2006-01-02")}
+		weight := 8.0
+		x := model.MeasurementInput{
+			MeasuredAt: service.Today(), WeightKg: &weight, LengthHeightCm: &tc.length,
+			Position: &tc.position, Source: "posyandu",
+		}
+		if fields := validMeasurement(x, child); len(fields) != 0 {
+			t.Fatalf("boundary %+v rejected: %+v", tc, fields)
+		}
+	}
+}

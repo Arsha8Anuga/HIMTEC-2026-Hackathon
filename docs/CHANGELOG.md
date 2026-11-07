@@ -14,6 +14,11 @@ Tandai `[MERUSAK]` bila mengganti nama, mengubah tipe, atau menghapus field/endp
 
 ## 2026-11-07
 
+- 20:20 · engine + backend · Codex · Perbaikan domain panjang/tinggi saat evaluasi pertumbuhan: backend memeriksa domain BB/PB atau BB/TB setelah koreksi posisi sebelum INSERT. Engine mengembalikan 422 VALIDATION_ERROR beserta tanggal, ID, dan fields untuk riwayat di luar domain. Tabel hilang/rusak serta permintaan /reference di luar domain tetap 503. Pengukuran lama tidak diubah otomatis. Tidak menambah endpoint, field respons, kode alasan, maupun dependensi · — · backend dan engine: timpa berkas hotfix dan mulai ulang kedua proses; periksa pengukuran lama yang ditunjuk pesan validasi.
+
+
+- 19:40 · frontend · Codex · Pantau memeriksa sesi sebelum membuka data anak. Mode OTP email dan dummy memakai alur masuk/daftar yang sama, dengan kirim ulang, Bearer pada semua request bisnis, dan keluar dari header. Respons 404 dari `/auth/me` membuka mode demo · — · frontend: lihat pengujian di `tests/auth.spec.ts` dan bagian frontend di `docs/HANDOFF.md`.
+
 - 18:45 · kontrak v0.8 (draf) + backend + frontend · Zena · F-14 sebagai "Tanya asisten": `GET /assistant`, `POST /children/{id}/assistant`, error `LLM_UNAVAILABLE`; Go memanggil Ollama lokal (`LLM_ENABLED`, `LLM_MODEL`, `OLLAMA_URL`, `LLM_TIMEOUT`), konteks = data anak tanpa ID, jawaban berangka/bertanggal di luar data diganti penolakan (`grounded=false`). Komponen `AssistantChat.vue` di ringkasan anak, `api()` menerima batas waktu. Mode baru `AUTH_MODE=otp_email` (SMTP 587) untuk kode login via email; frontend belum punya layar login (perintah untuk AI lain di `docs/PROMPT_FRONTEND_AUTH.md`). Fitur sesudah H+9 atas keputusan pemilik kontrak · — · backend: tinjau `internal/llm`, `service/assistant.go`, `handler/assistant.go`, `auth/email.go`, `cmd/server/main.go`; frontend: tinjau `AssistantChat.vue`, `api.ts`, `App.vue`, `tests/assistant.spec.ts`; semua: setup di `docs/SETUP.md`
 
 - 18:10 · backend data + frontend · Zena · F-09: `guides.id.json` diisi 26 kartu bersumber (6 GiziCerdas dari Buku KIA 2024 hlm. 56–67, 20 Stimulasi dari SDIDTK 2022 Tabel 3.7 hlm. 43–62), dijaga tes Go `guides_test.go`; sumbu x kurva BB/PB mulai dari data (`GrowthChart.vue`) · — · backend: tinjau isi kartu; frontend: tinjau satu baris di `GrowthChart.vue`

@@ -209,3 +209,86 @@ def test_as_of_outside_kpsp_scope_has_validation_error(client):
         response = client.post("/engine/v1/growth/evaluate", json=body)
     assert_error(response, 422, "VALIDATION_ERROR")
     assert "as_of" in response.json()["error"]["fields"]
+
+
+@pytest.mark.parametrize("days,position,length", [
+    (100, "recumbent", 44.9),
+    (730, "standing", 109.4),
+    (731, "standing", 64.9),
+    (731, "recumbent", 65.6),
+    (1000, "standing", 120.1),
+])
+def test_measurement_domain_error_identifies_history_point(client, days, position, length):
+    from uuid import uuid4
+
+    body = payload()
+    birth = date.fromisoformat(body["child"]["birth_date"])
+    day = (birth + timedelta(days=days)).isoformat()
+    body["as_of"] = day
+    measurement_id = str(uuid4())
+    body["measurements"] = [{
+        "id": measurement_id, "measured_at": day, "weight_kg": 8.0,
+        "length_height_cm": length, "position": position, "source": "posyandu",
+    }]
+    # Domain input validation must not depend on installed reference files.
+    with patch("app.api.evaluation.verified_tables", side_effect=AssertionError("not reached")):
+        response = client.post("/engine/v1/growth/evaluate", json=body)
+    assert_error(response, 422, "VALIDATION_ERROR")
+    error = response.json()["error"]
+    assert day in error["message"] and measurement_id in error["message"]
+    assert "measurements.0.length_height_cm" in error["fields"]
+
+
+@pytest.mark.parametrize("days,position,length,corrected", [
+    (100, "recumbent", 45.0, 45.0),
+    (730, "standing", 44.3, 45.0),
+    (730, "standing", 109.3, 110.0),
+    (731, "standing", 65.0, 65.0),
+    (731, "recumbent", 65.7, 65.0),
+    (731, "recumbent", 120.7, 120.0),
+])
+def test_measurement_domain_boundaries_use_corrected_length(client, days, position, length, corrected):
+    from uuid import uuid4
+    from app.core.who_tables import LMS, WHOTables
+
+    body = payload()
+    birth = date.fromisoformat(body["child"]["birth_date"])
+    day = (birth + timedelta(days=days)).isoformat()
+    body["as_of"] = day
+    body["measurements"] = [{
+        "id": str(uuid4()), "measured_at": day, "weight_kg": 8.0,
+        "length_height_cm": length, "position": position, "source": "posyandu",
+    }]
+    indicator = "wfl" if days < 731 else "wfh"
+    # Arithmetic sentinels, not clinical reference values.
+    tables = WHOTables({
+        ("wfa", 2, days): LMS(1, 8, .1),
+        ("lhfa", 2, days): LMS(1, corrected, .1),
+        (indicator, 2, round(corrected * 10)): LMS(1, 8, .1),
+    })
+    with patch("app.api.evaluation.verified_tables", return_value=tables):
+        response = client.post("/engine/v1/growth/evaluate", json=body)
+    assert response.status_code == 200
+    assert response.json()["data"]["per_measurement"][0]["corrected_length_cm"] == corrected
+
+
+def test_legacy_domain_error_clears_after_correcting_history(client, tables):
+    from uuid import uuid4
+
+    body = payload()
+    body["child"]["birth_date"] = "2025-01-01"
+    bad_id = str(uuid4())
+    body["measurements"] = [
+        {"id": bad_id, "measured_at": "2025-01-02", "weight_kg": 3.0,
+         "length_height_cm": 40.0, "position": "recumbent", "source": "posyandu"},
+        {"id": str(uuid4()), "measured_at": "2025-01-03", "weight_kg": 3.1,
+         "length_height_cm": 50.0, "position": "recumbent", "source": "posyandu"},
+    ]
+    with patch("app.api.evaluation.verified_tables", return_value=tables):
+        response = client.post("/engine/v1/growth/evaluate", json=body)
+        assert_error(response, 422, "VALIDATION_ERROR")
+        assert bad_id in response.json()["error"]["message"]
+        body["measurements"][0]["length_height_cm"] = 50.0
+        response = client.post("/engine/v1/growth/evaluate", json=body)
+    assert response.status_code == 200
+    assert len(response.json()["data"]["per_measurement"]) == 2

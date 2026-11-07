@@ -131,3 +131,47 @@ func TestStatusDatabaseFailureIsNotAnEngineOutage(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestOutOfDomainMeasurementRejectedBeforeInsert(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		days     int
+		position string
+		length   float64
+	}{
+		{"below_wfl", 100, "recumbent", 44.9},
+		{"corrected_above_wfl", 730, "standing", 109.4},
+		{"below_wfh", 731, "standing", 64.9},
+		{"corrected_below_wfh", 731, "recumbent", 65.6},
+		{"above_wfh", 1000, "standing", 120.1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer db.Close()
+			today, _ := service.ParseDate(service.Today())
+			birth := today.AddDate(0, 0, -tc.days).Format("2006-01-02")
+			mock.ExpectQuery("SELECT .* FROM children WHERE id=").WithArgs(testChildID, repository.DemoParentID).WillReturnRows(childRow(birth))
+			// No INSERT or engine request is expected for unsupported input.
+			h := (&Handler{Svc: &service.Service{Store: &repository.Store{DB: db}}}).Routes()
+			body, _ := json.Marshal(map[string]any{
+				"measured_at": service.Today(), "weight_kg": 8,
+				"length_height_cm": tc.length, "position": tc.position, "source": "posyandu",
+			})
+			r := httptest.NewRecorder()
+			h.ServeHTTP(r, httptest.NewRequest(http.MethodPost, "/api/v1/children/"+testChildID+"/measurements", strings.NewReader(string(body))))
+			var out envelope
+			if err := json.Unmarshal(r.Body.Bytes(), &out); err != nil {
+				t.Fatal(err)
+			}
+			if r.Code != 422 || out.Error == nil || out.Error.Fields["length_height_cm"] == "" {
+				t.Fatalf("unexpected response %d: %s", r.Code, r.Body.String())
+			}
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}

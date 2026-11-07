@@ -198,6 +198,27 @@ func validMeasurement(x model.MeasurementInput, ch model.Child) map[string]strin
 	if x.Position != nil && *x.Position != "recumbent" && *x.Position != "standing" {
 		f["position"] = "harus recumbent atau standing"
 	}
+	if ok && x.LengthHeightCm != nil && x.Position != nil && f["measured_at"] == "" && f["length_height_cm"] == "" && f["position"] == "" {
+		birth, _ := service.ParseDate(ch.BirthDate)
+		ageDays := int(d.Sub(birth).Hours() / 24)
+		// Match engine TABLE_SPECS and the v0.7 reference domains. Work in
+		// tenths of a cm so a position correction preserves boundary values.
+		corrected := int(math.Round(*x.LengthHeightCm * 10))
+		minimum, maximum := 450, 1100
+		if ageDays < 731 {
+			if *x.Position == "standing" {
+				corrected += 7
+			}
+		} else {
+			minimum, maximum = 650, 1200
+			if *x.Position == "recumbent" {
+				corrected -= 7
+			}
+		}
+		if corrected < minimum || corrected > maximum {
+			f["length_height_cm"] = fmt.Sprintf("Ukuran setelah koreksi posisi harus dalam domain referensi %.1f–%.1f cm. Periksa tanggal lahir, tanggal pengukuran, posisi, dan ukuran.", float64(minimum)/10, float64(maximum)/10)
+		}
+	}
 	if x.Source != "posyandu" && x.Source != "puskesmas" && x.Source != "home" {
 		f["source"] = "harus posyandu, puskesmas, atau home"
 	}

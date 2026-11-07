@@ -7,7 +7,7 @@ from fastapi import APIRouter, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.core.growth_math import lms_value_at_z
+from app.core.growth_math import correct_length_height_cm, lms_value_at_z
 from app.core.iycf import evaluate_growth_and_diet
 from app.core.kpsp import next_kpsp, runtime_questionnaire, score_kpsp
 from app.core.who_tables import TABLE_SPECS, WHODataError, WHOTables, load_who_tables
@@ -32,11 +32,30 @@ def invalid_field(location: tuple, message: str) -> None:
 
 @router.post("/growth/evaluate", response_model=Envelope[dict])
 def evaluate(payload: GrowthEvaluateRequest):
+    domain_fields = {}
     for index, point in enumerate(payload.measurements):
         for field in ("length_height_cm", "head_circumference_cm"):
             value = getattr(point, field)
             if value is not None and Decimal(str(value)) * 10 % 1:
                 invalid_field(("body", "measurements", index, field), "Ukuran cm harus pada grid 0,1 cm sesuai kontrak")
+        if point.length_height_cm is not None:
+            age_days = (point.measured_at - payload.child.birth_date).days
+            indicator = "wfl" if age_days < 731 else "wfh"
+            spec = TABLE_SPECS[indicator]
+            corrected = correct_length_height_cm(age_days, point.length_height_cm, point.position)
+            if not spec.min_index <= Decimal(str(corrected)) * 10 <= spec.max_index:
+                domain_fields[f"measurements.{index}.length_height_cm"] = (
+                    f"Pengukuran {point.measured_at.isoformat()} (ID {point.id}): "
+                    f"panjang/tinggi setelah koreksi posisi ukur {corrected:g} cm "
+                    f"di luar domain referensi {indicator} "
+                    f"{spec.min_index / 10:g}–{spec.max_index / 10:g} cm. "
+                    "Periksa tanggal lahir, tanggal pengukuran, posisi, dan ukuran pada riwayat."
+                )
+    if domain_fields:
+        return JSONResponse(status_code=422, content={"data": None, "error": {
+            "code": "VALIDATION_ERROR", "message": " ".join(domain_fields.values()),
+            "fields": domain_fields,
+        }})
     try:
         schedule = next_kpsp(payload)
     except ValueError:

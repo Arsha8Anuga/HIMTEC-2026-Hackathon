@@ -11,6 +11,10 @@ Cara membuka sesi AI baru: tempel AGENTS.md, bagian kontrak yang relevan, lalu b
 
 ## Engine — Zena
 
+- **Hotfix domain pertumbuhan, 7 November 2026:** Evaluasi memvalidasi ukuran terkoreksi terhadap TABLE_SPECS sebelum mencari LMS. Riwayat di luar domain menghasilkan 422 dengan fields measurements.<indeks>.length_height_cm, tanggal, dan ID pengukuran. Ini kegagalan input yang sebelumnya dilaporkan sebagai 503. Kegagalan berkas WHO tetap 503, dan perilaku /reference tetap mengikuti kontrak v0.7.
+- **Verifikasi hotfix:** 308 tes pytest lulus, 137 subtests lulus, dengan lima tabel WHO resmi yang diunduh dan diverifikasi menggunakan skrip repo. Cakupan baru meliputi peralihan hari 730/731, koreksi posisi, batas inklusif, dan evaluasi yang pulih setelah riwayat dikoreksi. Satu peringatan deprecation dari dependensi Starlette/AnyIO.
+- **Penerapan:** Timpa berkas hotfix lalu mulai ulang engine dan backend. Jika tabel belum terpasang, jalankan python scripts/fetch_who_tables.py dari engine/. Riwayat lama tetap disimpan. Periksa tanggal lahir, tanggal pengukuran, posisi, dan nilai pada tanggal/ID yang disebut error. UI Riwayat menyediakan hapus pengukuran dan formulir pengukuran menyediakan pencatatan ulang setelah kesalahan terkonfirmasi. Jangan mengganti nilai pengukuran yang benar agar masuk rentang tabel. Ukuran benar di luar domain tetap belum bisa dievaluasi oleh implementasi ini.
+
 - **Diperbarui:** 2026-11-07 ±18:00 WIB (kontrak v0.7, basis `edd6d4c`, belum di-push).
 - **Kontrak v0.7 (disetujui Zena):** (1) KPSP tayang hanya untuk formulir 15, 18, 24 bulan, `review_status=transcription_unreviewed`; umur jadwal lain `unavailable` dengan `items=[]`. Daftar umur di `engine/data/kpsp/questionnaires.json` `source.runtime_ages`; engine menolak bank bila umur tayang memuat butir bergambar. Go menambah `review_status` dan `review_label` di `/kpsp/next`; frontend menampilkan label apa adanya. (2) `/reference` internal menerima `wfl`/`wfh` (cm bulat, keluaran grid 0,1 cm); Go memilih `wfl` bila umur < 731 hari, selainnya `wfh`, seluruh domain tabel. Detail di "Penegasan v0.7" kontrak.
 - **F-03 selesai:** `engine/tests/test_who_anthro_cases.py`, lima kasus lewat `POST /growth/evaluate` (bayi 45 hari; 300 hari kurus; 600 hari berdiri +0,7; 1000 hari berbaring −0,7 dan BB/TB; 1800 hari BB/TB +4,25 restricted LMS). Nilai harapan di `tests/data/who_anthro_cases.csv` dihasilkan `scripts/who_anthro_cases.R` dengan paket R WHO `anthro` pada commit pin `b776d8a`; selisih 0,00 di keempat indikator semua kasus.
@@ -23,6 +27,9 @@ Cara membuka sesi AI baru: tempel AGENTS.md, bagian kontrak yang relevan, lalu b
 - **Langkah berikutnya:** umumkan v0.7 di grup (backend dan frontend meninjau perubahan di folder mereka); coba Compose di laptop demo; seed 002+005 pada hari demo; peragakan KPSP dengan Citra.
 
 ## Backend — tim backend
+
+- **Hotfix domain pertumbuhan, 7 November 2026:** validMeasurement menolak panjang/tinggi di luar domain referensi setelah koreksi posisi sebelum INSERT. Pesan terkait langsung ke length_height_cm melalui fields. Nilai rentang mengikuti TABLE_SPECS engine dan kontrak v0.7. Validasi ini berjalan tanpa bergantung pada koneksi engine.
+- **Verifikasi hotfix:** go test ./... lulus. Tes handler dengan SQL tiruan memastikan input di luar domain tidak menjalankan INSERT atau memanggil engine, dan nilai batas setelah koreksi diterima. Tes integrasi PostgreSQL autentikasi dilewati karena BACKEND_TEST_DATABASE_URL tidak diatur. Log pengguna belum dapat direproduksi dengan payload aslinya karena data pengukuran belum diberikan.
 
 - **Pembaruan bukti 14:14 WIB, 7 November 2026:** verifikasi OTP berikutnya untuk akun existing dikenali oleh /auth/me; daftar anak awal kosong, tambah/baca anak dengan token berhasil; logout dan penolakan token lama berhasil pada Windows/PostgreSQL lokal. Login setelah logout dan pembacaan ulang anak setelah login itu belum dilaporkan. Hanya dokumentasi backend yang diperbarui; catatan engine ZIP 08/frontend dipertahankan.
 
@@ -112,16 +119,14 @@ Hasil login awal adalah verifikasi OTP pendaftaran. Hasil sesi berikutnya memper
 - Draf kontrak v0.5, PRD, README dan handoff pada paket diselaraskan dengan OTP serta keputusan >=16 KPSP yang sudah tercatat di Patch 07B. Review pemilik kontrak tetap diperlukan. Go tidak menambah perhitungan medis; frontend/Compose dan endpoint engine asli tidak dibangun oleh patch ini.
 - Unit/race, vet, kompilasi Windows server/CLI, smoke CLI fake dan lima tes fake Python lulus pada pengembangan. Suite SQL tidak diulang pada patch diagnostik. Pengguna berhasil menguji auth/data, tetapi belum mengirim hasil cmd/check-engine sehingga penerapan diagnostik tepat versi paket tidak diasumsikan.
 
-## Desain + frontend — (nama)
+## Desain + frontend
 
-- **Diperbarui:** HH:MM
-- **Selesai:**
-- **Sedang dikerjakan:**
-- **Belum dimulai:**
-- **Cara menjalankan dan menguji:**
-- **Masalah yang diketahui:**
-- **Butuh dari orang lain:**
-- **Langkah berikutnya:**
+- **Diperbarui:** 7 November 2026, 19:40 WIB.
+- **Selesai:** Deteksi mode lewat `GET /auth/me` sebelum memuat data bisnis. Respons 404 membuka demo, 401 membuka Masuk, dan 200 memulihkan sesi. Gangguan layanan menampilkan tombol coba lagi.
+- **Alur OTP:** Masuk dan Daftar memakai satu formulir dengan jeda kirim ulang 60 detik. Token disimpan di `sessionStorage`, atau di memori tab jika storage diblokir. Semua pemanggilan melalui `api()`, termasuk chat, membawa Bearer saat token tersedia. Keluar atau 401 dari route bisnis menutup sesi lokal.
+- **Cara menjalankan dan menguji:** Dari `frontend/`, jalankan `npm ci` dan `npm run build`. Atur `CHROME_PATH` ke executable Chrome/Chromium lokal lalu jalankan `npm test`. Server uji memakai loopback. Uji dengan API tiruan mencakup demo, daftar, kirim ulang, Bearer, sesi kedaluwarsa, batas permintaan, keluar, validasi, dan storage yang diblokir.
+- **Hasil:** Build produksi berhasil. Seluruh 35 tes Playwright lulus (28 lama dan 7 baru) dengan Chromium lokal dan API tiruan.
+- **Langkah berikutnya:** Saat gladi, coba daftar, terima kode melalui SMTP, masuk, lalu keluar dengan backend `otp_email` pada origin frontend yang diizinkan. Untuk `otp_dummy`, ikuti `backend/AUTH_TESTING.md`.
 
 ---
 
