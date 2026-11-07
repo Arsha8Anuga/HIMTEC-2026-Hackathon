@@ -4,7 +4,7 @@ Nov 7, 2026 · @Zenacia
 
 ## Tujuan dan aturan main
 
-Kontrak ini mengikat bentuk data dan API antara frontend, backend Go, dan engine Python. Kode yang tidak cocok dengan kontrak dianggap salah, bukan kontraknya. Versi saat ini (v0.6 menetapkan batas umur pengukuran 1826 hari dan menuntaskan tiga isu terbuka, lihat "Penegasan v0.6"; v0.5 memperjelas umur/jadwal KPSP sesuai keputusan pengguna; v0.4 menambah Catatan Makan Kemarin; v0.3 jaringan demo dan kartu panduan): **v0.6 (draf)**, dibekukan menjadi v1.0 paling lambat satu jam setelah mulai.
+Kontrak ini mengikat bentuk data dan API antara frontend, backend Go, dan engine Python. Kode yang tidak cocok dengan kontrak dianggap salah, bukan kontraknya. Versi saat ini (v0.7 menayangkan KPSP 15/18/24 berlabel dan memilih tabel BB/PB atau BB/TB di Go, lihat "Penegasan v0.7"; v0.6 menetapkan batas umur pengukuran 1826 hari dan menuntaskan tiga isu terbuka, lihat "Penegasan v0.6"; v0.5 memperjelas umur/jadwal KPSP sesuai keputusan pengguna; v0.4 menambah Catatan Makan Kemarin; v0.3 jaringan demo dan kartu panduan): **v0.7 (draf)**, dibekukan menjadi v1.0 paling lambat satu jam setelah mulai.
 
 **Masalah.** Orang tua balita 6–24 bulan menerima angka penimbangan Posyandu setiap bulan, tetapi tidak memahami artinya. Perlambatan pertumbuhan baru ketahuan setelah anak melewati −2 SD, ketika jendela intervensi hampir tertutup. Kemenkes menyebut usia 12–24 bulan sebagai tantangan terbesar, saat anak masuk fase MPASI ([InfoPublik, Mei 2026](https://infopublik.id/kategori/nasional-sosial-budaya/970585/intervensi-masa-krusial-jadi-fokus-kemenkes-tekan-angka-stunting)). Prevalensi nasional 19,8% (SSGI 2024), target 17,5% pada 2026.
 
@@ -198,7 +198,7 @@ Nilai enum klasifikasi di JSON: `severely_underweight`, `underweight`, `normal`,
 - Hasil terakhir meragukan mengulang formulir yang sama setelah ≥14 hari, termasuk bila batas umur formulir berikutnya telah terlewati; mengacu evaluasi intervensi halaman 119. Hasil terakhir penyimpangan tidak menjadwalkan skrining mandiri ulang secara otomatis (`due=false`); alasan rujukan tetap aktif. Riwayat terbaru ditentukan oleh tanggal, umur kuesioner terbesar sebagai pemecah tanggal seri.
 - Umur bulat di luar 0–60 ditolak oleh core KPSP. Batas umur pengukuran ditetapkan di v0.6 (1826 hari).
 - Bentuk JSON skor tetap `{questionnaire_age_months, answers:[{item_no, answer}]}`, cocok dengan client Go; respons skor `{yes_count, result}` di dalam amplop umum.
-- Bank yang hanya ditranskripsi dari Markdown dan belum memiliki gambar/rubrik serta verifikasi klinis tidak boleh disajikan sebagai kuesioner siap pakai. Format referensi aset gambar pada API belum ditetapkan; jangan menambah field baru sepihak. Sampai lengkap, endpoint questionnaire tetap belum diaktifkan.
+- Bank yang hanya ditranskripsi dari Markdown dan belum memiliki gambar/rubrik serta verifikasi klinis tidak boleh disajikan sebagai kuesioner siap pakai. Format referensi aset gambar pada API belum ditetapkan; jangan menambah field baru sepihak. Sampai lengkap, endpoint questionnaire tetap belum diaktifkan. *(Diganti sebagian oleh v0.7: hanya formulir 15, 18, 24 yang tayang, berlabel.)*
 
 **Indikator pemberian makan** (WHO/UNICEF IYCF 2021, umur 6–23 bulan, v0.4). Definisi MDD, MMF dan EFF sudah dibandingkan dengan WHO/UNICEF 2021 pada Patch 08; perbedaan batas umur harian proyek dicatat di bawah dan belum diubah sepihak.
 
@@ -404,8 +404,8 @@ Engine adalah layanan FastAPI tanpa status di `http://localhost:8001/engine/v1`.
 | Metode | Path | Fungsi |
 | --- | --- | --- |
 | POST | `/growth/evaluate` | z-score, klasifikasi, flag per pengukuran + tingkat dan kode alasan |
-| GET | `/reference?indicator=lhfa&sex=female&x_from=0&x_to=500` | garis acuan WHO (−3, −2, median, +2, +3 SD) |
-| GET | `/kpsp/questionnaire?age_months=9` | 10 butir KPSP untuk umur jadwal itu |
+| GET | `/reference?indicator=lhfa&sex=female&x_from=0&x_to=500` | garis acuan WHO (−3, −2, median, +2, +3 SD); `indicator` = `wfa`, `lhfa`, `hcfa`, `wfl`, `wfh` (v0.7) |
+| GET | `/kpsp/questionnaire?age_months=15` | butir KPSP umur jadwal itu beserta `review_status` (v0.7) |
 | POST | `/kpsp/score` | hitung `yes_count` dan `result` |
 | GET | `/health` | `{ "status": "ok", "who_tables_loaded": true }` |
 
@@ -477,7 +477,19 @@ Engine wajib punya tes pytest untuk: rumus LMS, koreksi posisi, setiap kode alas
 
 **Mode `AUTH_MODE=otp_dummy` di luar kontrak.** Endpoint `/api/v1/auth/*` serta error `UNAUTHORIZED` (401) dan `RATE_LIMITED` (429) adalah ekstensi pengujian backend, aktif hanya bila `AUTH_MODE=otp_dummy`, dan didokumentasikan di `backend/AUTH_TESTING.md`. Frontend dan demo tidak memakainya; Go saat demo wajib berjalan dalam mode bawaan (`demo`). Login tetap peta jalan setelah MVP.
 
-**Isu terbuka: garis acuan `wfl_wfh`.** `GET /reference` tidak bisa memilih tabel BB/PB atau BB/TB tanpa umur, sehingga engine membalas 503 dan kurva BB/PB-TB belum tersedia. Z-score dan klasifikasi `wfl_wfh` pada `/status` tidak terdampak. Usulan setelah demo: Go memilih tabel dari umur anak (< 731 hari = `wfl`, selainnya `wfh`) dan memanggil engine dengan nilai indikator itu; perubahan ini menambah nilai enum di API internal dan butuh persetujuan pemilik kontrak.
+**Isu terbuka: garis acuan `wfl_wfh`.** *(Diselesaikan di v0.7.)* `GET /reference` tidak bisa memilih tabel BB/PB atau BB/TB tanpa umur, sehingga engine membalas 503 dan kurva BB/PB-TB belum tersedia. Z-score dan klasifikasi `wfl_wfh` pada `/status` tidak terdampak. Usulan setelah demo: Go memilih tabel dari umur anak (< 731 hari = `wfl`, selainnya `wfh`) dan memanggil engine dengan nilai indikator itu; perubahan ini menambah nilai enum di API internal dan butuh persetujuan pemilik kontrak.
+
+## Penegasan v0.7
+
+Disetujui Zena, 7 November 2026. Kedua perubahan berlaku sesudah H+9 atas keputusan pemilik kontrak.
+
+**KPSP tayang terbatas.** Engine `GET /kpsp/questionnaire?age_months=N` (N harus umur jadwal; selain itu 422) mengembalikan `{ "questionnaire_age_months": N, "review_status": "...", "items": [...] }`. `review_status` = `transcription_unreviewed` untuk formulir 15, 18, dan 24 bulan, satu-satunya formulir tanpa butir bergambar menurut `engine/data/kpsp/questionnaires.json`; `items` berisi 10 butir transkripsi apa adanya. Untuk umur jadwal lain `review_status` = `unavailable` dan `items` = `[]`. Daftar umur tayang tercatat di `source.runtime_ages`; engine menolak bank (503) bila umur tayang memuat butir bergambar.
+
+Publik `GET /children/{id}/kpsp/next` menambah dua field: `review_status` (diteruskan dari engine) dan `review_label` (kalimat dari Go, ditampilkan frontend apa adanya). `items` boleh kosong bila `review_status` = `unavailable`; frontend lalu hanya menampilkan `review_label`. Jadwal, skor, dan `POST /children/{id}/kpsp` tidak berubah.
+
+**Kurva BB/PB-TB.** Enum `indicator` pada `GET /reference` internal menjadi `wfa`, `lhfa`, `hcfa`, `wfl`, `wfh`; `wfl_wfh` tidak lagi diterima engine (422). Untuk `wfl`/`wfh`, `x_from`/`x_to` adalah cm bulat dan respons memakai grid 0,1 cm tabel WHO; di luar domain tabel (`wfl` 45–110, `wfh` 65–120) engine membalas 503 tanpa ekstrapolasi. Go memilih `wfl` bila umur anak hari ini < 731 hari, selainnya `wfh`, dan meminta seluruh domain tabel itu. API publik tetap `indicator=wfl_wfh`, `x_unit` = `"cm"`.
+
+Batas yang diketahui: anak ≥ 731 hari yang punya pengukuran sebelum 731 hari tetap digambar di atas garis BB/TB; z-score titik itu sendiri tetap dihitung engine dengan tabel yang benar.
 
 ## Demo, batas cakupan, dan jadwal
 

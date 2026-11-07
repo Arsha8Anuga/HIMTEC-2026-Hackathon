@@ -33,7 +33,7 @@ class FakeTests(unittest.TestCase):
     def test_reference_has_no_fabricated_who_data(self):
         status,body=self.call('/reference?indicator=lhfa');self.assertEqual(status,200);self.assertTrue(all(v==[] for v in body['data'].values()))
     def test_questionnaire_and_score(self):
-        status,body=self.call('/kpsp/questionnaire?age_months=9');self.assertEqual(status,200);self.assertEqual(len(body['data']['items']),10)
+        status,body=self.call('/kpsp/questionnaire?age_months=9');self.assertEqual(status,200);self.assertEqual(len(body['data']['items']),10);self.assertEqual(body['data']['review_status'],'transcription_unreviewed')
         status,body=self.call('/kpsp/score',{'answers':[{'item_no':i,'answer':True} for i in range(1,11)]});self.assertEqual(status,200);self.assertEqual(body['data']['yes_count'],10)
     def test_invalid_and_unknown(self):
         self.assertEqual(self.call('/growth/evaluate',{})[0],422)

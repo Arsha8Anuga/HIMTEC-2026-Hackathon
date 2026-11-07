@@ -100,8 +100,8 @@ curl.exe http://localhost:8080/api/v1/children
 go run ./cmd/check-engine
 ```
 
-Yang pertama harus menampilkan Anisa, Bima, dan Citra; di peramban statusnya merah, hijau, merah. Yang kedua melaporkan endpoint engine yang belum ada;
-saat ini `GET /kpsp/questionnaire` memang belum ada (lihat "Batas yang diketahui").
+Yang pertama harus menampilkan Anisa, Bima, dan Citra; di peramban statusnya merah, hijau, merah. Yang kedua harus melaporkan
+keempat route engine ada (sejak kontrak v0.7 termasuk `GET /kpsp/questionnaire`).
 
 ## 4. Frontend Vue
 
@@ -201,14 +201,33 @@ python scripts/verify_demo_seed.py --days 30
 
 Harus berakhir `0 kegagalan`.
 
-## Batas yang diketahui (kontrak v0.6)
+## Batas yang diketahui (kontrak v0.7)
 
 | Gejala | Penyebab | Sikap saat demo |
 | --- | --- | --- |
-| Halaman Perkembangan menampilkan "Endpoint perhitungan yang diminta belum tersedia" | kuesioner KPSP sengaja nonaktif sampai bank butir terverifikasi | jelaskan, jangan dibuka di demo |
-| Kurva "Berat menurut panjang / tinggi" gagal | garis acuan `wfl_wfh` masih isu terbuka | pakai kurva PB/U dan BB/U |
+| Halaman Perkembangan hanya menampilkan "Kuesioner untuk umur ini belum tersedia di aplikasi…" | hanya formulir 15, 18, 24 bulan yang tayang (tanpa butir bergambar) | peragakan KPSP dengan Citra (15 bulan); Anisa (formulir 9) dan Bima (formulir 12) menampilkan label ini |
+| Formulir KPSP berlabel "Transkripsi … belum ditinjau klinis" | butir diketik ulang dari pedoman SDIDTK 2022, belum ditinjau tenaga kesehatan | sebut terus terang saat demo |
+| Kurva BB/PB sumbu x mulai dari 0 cm | skala sumbu grafik frontend | tidak mengganggu; garis acuan mulai 45 cm |
 | Halaman Panduan kosong | `guides.id.json` belum diisi | tidak ditampilkan |
-| Ringkasan menautkan "Formulir … Sudah jatuh tempo" | jadwal KPSP dihitung walau kuesioner nonaktif | jangan klik "Lihat skrining" saat demo |
+
+## Mode satu laptop (Docker Compose)
+
+Cadangan bila hotspot gagal. **Bangun image saat masih ada internet**; setelah itu `up` berjalan tanpa internet.
+Tabel WHO tidak masuk image, jadi jalankan `python scripts/fetch_who_tables.py` di `engine/` lebih dulu.
+
+```powershell
+docker compose build
+docker compose up -d
+docker compose exec db psql -U postgres -d tumbuh -f /seed/002_seed_children.sql
+docker compose exec db psql -U postgres -d tumbuh -f /seed/005_seed_demo_measurements.sql
+```
+
+Buka **http://localhost:5173**. Go di dalam Compose memakai `ENGINE_URL=http://engine:8001/engine/v1` dan
+PostgreSQL `db`; PostgreSQL lokal di port 5432 tidak dipakai dan tidak bentrok (port db tidak dibuka ke luar).
+Reset data: `docker compose down -v`, lalu `up` dan seed ulang pada hari demo.
+
+Status: berkas ini belum pernah dijalankan utuh di mesin pembuat (registry Docker tidak terjangkau di sana);
+perintah yang sama di dalam image sudah diuji tanpa Docker. Coba sekali di laptop demo sebelum gladi.
 
 ## Masalah umum
 

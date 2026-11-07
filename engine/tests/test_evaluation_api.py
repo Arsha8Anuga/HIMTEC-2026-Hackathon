@@ -70,10 +70,10 @@ def test_invalid_score_rejected(client, change):
     assert_error(client.post("/engine/v1/kpsp/score", json=body), 422, "VALIDATION_ERROR")
 
 
-def test_questionnaire_stays_unregistered_pending_visual_review(client):
-    assert_error(client.get("/engine/v1/kpsp/questionnaire?age_months=9"), 404, "NOT_FOUND")
+def test_registered_routes_v07(client):
     paths = client.get("/openapi.json").json()["paths"]
-    assert set(paths) == {"/engine/v1/health", "/engine/v1/growth/evaluate", "/engine/v1/kpsp/score", "/engine/v1/reference"}
+    assert set(paths) == {"/engine/v1/health", "/engine/v1/growth/evaluate", "/engine/v1/kpsp/score",
+                          "/engine/v1/kpsp/questionnaire", "/engine/v1/reference"}
 
 
 def test_bad_body_validation_does_not_depend_on_who_files(client):
@@ -97,17 +97,18 @@ def test_unexpected_exception_is_sanitized(client):
     assert "private-data" not in response.text
 
 
-@pytest.mark.parametrize("query", ["indicator=bad&sex=female&x_from=0&x_to=10", "indicator=lhfa&sex=other&x_from=0&x_to=10", "indicator=lhfa&sex=female&x_from=1.5&x_to=10", "indicator=lhfa&sex=female&x_from=-1&x_to=10", "indicator=lhfa&sex=female&x_from=10&x_to=9", "indicator=lhfa&sex=female&x_from=0"])
+@pytest.mark.parametrize("query", ["indicator=bad&sex=female&x_from=0&x_to=10", "indicator=lhfa&sex=other&x_from=0&x_to=10", "indicator=lhfa&sex=female&x_from=1.5&x_to=10", "indicator=lhfa&sex=female&x_from=-1&x_to=10", "indicator=lhfa&sex=female&x_from=10&x_to=9", "indicator=lhfa&sex=female&x_from=0", "indicator=wfl_wfh&sex=female&x_from=50&x_to=60"])
 def test_reference_validation_without_data(client, query):
     with patch("app.api.evaluation.verified_tables", side_effect=AssertionError("not reached")):
         response = client.get("/engine/v1/reference?" + query)
     assert_error(response, 422, "VALIDATION_ERROR")
 
 
-@pytest.mark.parametrize("indicator,to", [("wfl_wfh", 130), ("wfa", 1856)])
+@pytest.mark.parametrize("indicator,to", [("wfl", 111), ("wfl", 44), ("wfh", 64), ("wfh", 121), ("wfa", 1856)])
 def test_unsupported_reference_domain_never_guesses_or_extrapolates(client, indicator, to):
+    start = to if indicator in ("wfl", "wfh") else 0
     with patch("app.api.evaluation.verified_tables", side_effect=AssertionError("not reached")):
-        response = client.get(f"/engine/v1/reference?indicator={indicator}&sex=female&x_from=0&x_to={to}")
+        response = client.get(f"/engine/v1/reference?indicator={indicator}&sex=female&x_from={start}&x_to={to}")
     assert_error(response, 503, "ENGINE_UNAVAILABLE")
 
 

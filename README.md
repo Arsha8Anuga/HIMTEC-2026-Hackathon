@@ -59,7 +59,7 @@ go run ./cmd/server
 go run ./cmd/check-engine
 ```
 
-Engine kini menyediakan `health`, `growth/evaluate`, `kpsp/score`, dan `reference` (wfa, lhfa, hcfa). Yang belum: `kpsp/questionnaire` (sengaja nonaktif sampai bank KPSP lengkap) dan `reference` untuk `wfl_wfh` (menunggu keputusan kontrak); lihat `engine/debug/PATCH_09.md`. Pengujian fixture lokal tersedia di backend/testing/README.md; tidak ada fallback medis otomatis.
+Engine kini menyediakan `health`, `growth/evaluate`, `kpsp/score`, `kpsp/questionnaire` (kontrak v0.7: hanya formulir 15, 18, 24 bulan, berlabel belum ditinjau klinis), dan `reference` (wfa, lhfa, hcfa, wfl, wfh; Go memilih wfl/wfh dari umur). Pengujian fixture lokal tersedia di backend/testing/README.md; tidak ada fallback medis otomatis.
 
 **Frontend** (laptop teman):
 
@@ -70,7 +70,7 @@ npm install
 npm run dev             # demo: npm run build && npm run preview
 ```
 
-**Mode cadangan satu laptop:** `docker-compose.yml` belum ada di repo; mode ini belum bisa dijalankan.
+**Mode cadangan satu laptop:** `docker compose up` dari akar repo; langkah dan batasnya di `docs/SETUP.md` bagian "Mode satu laptop".
 
 **Mode OTP lokal:** set AUTH_MODE=otp_dummy di terminal Go sebelum startup. Gunakan Authorization Bearer saat menguji data anak; panduan lengkap di backend/AUTH_TESTING.md. Mode demo default tetap tersedia. Tidak ada email/SMS nyata pada OTP dummy.
 

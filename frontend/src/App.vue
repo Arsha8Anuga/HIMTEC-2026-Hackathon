@@ -919,13 +919,24 @@ async function remove() {
               >Lihat ringkasan dan tindak lanjut</RouterLink
             >
           </section>
+          <p
+            v-if="!savedKpsp && questionnaire?.review_label"
+            id="kpsp-review"
+            class="card"
+            role="note"
+          >
+            {{ questionnaire.review_label }}
+          </p>
           <KpspQuestionnaire
-            v-else-if="questionnaire"
+            v-if="!savedKpsp && questionnaire?.items?.length"
             :questionnaire="questionnaire"
             :saving="saving"
             @submit="submit('kpsp', $event)"
           />
-          <section v-else-if="!error" class="card">
+          <section
+            v-else-if="!savedKpsp && !questionnaire?.review_label && !error"
+            class="card"
+          >
             Kuesioner belum tersedia.
           </section>
         </template>

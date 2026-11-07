@@ -1,0 +1,6 @@
+"case","sex","age_days","weight_kg","length_height_cm","position","head_circumference_cm","z_wfa","z_lhfa","z_wfl_wfh","z_hcfa","anthro_version"
+"bayi_45_hari","male",45,4.5,55,"recumbent",38,-0.87,-0.81,-0.12,-0.21,"1.1.0.9000"
+"perempuan_300_hari_kurus","female",300,6,66.5,"recumbent",40.5,-2.88,-1.95,-2.43,-2.73,"1.1.0.9000"
+"laki_600_hari_berdiri","male",600,9,78,"standing",46,-2.02,-1.87,-1.55,-1.23,"1.1.0.9000"
+"perempuan_1000_hari_berbaring","female",1000,10.5,85,"recumbent",47.5,-1.9,-2.32,-0.75,-0.52,"1.1.0.9000"
+"laki_1800_hari_bb_tb_di_atas_3sd","male",1800,22,100,"standing",51,1.39,-2.06,4.25,0.2,"1.1.0.9000"

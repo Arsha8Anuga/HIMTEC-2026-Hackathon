@@ -55,7 +55,7 @@ Jangan mengubah folder milik orang lain. Butuh perubahan di sana? Minta lewat gr
 | PostgreSQL | 5432 | laptop teman |
 | Engine Python | 8001 (`/engine/v1`), bind `0.0.0.0` | laptop Zena |
 
-Semua laptop tersambung ke hotspot ponsel tim. Mode cadangan satu laptop: `docker-compose up`
+Semua laptop tersambung ke hotspot ponsel tim. Mode cadangan satu laptop: `docker compose up` (lihat `docs/SETUP.md`)
 dengan `ENGINE_URL=http://engine:8001/engine/v1`.
 
 ## Konvensi

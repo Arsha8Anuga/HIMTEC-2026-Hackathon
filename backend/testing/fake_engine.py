@@ -24,7 +24,7 @@ class Handler(BaseHTTPRequestHandler):
         elif path == BASE + '/reference':
             self.reply(200, {key: [] for key in ['x', 'sd_neg3', 'sd_neg2', 'median', 'sd_pos2', 'sd_pos3']})
         elif path == BASE + '/kpsp/questionnaire':
-            self.reply(200, {'items': [{'item_no': i, 'aspect': 'gerak_kasar', 'question': f'[DUMMY TEST] Pilih jawaban uji nomor {i}; bukan pertanyaan KPSP.'} for i in range(1, 11)]})
+            self.reply(200, {'questionnaire_age_months': 9, 'review_status': 'transcription_unreviewed', 'items': [{'item_no': i, 'aspect': 'gerak_kasar', 'question': f'[DUMMY TEST] Pilih jawaban uji nomor {i}; bukan pertanyaan KPSP.'} for i in range(1, 11)]})
         else:
             self.reply(404, code='NOT_FOUND', message='Route fake engine tidak ditemukan')
 

@@ -7,6 +7,13 @@
     "input_sha256": "caab23502a0674b296e799699a170f7ef6ff6d29c3dad685f44383b7692d8443",
     "visual_assets_status": "missing",
     "clinical_review_status": "text_transcription_only",
+    "runtime_ages": [
+      15,
+      18,
+      24
+    ],
+    "runtime_review_status": "transcription_unreviewed",
+    "runtime_decision": "Zena, 2026-11-07 (kontrak v0.7): tayangkan hanya formulir tanpa butir bergambar; label transkripsi belum ditinjau klinis.",
     "image_dependent_items": {
       "3": [
         8,

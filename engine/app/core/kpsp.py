@@ -2,7 +2,7 @@
 
 Age components follow the team's SDIDTK 2022 Markdown (30-day borrowing).
 The user confirmed rounding upward at exactly 16 remaining days. Questionnaire
-text was transcribed, but runtime delivery stays blocked pending figure review.
+text was transcribed; v0.7 serves only picture-free runtime ages, labelled.
 """
 
 import json
@@ -117,3 +117,23 @@ def load_kpsp_bank(path: Path = _DIRECTORY / "questionnaires.json", *, for_revie
         return bank
     except (OSError, UnicodeError, ValueError, TypeError) as exc:
         raise ValueError(f"Bank KPSP tidak tersedia atau tidak valid: {exc}") from exc
+
+
+def runtime_questionnaire(age: int, path: Path = _DIRECTORY / "questionnaires.json") -> dict:
+    """Contract v0.7: serve only source.runtime_ages, labelled as unreviewed.
+
+    A runtime age must have no image-dependent item; otherwise the bank is
+    refused rather than shown without its pictures. Other ages return no items.
+    """
+    if age not in SCHEDULE:
+        raise ValueError("umur kuesioner tidak ada dalam jadwal kontrak")
+    bank = load_kpsp_bank(path, for_review=True)
+    source = json.loads(Path(path).read_text(encoding="utf-8"))["source"]
+    runtime = source.get("runtime_ages", [])
+    pictured = source.get("image_dependent_items", {})
+    if source.get("runtime_review_status") != "transcription_unreviewed" or any(pictured.get(str(a)) for a in runtime):
+        raise ValueError("Bank KPSP tidak tersedia atau tidak valid: formulir tayang memuat butir bergambar atau status tinjauan tidak dikenal")
+    if age not in runtime:
+        return {"questionnaire_age_months": age, "review_status": "unavailable", "items": []}
+    items = [item.model_dump() for item in bank[age].items]
+    return {"questionnaire_age_months": age, "review_status": "transcription_unreviewed", "items": items}

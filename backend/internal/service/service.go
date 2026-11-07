@@ -175,10 +175,15 @@ func (s *Service) Growth(ctx context.Context, ch model.Child, indicator string) 
 	if to > 1826 {
 		to = 1826
 	}
+	refIndicator := indicator
 	if indicator == "wfl_wfh" {
-		from = 40
-		to = 130
-	} // rentang panjang/tinggi yang diizinkan kontrak.
+		// Kontrak v0.7: Go memilih tabel dari umur anak hari ini; seluruh domain tabel WHO dalam cm.
+		// shortcut: titik sebelum 731 hari pada anak >= 731 hari tetap digambar di atas garis BB/TB.
+		refIndicator, from, to = "wfl", 45, 110
+		if age >= 731 {
+			refIndicator, from, to = "wfh", 65, 120
+		}
+	}
 	for _, m := range ms {
 		p, ok := byID[m.ID]
 		if !ok {
@@ -228,7 +233,7 @@ func (s *Service) Growth(ctx context.Context, ch model.Child, indicator string) 
 		return toNumber(points[i]["x"]) < toNumber(points[j]["x"])
 	})
 	var reference json.RawMessage
-	err = s.Engine.Get(ctx, engineclient.ReferencePath(indicator, ch.Sex, from, to), &reference)
+	err = s.Engine.Get(ctx, engineclient.ReferencePath(refIndicator, ch.Sex, from, to), &reference)
 	if err != nil {
 		return nil, err
 	}
@@ -254,18 +259,31 @@ func (s *Service) NextKpsp(ctx context.Context, ch model.Child) (map[string]any,
 		return nil, invalidEngineResponse(errors.New("engine tidak mengembalikan umur jadwal KPSP yang valid"))
 	}
 	var questionnaire struct {
-		Items json.RawMessage `json:"items"`
+		ReviewStatus string          `json:"review_status"`
+		Items        json.RawMessage `json:"items"`
 	}
 	path := "/kpsp/questionnaire?" + url.Values{"age_months": {fmt.Sprint(next.QuestionnaireAgeMonths)}}.Encode()
 	if err = s.Engine.Get(ctx, path, &questionnaire); err != nil {
 		return nil, err
 	}
 	var items []json.RawMessage
-	if err = json.Unmarshal(questionnaire.Items, &items); err != nil || len(items) != 10 {
-		return nil, invalidEngineResponse(errors.New("engine tidak mengembalikan 10 butir KPSP"))
+	if err = json.Unmarshal(questionnaire.Items, &items); err != nil {
+		return nil, invalidEngineResponse(errors.New("engine tidak mengembalikan daftar butir KPSP"))
 	}
-	return map[string]any{"questionnaire_age_months": next.QuestionnaireAgeMonths, "due": next.Due, "items": questionnaire.Items}, nil
+	label, ok := kpspReviewLabels[questionnaire.ReviewStatus]
+	if !ok || (questionnaire.ReviewStatus == "unavailable") != (len(items) == 0) || (len(items) != 0 && len(items) != 10) {
+		return nil, invalidEngineResponse(errors.New("engine tidak mengembalikan 10 butir KPSP atau status tinjauan yang cocok"))
+	}
+	return map[string]any{"questionnaire_age_months": next.QuestionnaireAgeMonths, "due": next.Due, "items": questionnaire.Items,
+		"review_status": questionnaire.ReviewStatus, "review_label": label}, nil
 }
+
+// Kontrak v0.7: teks label milik Go, bukan frontend.
+var kpspReviewLabels = map[string]string{
+	"transcription_unreviewed": "Transkripsi dari pedoman SDIDTK 2022, belum ditinjau klinis. Hasilnya pra-skrining yang perlu dikonfirmasi petugas kesehatan di Posyandu.",
+	"unavailable":              "Kuesioner untuk umur ini belum tersedia di aplikasi. Lakukan skrining perkembangan bersama petugas kesehatan di Posyandu.",
+}
+
 func (s *Service) ScoreKpsp(ctx context.Context, input model.KpspInput) (int, string, error) {
 	var score struct {
 		YesCount *int   `json:"yes_count"`

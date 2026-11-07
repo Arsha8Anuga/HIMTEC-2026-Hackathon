@@ -279,3 +279,30 @@ test("summary shows each reason message without opening anything", async ({
   // Evidence stays collapsible.
   await expect(page.getByText("from_date", { exact: true })).toBeHidden();
 });
+test("v0.7 KPSP shows the backend review label with the form", async ({
+  page,
+}) => {
+  const label = "LABEL UJI dari backend";
+  await page.route("**/kpsp/next", (route) =>
+    route.fulfill({
+      json: envelope({ ...questionnaire, review_status: "transcription_unreviewed", review_label: label }),
+    }),
+  );
+  await page.goto("/#/children/test-child/kpsp");
+  await expect(page.locator("#kpsp-review")).toHaveText(label);
+  await expect(page.getByRole("button", { name: "Ya", exact: true })).toBeVisible();
+});
+test("v0.7 KPSP form unavailable shows only the backend label", async ({
+  page,
+}) => {
+  const label = "TIDAK TERSEDIA UJI dari backend";
+  await page.route("**/kpsp/next", (route) =>
+    route.fulfill({
+      json: envelope({ ...questionnaire, items: [], review_status: "unavailable", review_label: label }),
+    }),
+  );
+  await page.goto("/#/children/test-child/kpsp");
+  await expect(page.locator("#kpsp-review")).toHaveText(label);
+  await expect(page.getByRole("button", { name: "Ya", exact: true })).toHaveCount(0);
+  await expect(page.getByText("Kuesioner belum tersedia.")).toHaveCount(0);
+});

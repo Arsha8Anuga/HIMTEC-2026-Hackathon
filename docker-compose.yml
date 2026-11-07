@@ -1,0 +1,53 @@
+# Mode cadangan satu laptop (AGENTS.md, PRD "Risiko"). Bangun image SEBELUM hari demo
+# (butuh internet); saat demo `docker compose up` berjalan tanpa internet.
+# Tabel WHO tidak dibundel ke image: jalankan engine/scripts/fetch_who_tables.py dulu di laptop ini.
+# Seed demo (hari yang sama, setelah backend siap):
+#   docker compose exec db psql -U postgres -d tumbuh -f /seed/002_seed_children.sql
+#   docker compose exec db psql -U postgres -d tumbuh -f /seed/005_seed_demo_measurements.sql
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tumbuh
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/migrations:/seed:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "tumbuh"]
+      interval: 3s
+      retries: 20
+
+  engine:
+    build: ./engine
+    volumes:
+      - ./engine/data/who:/app/data/who:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request as u; assert json.load(u.urlopen('http://127.0.0.1:8001/engine/v1/health'))['data']['who_tables_loaded']"]
+      interval: 3s
+      retries: 20
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/tumbuh?sslmode=disable
+      ENGINE_URL: http://engine:8001/engine/v1
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - "8080:8080"
+    depends_on:
+      db: { condition: service_healthy }
+      engine: { condition: service_healthy }
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8080/api/v1
+    ports:
+      - "5173:5173"
+    depends_on: [backend]
+
+volumes:
+  pgdata:

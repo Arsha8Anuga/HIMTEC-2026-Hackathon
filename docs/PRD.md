@@ -41,7 +41,7 @@ Enam usulan fitur dilebur menjadi tiga fitur wajib dan tiga fitur pendukung yang
 | --- | --- | --- | --- |
 | Pantau Pertumbuhan (Growth Tracker) | wajib | input BB, PB/TB, LK; z-score WHO; kurva BB/U, PB/U, BB/PB dengan pita SD | engine: Zena · API: backend · layar: frontend |
 | Deteksi Risiko Dini (Early Alert) | wajib | tingkat Aman / Perlu perhatian / Segera periksakan dengan alasan yang bisa dibaca; tampil di aplikasi, bukan notifikasi push | engine: Zena · kalimat: backend · layar: frontend |
-| Skrining Perkembangan (Smart Milestone) | wajib | KPSP sesuai jadwal umur, dibingkai sebagai pra-skrining mandiri | engine: Zena · layar: frontend |
+| Skrining Perkembangan (Smart Milestone) | wajib | KPSP sesuai jadwal umur, dibingkai sebagai pra-skrining mandiri; sejak kontrak v0.7 hanya formulir 15, 18, 24 bulan yang tayang, berlabel "transkripsi, belum ditinjau klinis"; umur lain diarahkan ke Posyandu | engine: Zena · layar: frontend |
 | GiziCerdas | sebaiknya | kartu panduan ASI/MPASI per kelompok umur dari Buku KIA; muncul saat peringatan kuning atau merah | isi: Zena · API: backend · layar: frontend |
 | Stimulasi Pintar | sebaiknya | kartu stimulasi per umur dan aspek dari pedoman SDIDTK; muncul saat KPSP meragukan | isi: Zena · API: backend · layar: frontend |
 | Laporan untuk Posyandu (bagian Posyandu Connect) | sebaiknya | halaman laporan ramah cetak: identitas anak, tabel pengukuran, kurva, status, riwayat KPSP; tombol unduh memakai cetak-ke-PDF peramban | frontend |
@@ -100,7 +100,7 @@ Sebuah fitur dianggap selesai hanya jika kriteria penerimaannya terbukti di demo
 | F-04 | Kurva pertumbuhan | tiga indikator dengan garis −3, −2, median, +2, +3 SD; sumbu umur ditampilkan dalam bulan; titik yang kena flag ditandai berbeda |
 | F-05 | Status dan alasan | tingkat = alasan tertinggi; setiap alasan punya judul, kalimat, dan bukti (z dari–ke, tanggal); `PROJECTED_STUNTING` selalu ditulis "diperkirakan" |
 | F-06 | Ringkasan di beranda | setiap anak di daftar menampilkan warna tingkat terakhir dan tanggal pengukuran terakhir |
-| F-07 | Jadwal KPSP | kuesioner yang muncul sesuai aturan pembulatan umur; jawaban tidak bisa dikirim sebelum 10 butir terisi |
+| F-07 | Jadwal KPSP | kuesioner yang muncul sesuai aturan pembulatan umur; jawaban tidak bisa dikirim sebelum 10 butir terisi; v0.7: formulir 15/18/24 tampil bersama label tinjauan dari Go, formulir lain hanya menampilkan label "belum tersedia" |
 | F-08 | Hasil KPSP | sesuai / meragukan / penyimpangan sesuai skor; layar hasil menyebut ini pra-skrining yang perlu dikonfirmasi di Posyandu |
 | F-09 | Kartu GiziCerdas dan Stimulasi | kartu tampil sesuai `related_codes` dan umur anak; setiap kartu menampilkan sumbernya |
 | F-10 | Laporan untuk Posyandu | rapi saat dicetak A4; memuat identitas, tabel pengukuran, kurva PB/U, status, riwayat KPSP, tanggal cetak, dan penafian |
@@ -141,7 +141,7 @@ Risiko terbesar bukan teknis, melainkan angka medis yang salah dan demo yang put
 | Risiko | Dampak | Mitigasi |
 | --- | --- | --- |
 | Ambang atau tabel medis diambil dari ingatan AI | anak salah diklasifikasi; kredibilitas hilang di depan juri | semua angka dari WHO, Permenkes 2/2020, dan SDIDTK; 5 kasus uji dibandingkan dengan WHO Anthro |
-| Hotspot putus atau IP laptop Zena berubah saat demo | engine tidak terjangkau, status kosong | `ENGINE_URL` dicek sebelum tampil; mode satu laptop via `docker-compose` diuji sebelum H+9; video demo cadangan |
+| Hotspot putus atau IP laptop Zena berubah saat demo | engine tidak terjangkau, status kosong | `ENGINE_URL` dicek sebelum tampil; mode satu laptop via `docker-compose.yml` (ada sejak 7 Nov; image dibangun saat masih ada internet, tabel WHO dari folder lokal; belum pernah dijalankan utuh, wajib dicoba sekali di laptop demo sebelum gladi); video demo cadangan |
 | Cakupan melebar setelah H+9 | fitur setengah jadi, kestabilan turun | hanya fitur di tabel cakupan yang dibangun; setelah H+9 hanya perbaikan bug |
 | Integrasi baru dicoba di akhir | layanan tidak saling cocok | setiap endpoint diintegrasikan begitu selesai, bukan menunggu semuanya jadi |
 | Laptop Zena kepanasan (GTX 1060 Max-Q) | respons lambat saat demo | LLM mati secara bawaan; dinyalakan hanya untuk bagian demo yang membutuhkannya |
@@ -154,7 +154,7 @@ Risiko terbesar bukan teknis, melainkan angka medis yang salah dan demo yang put
 
 - [ ] Nama produk
 - [ ] Apakah panitia mewajibkan pencantuman penggunaan AI dalam pengembangan
-- [ ] Apakah pedoman SDIDTK mengizinkan KPSP diisi orang tua sendiri, atau hanya oleh petugas terlatih
+- [ ] Apakah pedoman SDIDTK mengizinkan KPSP diisi orang tua sendiri, atau hanya oleh petugas terlatih. *Catatan 7 Nov (Pedoman Pelaksanaan SDIDTK revisi 23 Agustus 2022, berkas Markdown yang sama dengan sumber `questionnaires.json`, SHA-256 `caab2350…8443`):* hlm. 117 butir 2 menulis "Skrining atau pemeriksaan dilakukan oleh tenaga kesehatan". Hlm. 118 butir 6e membagi pertanyaan KPSP menjadi "Pertanyaan yang dijawab oleh ibu atau pengasuh anak" dan "Perintah kepada ibu atau pengasuh anak atau petugas melaksanakan tugas yang tertulis pada KPSP". Jadi yang menjawab dan melaksanakan butir boleh orang tua atau petugas, tetapi pelaksana skrining tetap tenaga kesehatan. Pedoman ini tidak menyebut pengisian mandiri oleh orang tua tanpa petugas; pembingkaian "pra-skrining yang dikonfirmasi di Posyandu" tetap diperlukan. Pertanyaan tetap terbuka sampai ada sumber lain (mis. Buku KIA) yang menyatakan sebaliknya.
 - [ ] Apakah panitia menyediakan templat laporan dan proposal
 - [ ] Jumlah kartu GiziCerdas dan Stimulasi yang realistis disiapkan sebelum H+9
 

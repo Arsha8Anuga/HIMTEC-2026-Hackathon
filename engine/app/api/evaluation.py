@@ -5,14 +5,15 @@ from typing import Literal
 
 from fastapi import APIRouter, Query
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from app.core.growth_math import lms_value_at_z
 from app.core.iycf import evaluate_growth_and_diet
-from app.core.kpsp import next_kpsp, score_kpsp
+from app.core.kpsp import next_kpsp, runtime_questionnaire, score_kpsp
 from app.core.who_tables import TABLE_SPECS, WHODataError, WHOTables, load_who_tables
 from app.schemas.common import Envelope
 from app.schemas.growth import GrowthEvaluateRequest, Sex
-from app.schemas.kpsp import KpspScoreRequest
+from app.schemas.kpsp import SCHEDULE, KpspScoreRequest
 
 router = APIRouter()
 
@@ -58,27 +59,42 @@ def score(payload: KpspScoreRequest):
     return {"data": score_kpsp(payload), "error": None}
 
 
+@router.get("/kpsp/questionnaire", response_model=Envelope[dict])
+def questionnaire(age_months: int):
+    if age_months not in SCHEDULE:
+        invalid_field(("query", "age_months"), "age_months harus salah satu umur jadwal KPSP pada kontrak")
+    try:
+        return {"data": runtime_questionnaire(age_months), "error": None}
+    except ValueError:
+        return JSONResponse(status_code=503, content={"data": None, "error": {
+            "code": "ENGINE_UNAVAILABLE", "message": "Bank KPSP lokal tidak tersedia atau tidak valid", "fields": None}})
+
+
 @router.get("/reference", response_model=Envelope[dict])
 def reference(
-    indicator: Literal["wfa", "lhfa", "hcfa", "wfl_wfh"],
+    indicator: Literal["wfa", "lhfa", "hcfa", "wfl", "wfh"],
     sex: Sex,
     x_from: int = Query(ge=0),
     x_to: int = Query(ge=0),
 ):
+    """x is age in days (wfa, lhfa, hcfa) or whole cm (wfl, wfh, contract v0.7).
+
+    Go chooses wfl/wfh from the child's age; the engine never guesses it.
+    Length tables are returned on their native 0,1 cm grid.
+    """
     if x_to < x_from:
         invalid_field(("query", "x_to"), "x_to harus lebih besar atau sama dengan x_from")
-    if indicator == "wfl_wfh":
-        # The contract supplies neither age nor position to distinguish WFL
-        # from WFH. Do not concatenate incompatible curves or guess a table.
-        raise WHODataError("Pemilihan WFL/WFH pada referensi belum ditetapkan dalam kontrak")
     spec = TABLE_SPECS[indicator]
-    if x_from < spec.min_index or x_to > spec.max_index:
+    step = 1 if spec.axis == "age" else 10
+    first, last = x_from * step, x_to * step
+    if first < spec.min_index or last > spec.max_index:
         raise WHODataError("Rentang yang diminta melampaui tabel WHO yang tersedia; tidak ada ekstrapolasi")
     tables = verified_tables()
     result = {key: [] for key in ("x", "sd_neg3", "sd_neg2", "median", "sd_pos2", "sd_pos3")}
-    for day in range(x_from, x_to + 1):
-        lms = tables.lookup(indicator, sex, day)
-        result["x"].append(day)
+    for index in range(first, last + 1):
+        x = index if step == 1 else Decimal(index) / 10
+        lms = tables.lookup(indicator, sex, x)
+        result["x"].append(x if step == 1 else float(x))
         for key, z in (("sd_neg3", -3), ("sd_neg2", -2), ("median", 0), ("sd_pos2", 2), ("sd_pos3", 3)):
             result[key].append(lms_value_at_z(z, lms))
     return {"data": result, "error": None}
