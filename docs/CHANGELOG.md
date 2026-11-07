@@ -14,6 +14,16 @@ Tandai `[MERUSAK]` bila mengganti nama, mengubah tipe, atau menghapus field/endp
 
 ## 2026-11-07
 
+- 16:15 · frontend · Zena (audit, atas nama tim frontend) · favicon kosong agar tidak ada 404 di setiap pemuatan; tautan "Buka laporan" disembunyikan di halaman laporan itu sendiri · — · frontend: tinjau perubahan di ZIP audit
+
+- 16:15 · backend · Zena (audit, atas nama tim backend) · jendela 14 hari `GET /food-recalls` dan riwayat ke engine memakai tanggal Go (sama dengan `as_of`), bukan `CURRENT_DATE` PostgreSQL; bila zona waktu DB berbeda (mis. UTC di Docker), catatan makan hari ini tersimpan tetapi hilang dari riwayat dan dari `diet` antara 00.00–07.00 WIB. Fixture sqlmock disesuaikan · — · backend: tinjau perubahan di ZIP audit
+
+- 16:10 · backend · Zena (audit, atas nama tim backend) · validasi pengukuran menolak `length_height_cm`/`head_circumference_cm` lebih dari 1 desimal sesuai kontrak; sebelumnya 75,25 cm tersimpan lalu setiap evaluasi anak itu 422 sampai baris dihapus · — · backend: tinjau perubahan di ZIP audit
+
+- 16:10 · docs · Zena · README: frontend sudah ada (perintah npm dikembalikan), status endpoint engine diperbarui, Compose dinyatakan belum ada; HANDOFF engine diperbarui dengan bukti audit dan empat keputusan kontrak yang menunggu · — · semua: baca bagian "Keputusan kontrak" di HANDOFF
+
+- 14:29 · engine · Zena (Patch 09, entri susulan) · endpoint `POST /growth/evaluate`, `POST /kpsp/score`, `GET /reference` (wfa, lhfa, hcfa) aktif; `GET /kpsp/questionnaire` tetap 404 dan `reference` wfl_wfh 503 · — · backend/frontend: kurva wfl_wfh dan KPSP next belum bisa dipakai; lihat engine/debug/PATCH_09.md
+
 - 14:14 · docs/backend · hasil uji pengguna · tambahkan bukti sesi OTP akun existing, GET children awal kosong, POST/GET anak akun login, POST logout logged_out:true dan penolakan token lama UNAUTHORIZED; pertahankan seluruh catatan engine ZIP 08 dan frontend; tidak menganggap data lintas akun/engine asli sudah teruji · — · backend: lanjut login setelah logout dan baca anak yang sama, lalu isolasi dua akun
 
 - 14:07 · backend · hasil uji pengguna Windows/PostgreSQL lokal · POST /children dengan Authorization berhasil membuat Anak Mutia Uji; GET /children dengan sesi yang sama menampilkan objek ber-ID sama dan error:null; GET sebelumnya menghasilkan [] pada akun yang belum memiliki anak · — · tim: data baru terkait akun sesi; hasil ini belum membuktikan penolakan akses akun lain

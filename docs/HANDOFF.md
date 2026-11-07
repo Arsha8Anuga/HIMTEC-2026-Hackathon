@@ -11,8 +11,9 @@ Cara membuka sesi AI baru: tempel AGENTS.md, bagian kontrak yang relevan, lalu b
 
 ## Engine — Zena
 
-- **Diperbarui:** 2026-11-07 13:50 WIB (ZIP 08; basis kode `4ca72a386b03ee92213f6cfe8109ba7ea7c499e3`).
-- **Status kode:** Patch 01–07B tersedia. Patch 08 menambah core evaluasi catatan makan/IYCF dan penggabungan dengan pertumbuhan. Main masih hanya health; tidak ada endpoint yang diaktifkan.
+- **Diperbarui:** 2026-11-07 16:10 WIB (audit setelah Patch 09, basis `3648ca0`).
+- **Status kode:** Patch 01–09 di main. Endpoint aktif: `health`, `growth/evaluate`, `kpsp/score`, `reference` (wfa, lhfa, hcfa). Belum: `kpsp/questionnaire` (sengaja, bank belum lengkap) dan `reference` wfl_wfh (503, menunggu kontrak).
+- **Bukti audit 16:10:** pytest 262 passed dengan tabel WHO asli (Linux, Python 3.13). Uji ujung ke ujung engine asli + Go + PostgreSQL 16: skenario Anisa green → yellow `WEIGHT_NOT_GAINING` → red `WEIGHT_NOT_GAINING_2X` dengan lhfa normal; catatan makan, skor KPSP, kurva wfa/lhfa/hcfa berhasil.
 - **IYCF selesai (core):** MDD kelompok unik +ASI, MMF menurut umur/menyusu dan jumlah makan/susu, EFF telur/flesh foods; pola tiga catatan terakhir dalam 14 tanggal; satu hari buruk hanya info, >=2 kegagalan yang tersedia dapat yellow; NO_RECENT_FOOD_RECALL. Teks pengguna tetap milik Go. Semua aturan/URL sumber berada di `data/iycf/rules.json`.
 - **Batas data makan:** umur pada recall memakai hari/30,4375 sesuai proyek, bukan umur pada as_of. Selisih terhadap WHO <730 hari di batas atas (proyek masih menerima hari 730) dicatat. Jendela as_of−13..as_of sama dengan backend; tujuh tanggal recency as_of−6..as_of. Susu opsional null dihitung nol untuk MMF; bukan bukti klinis tidak minum susu. Dairy tidak ditambahkan dari jumlah susu. MMF tidak sama dengan minimum frekuensi susu/MAD. Kode NO_ANIMAL_SOURCE_FOOD merujuk EFF kontrak (eggs/flesh), bukan klaim dairy tidak hewani.
 - **Penggabungan:** `evaluate_growth_and_diet(request,tables)` mempertahankan per_measurement dan bukti pertumbuhan, menambah diet/reasons dan mengambil severity tertinggi. Red tidak diturunkan oleh diet baik. WHODataError tetap diteruskan. Respons core belum memiliki next_kpsp dan belum respons HTTP lengkap.
@@ -22,8 +23,9 @@ Cara membuka sesi AI baru: tempel AGENTS.md, bagian kontrak yang relevan, lalu b
 - **Pertumbuhan:** core evaluasi/klasifikasi/flag dan early warning tersedia. 1T/2T kalender berurutan, bulan kosong memutus 2T, titik valid terakhir per bulan; KBM masih fallback <=0 g. Domain WHO 1826 vs kontrak 1856, presisi WFL/WFH, flag berdiri sebelum 9 bulan dan pembulatan flag tetap isu integrasi.
 - **Cara uji:** `cd engine && python -m unittest discover -s tests -p test_iycf.py -v`, lalu `python -m pytest -q` dengan requirements. Bila belum ada WHO, unduh saat setup memakai scripts/fetch_who_tables.py. Penjelasan `engine/debug/PATCH_08.md`.
 - **Dokumentasi:** versi kontrak v0.5 dan entri 07B yang telah disetujui/diberikan sebelumnya digabung kembali dengan docs GitHub terbaru, kemudian catatan IYCF ditambahkan. Hotfix dokumentasi menggabungkan ulang HANDOFF/CHANGELOG dari main, termasuk pembaruan backend 13:45 (OTP dan bukti uji pengguna); bagian backend/frontend/matriks dipertahankan persis dari sumber terbaru. Tidak mengubah API/enum/dependensi/backend/frontend.
-- **Belum selesai:** endpoint lengkap growth/reference/KPSP, gambar dan review klinis KPSP, lima kasus penuh WHO Anthro dan uji lintas layanan. IYCF ini adaptasi skrining proyek, bukan diagnosis atau evaluasi kecukupan gizi menyeluruh.
-- **Langkah berikutnya:** Patch 09 integrasi endpoint, menangani isu domain secara eksplisit, lalu uji Go/frontend dan demo. Tetap ZIP tanpa push GitHub. Butuh hasil pytest laptop tim dan aset visual KPSP.
+- **Belum selesai:** `kpsp/questionnaire` (gambar dan review klinis KPSP), `reference` wfl_wfh, lima kasus penuh WHO Anthro. IYCF ini adaptasi skrining proyek, bukan diagnosis atau evaluasi kecukupan gizi menyeluruh.
+- **Keputusan kontrak yang menunggu Zena:** (1) cara memilih WFL/WFH di `/reference`; (2) batas umur pengukuran 1856 hari vs tabel WHO 1826 hari — pengukuran hari 1827–1856 lolos Go tetapi membuat evaluasi seluruh riwayat anak itu 503 sampai baris dihapus; (3) endpoint `/auth/*` dan error 401/429 dari backend belum ada di kontrak; (4) `GET /children` belum memuat ringkasan tingkat peringatan.
+- **Langkah berikutnya:** putuskan empat hal di atas, lalu uji frontend dengan engine asli dan demo.
 
 ## Backend — tim backend
 

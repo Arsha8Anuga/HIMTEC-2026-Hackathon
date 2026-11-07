@@ -57,9 +57,18 @@ go run ./cmd/server
 go run ./cmd/check-engine
 ```
 
-Health berhasil tidak berarti endpoint evaluasi siap. Pada snapshot ini main.py engine masih hanya mendaftarkan health; Go melaporkan route yang belum ada melalui diagnostik OpenAPI. Backend CRUD/login tetap dapat berjalan. Pengujian fixture lokal tersedia di backend/testing/README.md; tidak ada fallback medis otomatis.
+Engine kini menyediakan `health`, `growth/evaluate`, `kpsp/score`, dan `reference` (wfa, lhfa, hcfa). Yang belum: `kpsp/questionnaire` (sengaja nonaktif sampai bank KPSP lengkap) dan `reference` untuk `wfl_wfh` (menunggu keputusan kontrak); lihat `engine/debug/PATCH_09.md`. Pengujian fixture lokal tersedia di backend/testing/README.md; tidak ada fallback medis otomatis.
 
-**Frontend dan Docker:** frontend masih kerangka folder; package.json/aplikasi Vite dan konfigurasi Compose belum tersedia pada snapshot ini. Perintah npm/Docker untuk seluruh stack adalah rencana, belum langkah yang dapat dijalankan. Gunakan API Go melalui PowerShell sampai aplikasi frontend dan Compose disediakan.
+**Frontend** (laptop teman):
+
+```bash
+cd frontend
+cp .env.example .env    # Vite membaca VITE_API_URL dari frontend/, bukan dari .env akar
+npm install
+npm run dev             # demo: npm run build && npm run preview
+```
+
+**Mode cadangan satu laptop:** `docker-compose.yml` belum ada di repo; mode ini belum bisa dijalankan.
 
 **Mode OTP lokal:** set AUTH_MODE=otp_dummy di terminal Go sebelum startup. Gunakan Authorization Bearer saat menguji data anak; panduan lengkap di backend/AUTH_TESTING.md. Mode demo default tetap tersedia. Tidak ada email/SMS nyata pada OTP dummy.
 

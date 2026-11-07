@@ -134,6 +134,11 @@ func checkRange(key string, v *float64, min, max float64, f map[string]string) {
 		f[key] = fmt.Sprintf("harus antara %g dan %g", min, max)
 	}
 }
+func checkOneDecimal(key string, v *float64, f map[string]string) {
+	if v != nil && f[key] == "" && math.Abs(*v*10-math.Round(*v*10)) > 1e-9 {
+		f[key] = "maksimal 1 angka di belakang koma"
+	}
+}
 func intRange(key string, v *int, min, max int, f map[string]string) {
 	if v != nil && (*v < min || *v > max) {
 		f[key] = fmt.Sprintf("harus antara %d dan %d", min, max)
@@ -183,6 +188,10 @@ func validMeasurement(x model.MeasurementInput, ch model.Child) map[string]strin
 	}
 	checkRange("length_height_cm", x.LengthHeightCm, 40, 130, f)
 	checkRange("head_circumference_cm", x.HeadCircumferenceCm, 30, 60, f)
+	// Kontrak: cm 1 desimal. Engine menolak nilai di luar grid 0,1; bila tersimpan,
+	// seluruh riwayat anak gagal dievaluasi sampai baris itu dihapus.
+	checkOneDecimal("length_height_cm", x.LengthHeightCm, f)
+	checkOneDecimal("head_circumference_cm", x.HeadCircumferenceCm, f)
 	if x.LengthHeightCm != nil && x.Position == nil {
 		f["position"] = "wajib jika panjang/tinggi diisi"
 	}

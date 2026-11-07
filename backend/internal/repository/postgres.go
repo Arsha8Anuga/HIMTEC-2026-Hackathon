@@ -248,7 +248,10 @@ func scanFood(s interface{ Scan(...any) error }) (model.FoodRecall, error) {
 	return f, err
 }
 func (s *Store) Foods(ctx context.Context, childID string) ([]model.FoodRecall, error) {
-	rows, err := s.DB.QueryContext(ctx, `SELECT `+foodColumns+` FROM food_recalls WHERE child_id=$1 AND recall_date >= CURRENT_DATE-13 AND recall_date <= CURRENT_DATE AND EXISTS (SELECT 1 FROM children c JOIN users u ON u.id=c.parent_id WHERE c.id=$1 AND c.parent_id=$2 AND u.role='parent' AND u.is_active) ORDER BY recall_date DESC`, childID, s.parentID())
+	// Jendela memakai tanggal Go (sama dengan as_of ke engine), bukan CURRENT_DATE
+	// PostgreSQL yang bisa berbeda zona waktu.
+	today := time.Now().Local().Format("2006-01-02")
+	rows, err := s.DB.QueryContext(ctx, `SELECT `+foodColumns+` FROM food_recalls WHERE child_id=$1 AND recall_date >= $3::date-13 AND recall_date <= $3::date AND EXISTS (SELECT 1 FROM children c JOIN users u ON u.id=c.parent_id WHERE c.id=$1 AND c.parent_id=$2 AND u.role='parent' AND u.is_active) ORDER BY recall_date DESC`, childID, s.parentID(), today)
 	if err != nil {
 		return nil, err
 	}

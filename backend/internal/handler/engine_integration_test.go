@@ -75,7 +75,7 @@ func TestSavedInputRemainsReadableWhenEngineRouteIsMissing(t *testing.T) {
 			}
 			mock.ExpectQuery("SELECT .* FROM measurements WHERE child_id=").WithArgs(testChildID, repository.DemoParentID).WillReturnRows(measurementRow(day))
 			mock.ExpectQuery("SELECT .* FROM kpsp_results WHERE child_id=").WithArgs(testChildID, repository.DemoParentID).WillReturnRows(sqlmock.NewRows([]string{"id"}))
-			mock.ExpectQuery("SELECT .* FROM food_recalls WHERE child_id=").WithArgs(testChildID, repository.DemoParentID).WillReturnRows(foodRow(day))
+			mock.ExpectQuery("SELECT .* FROM food_recalls WHERE child_id=").WithArgs(testChildID, repository.DemoParentID, service.Today()).WillReturnRows(foodRow(day))
 			r := httptest.NewRecorder()
 			h.ServeHTTP(r, httptest.NewRequest(http.MethodPost, "/api/v1/children/"+testChildID+"/"+kind, strings.NewReader(body)))
 			var out envelope
@@ -95,7 +95,7 @@ func TestSavedInputRemainsReadableWhenEngineRouteIsMissing(t *testing.T) {
 				mock.ExpectQuery("SELECT .* FROM measurements WHERE child_id=").WithArgs(testChildID, repository.DemoParentID).WillReturnRows(measurementRow(day))
 			} else {
 				id = testFoodID
-				mock.ExpectQuery("SELECT .* FROM food_recalls WHERE child_id=").WithArgs(testChildID, repository.DemoParentID).WillReturnRows(foodRow(day))
+				mock.ExpectQuery("SELECT .* FROM food_recalls WHERE child_id=").WithArgs(testChildID, repository.DemoParentID, service.Today()).WillReturnRows(foodRow(day))
 			}
 			r = httptest.NewRecorder()
 			h.ServeHTTP(r, httptest.NewRequest(http.MethodGet, "/api/v1/children/"+testChildID+"/"+kind, nil))

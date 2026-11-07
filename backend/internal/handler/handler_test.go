@@ -73,6 +73,12 @@ func TestValidationMeasurement(t *testing.T) {
 	if validMeasurement(m, child)["measured_at"] == "" {
 		t.Fatal("prebirth measurement accepted")
 	}
+	m.MeasuredAt = "2026-02-01"
+	offGrid, head := 70.25, 44.05
+	m.LengthHeightCm, m.HeadCircumferenceCm = &offGrid, &head
+	if f := validMeasurement(m, child); f["length_height_cm"] == "" || f["head_circumference_cm"] == "" {
+		t.Fatalf("values beyond 1 decimal accepted: %+v", f)
+	}
 }
 func TestKPSPMissingAnswer(t *testing.T) {
 	answers := make([]model.Answer, 10)

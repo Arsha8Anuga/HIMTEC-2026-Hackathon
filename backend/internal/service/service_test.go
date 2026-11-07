@@ -29,7 +29,7 @@ func TestGrowthSkipsMissingOptionalMeasurements(t *testing.T) {
 					AddRow("missing", "child", "2026-02-01", 8.0, nil, nil, nil, "posyandu", nil, time.Now()).
 					AddRow("complete", "child", "2026-01-01", 7.0, 70.0, "recumbent", 40.0, "posyandu", nil, time.Now()))
 			mock.ExpectQuery("SELECT .* FROM kpsp_results WHERE child_id=").WithArgs("child", repository.DemoParentID).WillReturnRows(sqlmock.NewRows([]string{"id"}))
-			mock.ExpectQuery("SELECT .* FROM food_recalls WHERE child_id=").WithArgs("child", repository.DemoParentID).WillReturnRows(sqlmock.NewRows([]string{"id"}))
+			mock.ExpectQuery("SELECT .* FROM food_recalls WHERE child_id=").WithArgs("child", repository.DemoParentID, Today()).WillReturnRows(sqlmock.NewRows([]string{"id"}))
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				if r.URL.Path == "/growth/evaluate" {
