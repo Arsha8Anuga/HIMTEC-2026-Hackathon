@@ -9,7 +9,7 @@ Basis: `af4193a6da0a9019a25f25738b0e9caf9243ffac` (`Document Update`). Paket ini
 - `food_groups text[]` dari DDL PRD dikonversi ke JSONB tanpa kehilangan nilai; JSON publik tetap sama.
 - `001` dan `003` dijalankan dalam transaksi dengan advisory lock. Kegagalan satu bagian membatalkan transaksi. Seed `002` tetap opsional dan kini menyertakan pemilik.
 - Seluruh query repository membatasi pemilik anak dan memeriksa akun aktif berperan parent, termasuk query data pengukuran, KPSP, catatan makan dan hapus pengukuran.
-- Konteks demo dipilih server; tidak menambah field atau endpoint publik. Login OTP/admin belum diimplementasikan.
+- Konteks demo dipilih server; tidak menambah field atau endpoint publik. OTP dummy parent kini tersedia sebagai opsi lokal; pengelolaan admin belum diimplementasikan.
 
 ## Validasi dan perbaikan lain
 
@@ -50,3 +50,7 @@ PGlite, harness pengujian dan binary hanya dipakai saat validasi dan tidak diser
 Pada commit acuan, endpoint Python evaluasi/reference/KPSP belum tersedia; fitur yang membutuhkannya masih dapat membalas 503. Patch tidak menghasilkan z-score/status medis tiruan. Panduan masih kosong menunggu isi resmi. Tidak ada perubahan kontrak API, enum, port, variabel runtime wajib atau batas umur pengukuran. Riwayat medis lama tidak dibersihkan otomatis.
 
 `docs/CHANGELOG.md` dan `docs/HANDOFF.md` menggabungkan catatan backend dengan dokumen tim pada commit acuan; bagian engine/frontend dipertahankan. Jika dokumen GitHub berubah lagi, gabungkan perubahan backend dengan versi terbaru sebelum menimpa. Tidak ada push GitHub pada pekerjaan ini.
+
+## Tambahan OTP dummy lokal
+
+Pendaftaran email dan login diaktifkan dengan AUTH_MODE=otp_dummy, kode hanya di terminal. Migrasi 004 menambah otp_codes/auth_sessions/audit_logs. Semua data bisnis membutuhkan bearer session dalam mode ini dan Store/Service di-scope per request ke user parent aktif. Kode HMAC sekali pakai 5 menit/5 percobaan, request minimum 60 detik/maksimal 5 per jam/email, session token acak disimpan hashed dan berlaku 24 jam, logout mencabut sesi. Default demo lama tetap tersedia. Lihat AUTH_TESTING.md untuk ekstensi API, 401/429, hasil tes dan perintah PowerShell.

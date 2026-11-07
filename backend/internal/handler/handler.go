@@ -15,12 +15,14 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/auth"
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/engineclient"
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/model"
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/service"
 )
 
 type Handler struct {
+	Auth       *auth.Service
 	Svc        *service.Service
 	CORSOrigin string
 }
@@ -278,6 +280,11 @@ func (h *Handler) child(w http.ResponseWriter, r *http.Request) (model.Child, bo
 }
 func (h *Handler) Routes() http.Handler {
 	mux := http.NewServeMux()
+	entry := func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/api/v1/children", http.StatusTemporaryRedirect)
+	}
+	mux.HandleFunc("GET /api/v1", entry)
+	mux.HandleFunc("GET /api/v1/{$}", entry)
 	mux.HandleFunc("/api/v1/", func(w http.ResponseWriter, r *http.Request) { missing(w) })
 	mux.HandleFunc("GET /api/v1/children", h.children)
 	mux.HandleFunc("POST /api/v1/children", h.addChild)
@@ -299,11 +306,21 @@ func (h *Handler) Routes() http.Handler {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Vary", "Origin")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		}
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return
+		}
+		if h.Auth != nil && strings.HasPrefix(r.URL.Path, "/api/v1/") {
+			if strings.HasPrefix(r.URL.Path, "/api/v1/auth/") {
+				h.authRoute(w, r)
+				return
+			}
+			if r.URL.Path != "/api/v1/" {
+				h.authenticated(w, r)
+				return
+			}
 		}
 		mux.ServeHTTP(w, r)
 	})

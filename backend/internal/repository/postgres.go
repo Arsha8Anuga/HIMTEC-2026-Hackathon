@@ -47,7 +47,7 @@ func Open(databaseURL string) (*Store, error) {
 }
 func (s *Store) Migrate(ctx context.Context, directory string) error {
 	// 002 is an optional demo seed, not a startup migration.
-	names := []string{"001_init.sql", "003_demo_parent.sql"}
+	names := []string{"001_init.sql", "003_demo_parent.sql", "004_otp_auth.sql"}
 	scripts := make([][]byte, 0, len(names))
 	for _, name := range names {
 		b, err := os.ReadFile(filepath.Join(directory, name))
