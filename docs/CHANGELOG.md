@@ -14,6 +14,8 @@ Tandai `[MERUSAK]` bila mengganti nama, mengubah tipe, atau menghapus field/endp
 
 ## 2026-11-07
 
+- 11:06 · engine · engine (hotfix ZIP 04A) · melengkapi validasi tanggal KPSP/recall, umur recall menurut tanggalnya dan keunikan riwayat; koreksi posisi memakai desimal untuk grid WHO; tes health diisolasi dari data lokal dan tes regresi ditambahkan. 22 pemeriksaan manual serta kompilasi lulus; 5 checksum WHO cocok dan 13.366 baris termuat. Pytest hotfix belum terverifikasi (pytest/dependensi tidak tersedia di lingkungan ini); angka 91 lulus adalah hasil Patch 04 sebelumnya. Tidak mengubah kontrak/endpoint/dependensi; data WHO tidak dibundel · — · engine/tim: jalankan pytest dengan requirements repository sebelum menandai hotfix lulus dan melanjutkan Patch 05; lihat engine/debug/HOTFIX_04A.md
+
 - 10:47 · engine · engine (patch ZIP 04) · menambah fungsi murni z-score LMS, restricted LMS (khusus indikator berbasis berat), invers LMS untuk garis SD, koreksi posisi berdasar 731 hari, dan interpolasi linear 0,1 cm sebagai utilitas terpisah; 91 tes pytest lulus (48 lama + 43 baru), termasuk kasus resmi WHO Anthro. Tidak menambah endpoint/field/enum dan data WHO tidak dibundel · — · backend: endpoint evaluasi medis belum tersedia; pemilik kontrak: tetapkan kebijakan presisi 0,1 cm, batas umur, dan penanganan posisi berdiri di bawah 9 bulan sebelum integrasi
 
 - 10:37 · docs · engine (hotfix ZIP dokumentasi patch 03) · merge ulang `docs/CHANGELOG.md` dan `docs/HANDOFF.md` dari versi terbaru GitHub; mempertahankan semua catatan backend pukul 09:39 dan 10:03, isi serah terima backend, dan matriks integrasi; tidak ada perubahan kode engine · — · semua: gunakan dokumentasi hasil merge; hindari menimpa dokumen terbaru dengan dokumen dari ZIP patch lama

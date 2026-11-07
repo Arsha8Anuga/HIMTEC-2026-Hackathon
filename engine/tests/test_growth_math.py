@@ -122,6 +122,28 @@ def test_position_correction_at_boundary(age: int, position: str, expected: floa
     assert correct_length_height_cm(age, 80.0, position) == pytest.approx(expected)
 
 
+@pytest.mark.parametrize("age, position, measured, corrected, indicator", [
+    (730, "standing", 79.9, 80.6, "wfl"),
+    (731, "recumbent", 80.1, 79.4, "wfh"),
+])
+def test_position_correction_can_feed_exact_who_lookup(age, position, measured, corrected, indicator) -> None:
+    # Synthetic sentinel tests grid compatibility, not clinical accuracy.
+    sentinel = LMS(1, 10, 0.1)
+    index = int(Decimal(str(corrected)) * 10)
+    tables = WHOTables(rows={(indicator, 1, index): sentinel})
+    value = correct_length_height_cm(age, measured, position)
+    assert value == corrected
+    assert tables.lookup(indicator, "male", value) == sentinel
+
+
+@pytest.mark.parametrize("age, position, measured, expected", [
+    (730, "standing", 79.91, 80.61),
+    (731, "recumbent", 80.11, 79.41),
+])
+def test_position_correction_does_not_quantise_precise_inputs(age, position, measured, expected) -> None:
+    assert correct_length_height_cm(age, measured, position) == expected
+
+
 @pytest.mark.parametrize("bad_age, bad_pos, bad_measure", [
     (-1, "standing", 80),
     (True, "standing", 80),

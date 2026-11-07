@@ -1,17 +1,20 @@
 """Test the health endpoint and the shared validation error envelope."""
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import create_app
 from app.schemas.growth import GrowthEvaluateRequest
 
 
-def test_health_reports_missing_who_tables_honestly() -> None:
+@pytest.mark.parametrize("loaded", [False, True])
+def test_health_reports_table_availability(monkeypatch, loaded: bool) -> None:
+    monkeypatch.setattr("app.api.health.who_tables_loaded", lambda: loaded)
     with TestClient(create_app()) as client:
         response = client.get("/engine/v1/health")
     assert response.status_code == 200
     assert response.json() == {
-        "data": {"status": "ok", "who_tables_loaded": False},
+        "data": {"status": "ok", "who_tables_loaded": loaded},
         "error": None,
     }
 
