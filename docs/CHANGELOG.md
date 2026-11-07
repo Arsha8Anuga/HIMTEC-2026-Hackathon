@@ -14,7 +14,15 @@ Tandai `[MERUSAK]` bila mengganti nama, mengubah tipe, atau menghapus field/endp
 
 ## 2026-11-07
 
+- 14:14 · docs/backend · hasil uji pengguna · tambahkan bukti sesi OTP akun existing, GET children awal kosong, POST/GET anak akun login, POST logout logged_out:true dan penolakan token lama UNAUTHORIZED; pertahankan seluruh catatan engine ZIP 08 dan frontend; tidak menganggap data lintas akun/engine asli sudah teruji · — · backend: lanjut login setelah logout dan baca anak yang sama, lalu isolasi dua akun
+
+- 14:07 · backend · hasil uji pengguna Windows/PostgreSQL lokal · POST /children dengan Authorization berhasil membuat Anak Mutia Uji; GET /children dengan sesi yang sama menampilkan objek ber-ID sama dan error:null; GET sebelumnya menghasilkan [] pada akun yang belum memiliki anak · — · tim: data baru terkait akun sesi; hasil ini belum membuktikan penolakan akses akun lain
+
 - 14:01 · docs/engine · engine (hotfix dokumentasi ZIP 08) · gabungkan ulang CHANGELOG/HANDOFF dari main terbaru: pertahankan seluruh catatan backend sampai 13:45 termasuk OTP dan bukti uji pengguna, pulihkan status Engine 07B/08; tanpa perubahan kode atau push GitHub · — · semua: terapkan hotfix docs setelah ZIP 08 agar catatan backend terbaru tidak tertimpa
+
+- 14:01 · backend · paket penyelarasan basis 6551237 · tambah cmd/check-engine dan probe read-only health/OpenAPI maksimal 3 detik, kenali fake/route hilang/OpenAPI unknown; error 503 membedakan endpoint belum tersedia dari gangguan koneksi sambil mempertahankan pesan data tersimpan; loader .env bersama CLI/server; dokumentasi kontrak v0.5 draf, OTP/401/429, PRD dan status 07B/layanan diselaraskan · — · engine/frontend: komponen asli tidak ditambahkan oleh patch backend; review pemilik kontrak tetap diperlukan
+
+- 14:01 · backend · validasi paket penyelarasan · Go unit/race, vet, kompilasi server dan check-engine Windows, smoke CLI fake dan 5 tes fake Python lulus; SQL suite tidak dijalankan ulang tanpa BACKEND_TEST_DATABASE_URL; tidak ada perubahan kode engine/frontend/migrasi dalam patch ini · — · tim: hasil paket pengembangan terpisah dari bukti penerapan laptop dan validasi medis
 
 - 13:50 · engine · engine (ZIP 08) · core MDD/MMF/EFF dari referensi WHO/UNICEF 2021, jendela 14 tanggal selaras Go, pola >=2 kegagalan dari maksimal 3 catatan terbaru, recency 7 tanggal dan penggabungan severity/evidence pertumbuhan. 35 tes unittest lulus termasuk WHO asli+diet; pytest penuh belum tersedia lokal. Selisih umur hari 730 proyek vs WHO dicatat. Klarifikasi kontrak v0.5/riwayat 07B digabung kembali dari paket yang telah diberikan, catatan tim tetap dipertahankan · — · tim: jalankan pytest; backend/frontend: endpoint evaluasi belum aktif, KPSP gambar masih menunggu; lihat engine/debug/PATCH_08.md
 

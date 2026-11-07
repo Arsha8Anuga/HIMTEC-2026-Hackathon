@@ -27,9 +27,11 @@ Cara membuka sesi AI baru: tempel AGENTS.md, bagian kontrak yang relevan, lalu b
 
 ## Backend — tim backend
 
+- **Pembaruan bukti 14:14 WIB, 7 November 2026:** verifikasi OTP berikutnya untuk akun existing dikenali oleh /auth/me; daftar anak awal kosong, tambah/baca anak dengan token berhasil; logout dan penolakan token lama berhasil pada Windows/PostgreSQL lokal. Login setelah logout dan pembacaan ulang anak setelah login itu belum dilaporkan. Hanya dokumentasi backend yang diperbarui; catatan engine ZIP 08/frontend dipertahankan.
+
 - **Diperbarui:** 7 November 2026, 13:45 WIB; berdasarkan file lampiran dan hasil pengujian yang dilaporkan pengguna pada percakapan ini.
 - **Acuan:** kontrak medis v0.4, PRD users/children.parent_id, paket kompatibilitas backend, fake engine testing dan paket OTP dummy berbasis repository 1a0fe1b. Dokumen ini memperbarui status backend tanpa menimpa bagian engine/frontend.
-- **Status:** API dasar dan alur dengan fake engine telah diuji pengguna pada Windows/PostgreSQL lokal. Pendaftaran OTP, verifikasi dan pengenalan sesi /auth/me berhasil. Integrasi engine medis asli dan frontend lengkap belum terverifikasi. Tidak ada push GitHub pada pekerjaan dokumentasi ini; status commit/push pengguna di luar percakapan tidak diasumsikan.
+- **Status:** API dasar dan alur dengan fake engine telah diuji pengguna pada Windows/PostgreSQL lokal. Pendaftaran OTP, verifikasi/sesi /auth/me, tambah/baca anak dengan token, logout dan penolakan token lama berhasil. Integrasi engine medis asli dan frontend lengkap belum terverifikasi. Tidak ada push GitHub pada pekerjaan dokumentasi ini; status commit/push pengguna di luar percakapan tidak diasumsikan.
 
 ### Implementasi yang sudah dikerjakan
 
@@ -75,10 +77,17 @@ Cara membuka sesi AI baru: tempel AGENTS.md, bagian kontrak yang relevan, lalu b
 | Startup OTP | Log AUTH_MODE=otp_dummy dan siap pada loopback | Berhasil |
 | Pendaftaran dan verifikasi OTP | Challenge cocok dengan log; verify menghasilkan user role parent | Berhasil pada Windows/PostgreSQL lokal |
 | GET /auth/me | User uji yang sama, role parent, error:null dengan bearer token | Sesi dikenali; berhasil |
-| Daftar/tambah anak akun OTP baru | Baru disarankan, belum ada hasil pengguna | Belum diverifikasi di laptop |
-| Login ulang/logout/expired/replay/isolasi akun | Belum ada hasil pengguna | Baru teruji di lingkungan pengembangan |
+| Verifikasi OTP berikutnya akun existing | /auth/me kembali mengenali akun yang sama, error:null | Berhasil; raw request /auth/login tidak disertakan dalam hasil terakhir |
+| Daftar anak akun OTP sebelum tambah | GET /children dengan bearer menghasilkan data:[], error:null | Berhasil; akun memang belum punya anak |
+| Tambah anak akun OTP | POST menghasilkan Anak Mutia Uji, error:null, created_at 14:07:46 WIB | Berhasil pada Windows/PostgreSQL lokal |
+| Baca anak setelah tambah | GET /children menampilkan anak dengan ID sama seperti POST | Berhasil pada sesi yang sama |
+| Logout | POST /auth/logout menghasilkan logged_out:true dan error:null | Berhasil |
+| Token setelah logout | GET /children memakai token lama menghasilkan UNAUTHORIZED | Berhasil; sesi lama ditolak |
+| Login setelah logout, expiry/replay OTP dan isolasi dua akun | Hasil lanjutan belum dikirim | Belum terverifikasi di laptop; tes pengembangan telah tercatat |
 
-Hasil login awal merupakan verifikasi OTP pendaftaran yang langsung menerbitkan sesi. Keberhasilan endpoint /auth/login untuk akun existing dan /auth/logout pada laptop tidak disimpulkan dari /auth/me saja.
+Hasil login awal adalah verifikasi OTP pendaftaran. Hasil sesi berikutnya memperlihatkan /auth/me mengenali akun existing yang sama; request mentah /auth/login tidak ditampilkan dalam kiriman terakhir. Logout dan penolakan token lama kini dibuktikan oleh respons terpisah, bukan disimpulkan dari /auth/me. Pembacaan anak setelah login ulang pasca-logout belum dikonfirmasi.
+
+**Referensi data uji (bukan credential):** pengguna `Mutia Uji`, ID `8b86d1cb-4703-4f5e-adfe-b261fbfb21b7`; anak `Anak Mutia Uji`, ID `9ab42e38-99f7-430a-afd4-20c99db8253c`, dibuat 7 November 2026 pukul 14:07:46 WIB. ID anak pada POST dan GET sama. Tidak ada OTP atau access_token yang disimpan dalam dokumen. Pemeriksaan ini membuktikan data tampil di akun sesi, tetapi belum membuktikan isolasi dari akun kedua.
 
 ### Tes pada lingkungan pengembangan
 
@@ -92,12 +101,19 @@ Hasil login awal merupakan verifikasi OTP pendaftaran yang langsung menerbitkan 
 
 1. Pertahankan .env lokal. Dari backend, jalankan fake engine di terminal terpisah: python testing/fake_engine.py --testing-only.
 2. Pada terminal Go: set $env:AUTH_MODE="otp_dummy" dan $env:ENGINE_URL="http://127.0.0.1:18001/engine/v1", lalu go run ./cmd/server. Hentikan proses Go lama dahulu bila port dipakai.
-3. Di terminal pengujian pertahankan $base, $session dan $headers. Uji GET "$base/children" -Headers $headers. Daftar kosong normal untuk akun baru; hasilnya belum diterima pada sesi ini.
-4. Tambah anak milik sesi dengan -Headers $headers, kemudian uji pengukuran/status/KPSP/catatan makan memakai ID baru. Uji logout dan login ulang setelah jeda request OTP; jangan mengirim token atau kode ke chat/dokumentasi.
+3. Token lama sudah dicabut oleh logout yang berhasil. Minta OTP login baru untuk akun existing, lakukan verify, dan bentuk ulang $headers dari token baru. Patuhi jeda minimal 60 detik antar-request OTP. Jangan memakai token yang sudah logout.
+4. Setelah login ulang pasca-logout, GET "$base/children" dengan token baru. Pastikan Anak Mutia Uji ber-ID 9ab42e38-99f7-430a-afd4-20c99db8253c masih ada; hasil ini belum dikirim. Tidak perlu POST anak yang sama lagi. Kemudian lanjutkan pengukuran/status/KPSP/catatan makan dengan token dan ID tersebut. Jangan mengirim kode/token ke chat.
 5. Uji dua akun untuk memastikan data terpisah; jalankan suite SQL pada database uji terpisah melalui BACKEND_TEST_DATABASE_URL. Jangan arahkan suite ke DB demo/produksi.
 6. Selesaikan koneksi engine asli (IP/port/bind/firewall) dan endpoint medis sesudah tersedia. Kegagalan koneksi real engine sebelumnya masih belum terpecahkan; fake engine hanya menyediakan fixture lokal.
 7. Hubungkan frontend dengan bearer header, lengkapi materi guides dan keputusan kontrak yang terbuka (ringkasan anak, reference, rentang WHO 1826 vs kontrak 1856, presisi/posisi). Integrasikan spesifikasi auth tambahan bersama pemilik kontrak.
 8. Gabungkan dokumen dan kode tim sebelum commit/push; hasil git di luar percakapan tidak diasumsikan. Pada pembaruan ini hanya file lampiran yang disunting, tidak ada kode atau push yang dijalankan.
+
+### Paket penyelarasan backend yang juga telah dibuat
+
+- Basis 6551237; tambah cmd/check-engine dan loader .env bersama server. Probe hanya GET health/OpenAPI, maksimal 3 detik, tanpa data anak. Health OK dipisahkan dari keberadaan route; fake ditandai; OpenAPI unknown tidak dianggap bukti route hilang. Tidak ada fallback fake otomatis.
+- HTTP upstream 404 menghasilkan pesan endpoint perhitungan belum tersedia; error transport menjelaskan pemeriksaan ENGINE_URL/proses Python. Kode publik ENGINE_UNAVAILABLE tetap 503; pesan setelah POST tetap menyebut data tersimpan.
+- Draf kontrak v0.5, PRD, README dan handoff pada paket diselaraskan dengan OTP serta keputusan >=16 KPSP yang sudah tercatat di Patch 07B. Review pemilik kontrak tetap diperlukan. Go tidak menambah perhitungan medis; frontend/Compose dan endpoint engine asli tidak dibangun oleh patch ini.
+- Unit/race, vet, kompilasi Windows server/CLI, smoke CLI fake dan lima tes fake Python lulus pada pengembangan. Suite SQL tidak diulang pada patch diagnostik. Pengguna berhasil menguji auth/data, tetapi belum mengirim hasil cmd/check-engine sehingga penerapan diagnostik tepat versi paket tidak diasumsikan.
 
 ## Desain + frontend — (nama)
 
@@ -126,4 +142,4 @@ Status pada tabel ini membedakan **route terimplementasi** dan **terbukti teruji
 | `GET /guides` | Ya, data masih kosong | — | ? | Belum |
 | `GET/POST /children/{id}/food-recalls` | Ya | ? | ? | Belum |
 
-**Status backend terkini:** alur dasar dan fixture fake engine telah dilaporkan berhasil di laptop; OTP pendaftaran, verifikasi dan /auth/me juga berhasil. Sesi logout/login ulang, isolasi akun native, frontend dan engine medis asli masih perlu diuji. Tabel end-to-end di atas tetap Belum karena integrasi seluruh layanan belum dibuktikan.
+**Status backend terkini:** alur dasar/fake engine, pendaftaran-verifikasi OTP, sesi /auth/me, daftar/tambah/baca anak akun login, logout serta penolakan token lama telah dilaporkan berhasil. Login ulang setelah logout untuk memastikan anak tetap tersedia, expiry/replay native, isolasi dua akun, frontend dan engine medis asli masih perlu diuji. Tabel end-to-end tetap Belum untuk integrasi seluruh layanan, bukan membatalkan bukti pengujian endpoint yang sudah diterima.
