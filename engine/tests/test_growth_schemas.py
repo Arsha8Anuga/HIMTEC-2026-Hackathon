@@ -136,8 +136,12 @@ def test_recalls_cannot_be_after_as_of(payload: dict) -> None:
 
 
 def test_measured_age_cannot_exceed_who_scope(payload: dict) -> None:
-    payload["child"]["birth_date"] = "2020-01-01"
-    with pytest.raises(ValidationError, match="1856"):
+    payload["food_recalls"], payload["kpsp_results"] = [], []
+    measured = date.fromisoformat(payload["measurements"][0]["measured_at"])
+    payload["child"]["birth_date"] = (measured - timedelta(days=1826)).isoformat()
+    GrowthEvaluateRequest.model_validate(payload)  # hari 1826 = batas tabel WHO, diterima
+    payload["child"]["birth_date"] = (measured - timedelta(days=1827)).isoformat()
+    with pytest.raises(ValidationError, match="1826"):
         GrowthEvaluateRequest.model_validate(payload)
 
 

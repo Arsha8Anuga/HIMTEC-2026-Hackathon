@@ -83,8 +83,8 @@ class GrowthEvaluateRequest(ContractModel):
                 raise ValueError("measured_at tidak boleh sebelum birth_date")
             if measurement.measured_at > self.as_of:
                 raise ValueError("measured_at tidak boleh setelah as_of")
-            if (measurement.measured_at - self.child.birth_date).days > 1856:
-                raise ValueError("umur pada measured_at tidak boleh lebih dari 1856 hari")
+            if (measurement.measured_at - self.child.birth_date).days > 1826:
+                raise ValueError("umur pada measured_at tidak boleh lebih dari 1826 hari")
             if measurement.id in measurement_ids:
                 raise ValueError("id pengukuran tidak boleh duplikat")
             if measurement.measured_at in measurement_dates:

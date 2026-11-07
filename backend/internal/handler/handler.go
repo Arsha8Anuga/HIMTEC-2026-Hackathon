@@ -177,8 +177,8 @@ func validMeasurement(x model.MeasurementInput, ch model.Child) map[string]strin
 		if d.After(today) {
 			f["measured_at"] = "tanggal tidak boleh di masa depan"
 		}
-		if int(d.Sub(b).Hours()/24) > 1856 {
-			f["measured_at"] = "umur pengukuran maksimal 1856 hari"
+		if int(d.Sub(b).Hours()/24) > 1826 {
+			f["measured_at"] = "umur pengukuran maksimal 1826 hari"
 		}
 	}
 	if x.WeightKg == nil {

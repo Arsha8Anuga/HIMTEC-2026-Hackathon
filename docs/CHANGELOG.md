@@ -14,6 +14,8 @@ Tandai `[MERUSAK]` bila mengganti nama, mengubah tipe, atau menghapus field/endp
 
 ## 2026-11-07
 
+- 16:45 · kontrak v0.6 (draf) + engine + backend · Zena · batas umur `measured_at` 1856 → 1826 hari agar sama dengan tabel WHO harian (1856 = ⌊61 × 30,4375⌋ dari konvensi bulan penuh SDIDTK hlm. 91; alasannya di "Penegasan v0.6"). Go menolak > 1826 dengan VALIDATION_ERROR dan membatasi garis acuan ke 1826; engine menolak dengan 422 (sebelumnya 503). `GET /children` ditetapkan tanpa ringkasan; `otp_dummy` dan `/auth/*` dinyatakan ekstensi pengujian di luar kontrak; garis acuan `wfl_wfh` tetap isu terbuka · — · backend: tinjau perubahan Go di ZIP; frontend: tidak ada perubahan; semua: Go demo wajib mode `demo`
+
 - 16:15 · frontend · Zena (audit, atas nama tim frontend) · favicon kosong agar tidak ada 404 di setiap pemuatan; tautan "Buka laporan" disembunyikan di halaman laporan itu sendiri · — · frontend: tinjau perubahan di ZIP audit
 
 - 16:15 · backend · Zena (audit, atas nama tim backend) · jendela 14 hari `GET /food-recalls` dan riwayat ke engine memakai tanggal Go (sama dengan `as_of`), bukan `CURRENT_DATE` PostgreSQL; bila zona waktu DB berbeda (mis. UTC di Docker), catatan makan hari ini tersimpan tetapi hilang dari riwayat dan dari `diet` antara 00.00–07.00 WIB. Fixture sqlmock disesuaikan · — · backend: tinjau perubahan di ZIP audit

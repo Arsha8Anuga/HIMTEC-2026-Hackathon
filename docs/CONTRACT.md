@@ -4,7 +4,7 @@ Nov 7, 2026 · @Zenacia
 
 ## Tujuan dan aturan main
 
-Kontrak ini mengikat bentuk data dan API antara frontend, backend Go, dan engine Python. Kode yang tidak cocok dengan kontrak dianggap salah, bukan kontraknya. Versi saat ini (v0.5 memperjelas umur/jadwal KPSP sesuai keputusan pengguna; v0.4 menambah Catatan Makan Kemarin; v0.3 jaringan demo dan kartu panduan): **v0.5 (draf)**, dibekukan menjadi v1.0 paling lambat satu jam setelah mulai.
+Kontrak ini mengikat bentuk data dan API antara frontend, backend Go, dan engine Python. Kode yang tidak cocok dengan kontrak dianggap salah, bukan kontraknya. Versi saat ini (v0.6 menetapkan batas umur pengukuran 1826 hari dan menuntaskan tiga isu terbuka, lihat "Penegasan v0.6"; v0.5 memperjelas umur/jadwal KPSP sesuai keputusan pengguna; v0.4 menambah Catatan Makan Kemarin; v0.3 jaringan demo dan kartu panduan): **v0.6 (draf)**, dibekukan menjadi v1.0 paling lambat satu jam setelah mulai.
 
 **Masalah.** Orang tua balita 6–24 bulan menerima angka penimbangan Posyandu setiap bulan, tetapi tidak memahami artinya. Perlambatan pertumbuhan baru ketahuan setelah anak melewati −2 SD, ketika jendela intervensi hampir tertutup. Kemenkes menyebut usia 12–24 bulan sebagai tantangan terbesar, saat anak masuk fase MPASI ([InfoPublik, Mei 2026](https://infopublik.id/kategori/nasional-sosial-budaya/970585/intervensi-masa-krusial-jadi-fokus-kemenkes-tekan-angka-stunting)). Prevalensi nasional 19,8% (SSGI 2024), target 17,5% pada 2026.
 
@@ -112,7 +112,7 @@ Go memiliki dan menyimpan tiga entitas ini. Engine Python tidak pernah menyentuh
 | --- | --- | --- | --- |
 | `id` | uuid | otomatis | — |
 | `child_id` | uuid | ya | anak harus ada |
-| `measured_at` | date | ya | ≥ `birth_date`, ≤ hari ini, umur ≤ 1856 hari; satu pengukuran per anak per tanggal |
+| `measured_at` | date | ya | ≥ `birth_date`, ≤ hari ini, umur ≤ 1826 hari (v0.6); satu pengukuran per anak per tanggal |
 | `weight_kg` | number | ya | 0,5–40 |
 | `length_height_cm` | number | tidak | 40–130 |
 | `position` | enum `recumbent`/`standing` | ya jika `length_height_cm` diisi | `recumbent` = berbaring (panjang badan), `standing` = berdiri (tinggi badan) |
@@ -196,7 +196,7 @@ Nilai enum klasifikasi di JSON: `severely_underweight`, `underweight`, `normal`,
 
 - `next_kpsp`: sebelum umur bulat 3 bulan mengembalikan formulir 3 bulan dengan `due=false`. Bila belum ada hasil sesuai untuk formulir yang cocok dengan umur, `due=true`. Hasil sesuai untuk formulir umur saat ini memindahkan tampilan ke formulir jadwal berikutnya dengan `due=false` sampai umur tersebut tercapai; pada formulir terakhir tetap 60/`false`.
 - Hasil terakhir meragukan mengulang formulir yang sama setelah ≥14 hari, termasuk bila batas umur formulir berikutnya telah terlewati; mengacu evaluasi intervensi halaman 119. Hasil terakhir penyimpangan tidak menjadwalkan skrining mandiri ulang secara otomatis (`due=false`); alasan rujukan tetap aktif. Riwayat terbaru ditentukan oleh tanggal, umur kuesioner terbesar sebagai pemecah tanggal seri.
-- Umur bulat di luar 0–60 ditolak oleh core KPSP; konflik batas 1856 hari untuk pengukuran versus domain WHO tetap isu terbuka dan tidak diubah di sini.
+- Umur bulat di luar 0–60 ditolak oleh core KPSP. Batas umur pengukuran ditetapkan di v0.6 (1826 hari).
 - Bentuk JSON skor tetap `{questionnaire_age_months, answers:[{item_no, answer}]}`, cocok dengan client Go; respons skor `{yes_count, result}` di dalam amplop umum.
 - Bank yang hanya ditranskripsi dari Markdown dan belum memiliki gambar/rubrik serta verifikasi klinis tidak boleh disajikan sebagai kuesioner siap pakai. Format referensi aset gambar pada API belum ditetapkan; jangan menambah field baru sepihak. Sampai lengkap, endpoint questionnaire tetap belum diaktifkan.
 
@@ -273,7 +273,7 @@ Frontend hanya berbicara dengan Go di `http://localhost:8080/api/v1`. MVP tanpa 
 
 | Metode | Path | Fungsi |
 | --- | --- | --- |
-| GET | `/children` | daftar anak + ringkasan tingkat peringatan terakhir |
+| GET | `/children` | daftar anak (bentuk `Child`); tingkat peringatan per anak diambil dari `/children/{id}/status` (v0.6) |
 | POST | `/children` | tambah anak |
 | GET | `/children/{id}` | detail anak |
 | GET | `/children/{id}/status` | evaluasi terkini: tingkat, z-score, kode alasan, KPSP berikutnya |
@@ -468,6 +468,16 @@ Engine tidak mengembalikan kalimat untuk orang tua. Go menambahkan `title` dan `
 Sejak v0.4, request `/growth/evaluate` menyertakan `food_recalls` (catatan 14 hari terakhir, bentuk `FoodRecall` tanpa `id` dan `child_id`), dan response menyertakan `diet` dengan bentuk yang sama seperti di `/status`. Kode alasan pola makan dihitung di engine bersama kode lainnya.
 
 Engine wajib punya tes pytest untuk: rumus LMS, koreksi posisi, setiap kode alasan minimal satu kasus, dan pembulatan umur KPSP.
+
+## Penegasan v0.6
+
+**Batas umur pengukuran: 1826 hari.** Angka 1856 di versi sebelumnya berasal dari konvensi umur bulan penuh pada Pedoman SDIDTK 2022 (hlm. 91: setelah 3 bulan, plotting memakai *completed months*). Dengan konvensi itu, anak 60 bulan 0–30 hari masih "60 bulan" dan dibaca dari baris 60 bulan tabel bulanan; ⌊61 × 30,4375⌋ = 1856. Engine memakai tabel WHO harian yang berakhir di hari 1826, jadi hari 1827–1856 tidak punya baris LMS. Proyek tidak mengekstrapolasi dan tidak memetakan hari ke baris bulanan tanpa sumber, maka batasnya disamakan dengan tabel: Go menolak pengukuran > 1826 hari dengan `VALIDATION_ERROR`, engine juga menolak dengan 422, dan garis acuan kurva berhenti di 1826. Sasaran aplikasi (6–24 bulan) tidak terdampak. Memakai baris hari 1826 untuk hari 1827–1856 sesuai konvensi bulan penuh adalah pengembangan setelah MVP dan butuh keputusan pemilik kontrak.
+
+**`GET /children` tanpa ringkasan.** Kontrak tidak pernah mendefinisikan bentuk ringkasan, jadi endpoint ini hanya mengembalikan daftar `Child`; tingkat peringatan dibaca dari `/status` per anak, seperti yang sudah dilakukan frontend.
+
+**Mode `AUTH_MODE=otp_dummy` di luar kontrak.** Endpoint `/api/v1/auth/*` serta error `UNAUTHORIZED` (401) dan `RATE_LIMITED` (429) adalah ekstensi pengujian backend, aktif hanya bila `AUTH_MODE=otp_dummy`, dan didokumentasikan di `backend/AUTH_TESTING.md`. Frontend dan demo tidak memakainya; Go saat demo wajib berjalan dalam mode bawaan (`demo`). Login tetap peta jalan setelah MVP.
+
+**Isu terbuka: garis acuan `wfl_wfh`.** `GET /reference` tidak bisa memilih tabel BB/PB atau BB/TB tanpa umur, sehingga engine membalas 503 dan kurva BB/PB-TB belum tersedia. Z-score dan klasifikasi `wfl_wfh` pada `/status` tidak terdampak. Usulan setelah demo: Go memilih tabel dari umur anak (< 731 hari = `wfl`, selainnya `wfh`) dan memanggil engine dengan nilai indikator itu; perubahan ini menambah nilai enum di API internal dan butuh persetujuan pemilik kontrak.
 
 ## Demo, batas cakupan, dan jadwal
 

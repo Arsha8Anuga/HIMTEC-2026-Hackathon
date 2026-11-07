@@ -188,7 +188,8 @@ def test_measurement_outside_who_domain_does_not_return_partial_success(client, 
     body = payload()
     body["as_of"] = (date.fromisoformat(body["child"]["birth_date"]) + timedelta(days=1827)).isoformat()
     body["measurements"] = [{"id": "9b1d0c2e-0000-4000-8000-000000000001", "measured_at": body["as_of"], "weight_kg": 18.0, "source": "posyandu"}]
-    assert_error(client.post("/engine/v1/growth/evaluate", json=body), 503, "ENGINE_UNAVAILABLE")
+    # Kontrak v0.6: umur > 1826 hari melanggar input, bukan gangguan engine.
+    assert_error(client.post("/engine/v1/growth/evaluate", json=body), 422, "VALIDATION_ERROR")
 
 
 def test_precision_validation_runs_before_who_load(client):

@@ -34,8 +34,7 @@ WHO_SOURCE_BLOBS: dict[str, str] = {
 
 # WHO anthro uses WHO sex codes: 1=male, 2=female.
 # WHO's daily age grid covers 0..1826 (60 months ~= 1826.25 days).
-# The project contract currently permits measurements through day 1856;
-# the resulting discrepancy must be resolved by the contract owner.
+# Contract v0.6 limits measurements to day 1826 to match this grid.
 @dataclass(frozen=True)
 class TableSpec:
     filename: str

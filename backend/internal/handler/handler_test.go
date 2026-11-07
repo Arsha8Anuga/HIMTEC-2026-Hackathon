@@ -79,6 +79,18 @@ func TestValidationMeasurement(t *testing.T) {
 	if f := validMeasurement(m, child); f["length_height_cm"] == "" || f["head_circumference_cm"] == "" {
 		t.Fatalf("values beyond 1 decimal accepted: %+v", f)
 	}
+	// Kontrak v0.6: batas umur = grid harian WHO, hari 1826.
+	m.LengthHeightCm, m.HeadCircumferenceCm = &cm, nil
+	older := model.Child{BirthDate: "2020-01-01"}
+	birth, _ := time.Parse("2006-01-02", older.BirthDate)
+	m.MeasuredAt = birth.AddDate(0, 0, 1826).Format("2006-01-02")
+	if f := validMeasurement(m, older); f["measured_at"] != "" {
+		t.Fatalf("day 1826 rejected: %+v", f)
+	}
+	m.MeasuredAt = birth.AddDate(0, 0, 1827).Format("2006-01-02")
+	if validMeasurement(m, older)["measured_at"] == "" {
+		t.Fatal("day 1827 accepted")
+	}
 }
 func TestKPSPMissingAnswer(t *testing.T) {
 	answers := make([]model.Answer, 10)

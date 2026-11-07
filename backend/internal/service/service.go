@@ -169,11 +169,11 @@ func (s *Service) Growth(ctx context.Context, ch model.Child, indicator string) 
 	for _, p := range eval.PerMeasurement {
 		byID[p.ID] = p
 	}
-	from, to := 0, 1856 // domain umur dalam hari (kontrak); referensi dibatasi sampai umur anak + 6 bulan.
+	from, to := 0, 1826 // domain umur dalam hari (kontrak v0.6); referensi dibatasi sampai umur anak + 6 bulan.
 	age, _ := AgeDays(ch.BirthDate, Today())
 	to = age + 183
-	if to > 1856 {
-		to = 1856
+	if to > 1826 {
+		to = 1826
 	}
 	if indicator == "wfl_wfh" {
 		from = 40

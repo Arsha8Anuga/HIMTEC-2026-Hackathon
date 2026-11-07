@@ -45,10 +45,9 @@ fitur medis sudah bisa dipakai.
 
 ## Catatan kontrak yang perlu diputuskan pemiliknya
 
-`docs/CONTRACT.md` v0.4 menerima pengukuran anak sampai 1856 hari, sedangkan
-tabel WHO Anthro harian berbasis usia hanya hingga 1826 hari. Endpoint
-perhitungan belum boleh mengekstrapolasi melebihi sumber; perlu disepakati
-batas validasi usia (tanpa mengubah kontrak sendiri).
+Sejak kontrak v0.6, batas umur pengukuran 1826 hari, sama dengan tabel
+WHO Anthro harian berbasis usia; tidak ada ekstrapolasi (lihat "Penegasan
+v0.6" di `docs/CONTRACT.md`).
 
 Hal lain yang belum diselesaikan: WHO `wfl`/`wfh` memakai langkah 0,1 cm.
 Data input lebih presisi dari itu tidak boleh dibulatkan diam-diam sebelum
