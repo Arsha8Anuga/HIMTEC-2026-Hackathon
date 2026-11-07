@@ -1,0 +1,204 @@
+# Menjalankan aplikasi dari nol
+
+Panduan ini membawa satu laptop Windows yang bersih sampai aplikasi bisa dipakai di peramban:
+engine Python → PostgreSQL → backend Go → frontend Vue. Setiap langkah punya pemeriksaan;
+jangan lanjut sebelum pemeriksaannya lolos. Bagian akhir menjelaskan mode demo dua laptop.
+
+Perintah ditulis untuk PowerShell. Di Linux/macOS, ganti `curl.exe` dengan `curl`,
+`copy` dengan `cp`, dan aktivasi venv dengan `source .venv/bin/activate`.
+
+## 0. Prasyarat
+
+| Perangkat | Versi | Catatan |
+| --- | --- | --- |
+| Git | apa saja | |
+| Python | 3.10 atau lebih baru | centang "Add python.exe to PATH" saat instalasi |
+| Go | 1.22 atau lebih baru | |
+| Node.js | 20 LTS atau lebih baru | |
+| PostgreSQL | 13 atau lebih baru (disarankan 16) | catat kata sandi user `postgres`; `psql` ada di `C:\Program Files\PostgreSQL\16\bin` |
+
+Internet hanya dibutuhkan saat persiapan (unduh dependensi dan tabel WHO). Setelah itu semuanya jalan tanpa internet.
+
+```powershell
+git clone https://github.com/Arsha8Anuga/HIMTEC-2026-Hackathon.git
+cd HIMTEC-2026-Hackathon
+copy .env.example .env
+```
+
+Buka `.env` di akar repo, lalu isi:
+
+```
+DATABASE_URL=postgres://postgres:KATA_SANDI@localhost:5432/tumbuh?sslmode=disable
+ENGINE_URL=http://127.0.0.1:8001/engine/v1
+CORS_ORIGIN=http://localhost:5173
+```
+
+## 1. Engine Python
+
+```powershell
+cd engine
+python -m venv .venv
+Set-ExecutionPolicy -Scope Process Bypass   # hanya bila Activate.ps1 diblokir
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python scripts/fetch_who_tables.py          # sekali saja, butuh internet
+python -m pytest -q                         # harus lulus semua
+uvicorn app.main:app --host 0.0.0.0 --port 8001
+```
+
+**Periksa** (terminal lain):
+
+```powershell
+curl.exe http://127.0.0.1:8001/engine/v1/health
+```
+
+Harus `"who_tables_loaded": true`. Bila `false`, tabel WHO belum terunduh atau rusak; ulangi `fetch_who_tables.py`.
+Biarkan terminal engine tetap terbuka.
+
+## 2. Database PostgreSQL
+
+```powershell
+psql -U postgres -c "CREATE DATABASE tumbuh"
+```
+
+Tabel tidak dibuat manual; Go membuatnya sendiri di langkah berikut.
+
+## 3. Backend Go
+
+**Wajib dijalankan dari dalam folder `backend/`.** Path migrasi dan `data/` bersifat relatif;
+dari folder lain server langsung berhenti dengan `open migrations/001_init.sql: no such file`.
+
+```powershell
+cd backend
+go test ./...
+go run ./cmd/server
+```
+
+Log yang benar memuat tiga baris ini (urutannya boleh berbeda):
+
+```
+AUTH_MODE=demo: tanpa login ...
+Health engine OK ...
+Backend Go siap pada http://localhost:8080/api/v1 ...
+```
+
+Jangan mengisi `AUTH_MODE=otp_dummy`. Mode itu ekstensi pengujian di luar kontrak, dan frontend
+akan menerima 401 di setiap halaman.
+
+Setelah server pertama kali berjalan, isi anak demo (terminal lain, dari `backend/`):
+
+```powershell
+psql -U postgres -d tumbuh -f migrations/002_seed_children.sql
+```
+
+**Periksa:**
+
+```powershell
+curl.exe http://localhost:8080/api/v1/children
+go run ./cmd/check-engine
+```
+
+Yang pertama harus menampilkan Anisa, Bima, dan Citra. Yang kedua melaporkan endpoint engine yang belum ada;
+saat ini `GET /kpsp/questionnaire` memang belum ada (lihat "Batas yang diketahui").
+
+## 4. Frontend Vue
+
+Vite membaca `.env` dari folder `frontend/`, bukan dari akar repo.
+
+```powershell
+cd frontend
+copy .env.example .env      # isinya VITE_API_URL=http://localhost:8080/api/v1
+npm install
+npm run dev
+```
+
+Buka **http://localhost:5173**, bukan `127.0.0.1:5173`. Go hanya mengizinkan origin yang persis sama
+dengan `CORS_ORIGIN`; alamat lain membuat semua permintaan ditolak peramban.
+
+Alamat halaman memakai `#`, misalnya `http://localhost:5173/#/children/<id>/growth`.
+
+**Versi build untuk demo** memakai port 4173 secara bawaan. Supaya CORS tetap cocok, jalankan di port 5173:
+
+```powershell
+npm run build
+npm run preview -- --port 5173
+```
+
+## 5. Alur pemeriksaan di peramban
+
+1. Beranda menampilkan tiga kartu anak dengan label status.
+2. Tambah anak → isi nama dan tanggal lahir → Simpan. Halaman berpindah ke ringkasan anak baru.
+3. Catat pengukuran → isi berat dan panjang (maksimal 1 angka di belakang koma) → Simpan.
+   Ringkasan menampilkan status, nilai terakhir, dan "Hal yang perlu diperhatikan".
+4. Kurva → pilih Panjang/tinggi menurut umur dan Berat menurut umur; keduanya menampilkan pita SD dan titik anak.
+5. Catatan makan (anak 6–23 bulan) → simpan → ringkasan menampilkan kartu catatan makan.
+6. Riwayat → Hapus → konfirmasi → status dihitung ulang.
+7. Ringkasan → Buka laporan → Cetak / simpan PDF → periksa tampilan A4.
+
+## Mode demo dua laptop
+
+Engine di laptop Zena; Go, PostgreSQL, dan frontend di laptop teman. Semua tersambung ke hotspot ponsel tim.
+
+Di laptop Zena:
+
+```powershell
+ipconfig                    # catat IPv4 adaptor Wi-Fi, mis. 192.168.43.20
+New-NetFirewallRule -DisplayName "Engine 8001" -Direction Inbound -Protocol TCP -LocalPort 8001 -Action Allow   # PowerShell admin, sekali saja
+uvicorn app.main:app --host 0.0.0.0 --port 8001
+```
+
+Matikan mode sleep dan pasang charger.
+
+Di laptop teman, ubah `ENGINE_URL` di `.env` akar repo menjadi `http://<IP-laptop-Zena>:8001/engine/v1`,
+lalu **mulai ulang** Go. Periksa dari laptop teman:
+
+```powershell
+curl.exe http://<IP-laptop-Zena>:8001/engine/v1/health
+```
+
+IP berubah setiap hotspot tersambung ulang; ulangi pemeriksaan ini sebelum demo.
+
+Mode cadangan satu laptop: jalankan langkah 1–4 di satu mesin dengan `ENGINE_URL=http://127.0.0.1:8001/engine/v1`.
+`docker-compose.yml` belum ada di repo.
+
+## Mengosongkan data (sebelum gladi)
+
+Hentikan Go, lalu:
+
+```powershell
+psql -U postgres -c "DROP DATABASE tumbuh"
+psql -U postgres -c "CREATE DATABASE tumbuh"
+```
+
+Jalankan Go lagi dari `backend/`, kemudian ulangi seed `002_seed_children.sql`.
+
+## Batas yang diketahui (kontrak v0.6)
+
+| Gejala | Penyebab | Sikap saat demo |
+| --- | --- | --- |
+| Halaman Perkembangan menampilkan "Endpoint perhitungan yang diminta belum tersedia" | kuesioner KPSP sengaja nonaktif sampai bank butir terverifikasi | jelaskan, jangan dibuka di demo |
+| Kurva "Berat menurut panjang / tinggi" gagal | garis acuan `wfl_wfh` masih isu terbuka | pakai kurva PB/U dan BB/U |
+| Halaman Panduan kosong | `guides.id.json` belum diisi | tidak ditampilkan |
+| Anak demo belum punya pengukuran | seed hanya berisi identitas | isi data demo terverifikasi sebelum H+10 |
+
+## Masalah umum
+
+| Gejala | Penyebab | Perbaikan |
+| --- | --- | --- |
+| Go: `open migrations/001_init.sql` | Go dijalankan dari luar `backend/` | `cd backend` lalu jalankan ulang |
+| Go: `DATABASE_URL wajib diisi` | `.env` akar belum dibuat | `copy .env.example .env` di akar repo |
+| Go: `tidak dapat memakai port 8080` | Go lama masih jalan | tutup terminal lama |
+| Status: "Perhitungan sementara tidak tersedia" | engine mati atau `ENGINE_URL` salah | periksa `/health` engine dari laptop Go |
+| Frontend: "Layanan belum dapat dihubungi" | CORS (alamat bukan `localhost:5173`) atau Go mati | buka `http://localhost:5173`, cek Go |
+| Frontend: "Alamat layanan belum diatur" | `frontend/.env` belum ada | salin `.env.example` di `frontend/`, mulai ulang `npm run dev` |
+| `/health` engine `who_tables_loaded: false` | tabel WHO belum diunduh | `python scripts/fetch_who_tables.py` saat ada internet |
+
+## Menjalankan semua tes
+
+```powershell
+cd engine;   python -m pytest -q
+cd backend;  go test ./...
+cd frontend; $env:CHROME_PATH="C:\Program Files\Google\Chrome\Application\chrome.exe"; npm test
+```
+
+Tes frontend memakai API tiruan, jadi tidak butuh Go atau engine.

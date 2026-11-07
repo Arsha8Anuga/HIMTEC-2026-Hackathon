@@ -28,6 +28,8 @@ Frontend hanya bicara dengan Go. Hanya Go yang memanggil engine. Engine tidak me
 
 ## Menjalankan
 
+Panduan lengkap dari laptop bersih, beserta pemeriksaan tiap langkah dan masalah umum: [`docs/SETUP.md`](docs/SETUP.md). Ringkasnya:
+
 Salin variabel lingkungan dulu:
 
 ```bash
