@@ -106,7 +106,7 @@ func TestPostgresFreshMigrationAndSeed(t *testing.T) {
 	if err := s.DB.QueryRowContext(ctx, `SELECT count(*) FROM children`).Scan(&children); err != nil {
 		t.Fatal(err)
 	}
-	if tables != 5 || users != 1 || children != 0 {
+	if tables != 8 || users != 1 || children != 0 {
 		t.Fatalf("tables=%d demo_users=%d children=%d", tables, users, children)
 	}
 	seed, err := os.ReadFile(filepath.Join("..", "..", "migrations", "002_seed_children.sql"))
@@ -302,6 +302,9 @@ func TestPostgresMigrationRollsBackOnFailure(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err = os.WriteFile(filepath.Join(dir, "003_demo_parent.sql"), []byte("SELECT invalid_migration_function();"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "004_otp_auth.sql"), []byte("SELECT 1;"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	if err = s.Migrate(ctx, dir); err == nil {

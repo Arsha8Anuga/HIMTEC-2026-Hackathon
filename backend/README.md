@@ -2,6 +2,10 @@
 
 Acuan: repository `af4193a` (`Document Update`, 7 November 2026), `docs/CONTRACT.md` v0.4 dan PRD terbaru dengan kepemilikan anak. API publik tetap `:8080/api/v1`; PostgreSQL tetap `:5432`. Aplikasi adalah alat skrining, bukan diagnosis.
 
+## Daftar/login OTP dummy lokal
+
+Fitur baru dipilih dengan `$env:AUTH_MODE="otp_dummy"` sebelum menjalankan Go. Baca **[AUTH_TESTING.md](AUTH_TESTING.md)** untuk pendaftaran email, OTP dari terminal, bearer token, logout dan pengujian akun berbeda. Mode ini hanya bind ke 127.0.0.1:8080; route data membutuhkan login. Default/demo tetap alur lama tanpa autentikasi. Akun baru tidak otomatis memiliki anak demo lama.
+
 ## Isi paket dan pemasangan
 
 ZIP berisi folder `backend/` lengkap serta `docs/CHANGELOG.md` dan `docs/HANDOFF.md`. Ekstrak ke akar repository sehingga ada `backend/go.mod` dan `docs/HANDOFF.md`. Gabungkan pembaruan anggota lain yang dibuat setelah commit acuan sebelum menimpa berkas yang sama.
@@ -33,9 +37,9 @@ Backend memeriksa ketersediaan port 8080 sebelum mengakses database. Bila port s
 
 ## Database dan orang tua demo
 
-Startup menjalankan `001_init.sql` kemudian `003_demo_parent.sql` dalam satu transaksi, dengan advisory lock agar startup bersamaan tidak menerapkan migrasi secara bersamaan. `002_seed_children.sql` adalah seed opsional dan tidak dijalankan otomatis.
+Startup menjalankan `001_init.sql` kemudian `003_demo_parent.sql` dan `004_otp_auth.sql` dalam satu transaksi, dengan advisory lock agar startup bersamaan tidak menerapkan migrasi secara bersamaan. `002_seed_children.sql` adalah seed opsional dan tidak dijalankan otomatis.
 
-Hasil akhir: lima tabel `users`, `children`, `measurements`, `kpsp_results`, `food_recalls`.
+Lima tabel bisnis `users`, `children`, `measurements`, `kpsp_results`, `food_recalls`.
 
 - Satu pengguna demo dibuat dengan ID tetap `00000000-0000-4000-8000-000000000001`, nama `Orang Tua Demo`, role `parent`, aktif.
 - `children.parent_id` ditambahkan dan diberi FK ke `users.id`. Anak lama yang belum memiliki pemilik dihubungkan ke orang tua demo. Pemilik yang sudah ada dipertahankan. Riwayat pengukuran, KPSP dan catatan makan tidak dihapus.
@@ -44,7 +48,7 @@ Hasil akhir: lima tabel `users`, `children`, `measurements`, `kpsp_results`, `fo
 - Jika database dibuat dari DDL PRD dengan `food_groups text[]`, migrasi mengubah penyimpanannya ke JSONB menggunakan `to_jsonb`, mempertahankan isi dan urutan kelompok pangan. JSON publik tetap berupa array string. PRD mengizinkan penyesuaian tipe penyimpanan.
 - Akun demo yang sudah dinonaktifkan atau memiliki role berbeda tidak diaktifkan ulang oleh migrasi; startup gagal agar kondisi tersebut ditinjau secara eksplisit.
 
-MVP tetap tanpa login dan memakai satu konteks orang tua demo. Login OTP dan pengelolaan akun admin merupakan pekerjaan setelah MVP; isolasi query ini adalah persiapannya.
+Mode demo lama memakai satu orang tua demo tanpa login. Mode otp_dummy menambahkan pendaftaran/login parent dan tiga tabel auth (total delapan tabel). Pengelolaan akun admin dan pengiriman OTP nyata tetap pekerjaan lanjutan.
 
 Seed identitas fiktif Anisa/Bima/Citra, setelah startup migrasi selesai:
 
