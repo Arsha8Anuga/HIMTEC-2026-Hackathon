@@ -14,8 +14,10 @@ Aplikasi ini **alat skrining, bukan diagnosis**. Setiap peringatan merah merujuk
 2. **PRD** (apa yang dibangun dan kapan dianggap selesai): `docs/PRD.md`
 
 Keduanya diekspor dari dokumen tim: https://claude.ai/artifact/UBPUY3UnFEi8tj1v7NJpgk
-(tab "Tab 1" = kontrak, tab "PRD"). Setiap kali versi kontrak naik, Zena mengekspor ulang
-keduanya ke `docs/` dan mencatatnya di `CHANGELOG.md`.
+(tab pertama = kontrak, tab "PRD"). Setiap kali versi kontrak naik, Zena mengekspor ulang
+keduanya ke `docs/` dan mencatatnya di `docs/CHANGELOG.md`.
+
+Semua dokumen proyek ada di `docs/`; hanya AGENTS.md dan CLAUDE.md yang tinggal di akar repo.
 
 Jika kode berbeda dengan kontrak, **kodenya yang salah**. Jika kontrak tidak menjawab, tanya di grup. Jangan menebak.
 
@@ -27,7 +29,7 @@ Jika kode berbeda dengan kontrak, **kodenya yang salah**. Jika kontrak tidak men
 | `backend/` | Backend | Go API, PostgreSQL, `messages.id.json`, `guides.id.json`, seed |
 | `frontend/` | Desain + frontend | Vue 3 + Vite + TS + Tailwind + shadcn-vue |
 | `docs/`, `AGENTS.md`, `CLAUDE.md` | Zena | |
-| `CHANGELOG.md`, `HANDOFF.md` | semua | setiap orang menulis bagiannya sendiri |
+| `docs/CHANGELOG.md`, `docs/HANDOFF.md` | semua | setiap orang menulis bagiannya sendiri |
 
 Jangan mengubah folder milik orang lain. Butuh perubahan di sana? Minta lewat grup.
 
@@ -40,7 +42,7 @@ Jangan mengubah folder milik orang lain. Butuh perubahan di sana? Minta lewat gr
 4. Engine tidak menyentuh database dan tidak menyimpan status. Go selalu mengirim riwayat lengkap.
 5. Alamat layanan dibaca dari variabel lingkungan (`ENGINE_URL`, `VITE_API_URL`), tidak pernah di-hardcode.
 6. Tidak ada CDN saat aplikasi berjalan: huruf, ikon, dan pustaka dibundel. Demo harus jalan tanpa internet.
-7. Setiap perubahan yang memengaruhi orang lain dicatat di `CHANGELOG.md` dalam commit yang sama.
+7. Setiap perubahan yang memengaruhi orang lain dicatat di `docs/CHANGELOG.md` dalam commit yang sama.
    Perubahan kontrak menaikkan versi dan harus disetujui Zena.
 8. Setelah H+9: hanya perbaikan bug, tidak ada fitur baru.
 
@@ -65,5 +67,5 @@ dengan `ENGINE_URL=http://engine:8001/engine/v1`.
 
 ## Serah terima
 
-Perbarui bagianmu di `HANDOFF.md` ketika: mencapai titik periksa (H+4, H+7, H+9), berpindah tugas,
+Perbarui bagianmu di `docs/HANDOFF.md` ketika: mencapai titik periksa (H+4, H+7, H+9), berpindah tugas,
 menyerahkan pekerjaan ke anggota lain, atau membuka sesi AI baru karena sesi lama terlalu panjang.
