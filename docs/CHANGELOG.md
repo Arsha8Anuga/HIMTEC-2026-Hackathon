@@ -14,6 +14,8 @@ Tandai `[MERUSAK]` bila mengganti nama, mengubah tipe, atau menghapus field/endp
 
 ## 2026-11-07
 
+- 10:47 · engine · engine (patch ZIP 04) · menambah fungsi murni z-score LMS, restricted LMS (khusus indikator berbasis berat), invers LMS untuk garis SD, koreksi posisi berdasar 731 hari, dan interpolasi linear 0,1 cm sebagai utilitas terpisah; 91 tes pytest lulus (48 lama + 43 baru), termasuk kasus resmi WHO Anthro. Tidak menambah endpoint/field/enum dan data WHO tidak dibundel · — · backend: endpoint evaluasi medis belum tersedia; pemilik kontrak: tetapkan kebijakan presisi 0,1 cm, batas umur, dan penanganan posisi berdiri di bawah 9 bulan sebelum integrasi
+
 - 10:37 · docs · engine (hotfix ZIP dokumentasi patch 03) · merge ulang `docs/CHANGELOG.md` dan `docs/HANDOFF.md` dari versi terbaru GitHub; mempertahankan semua catatan backend pukul 09:39 dan 10:03, isi serah terima backend, dan matriks integrasi; tidak ada perubahan kode engine · — · semua: gunakan dokumentasi hasil merge; hindari menimpa dokumen terbaru dengan dokumen dari ZIP patch lama
 
 - 10:30 · engine · engine (patch ZIP 03) · loader WHO LMS offline (5 berkas resmi dari WHO Anthro, sumber/commit + checksum Git blob diverifikasi), skrip unduh saat setup, status `/health` berbasis validitas seluruh tabel, dokumentasi sumber dan 48 tes pytest lulus; tabel belum dibundel karena sandbox tidak dapat mengunduhnya · — · backend: jangan gunakan endpoint evaluasi karena perhitungan medis belum diimplementasikan; pemilik kontrak: selaraskan batas umur 1856 hari dengan tabel WHO 0–1826 hari sebelum implementasi evaluasi

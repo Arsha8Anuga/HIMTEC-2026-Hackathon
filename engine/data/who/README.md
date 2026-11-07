@@ -53,3 +53,31 @@ batas validasi usia (tanpa mengubah kontrak sendiri).
 Hal lain yang belum diselesaikan: WHO `wfl`/`wfh` memakai langkah 0,1 cm.
 Data input lebih presisi dari itu tidak boleh dibulatkan diam-diam sebelum
 metode penyelarasan disetujui dan diuji dengan WHO Anthro.
+
+## Patch 04: fungsi perhitungan murni
+
+`app/core/growth_math.py` menyediakan `lms_zscore`, `restricted_lms_zscore`,
+`lms_value_at_z`, `correct_length_height_cm`, dan `interpolate_length_lms`.
+Matematika diselaraskan dengan kode R WHO Anthro pada commit yang dipin,
+khususnya `R/z-score-helper.R` serta `R/z-score-weight-for-lenhei.R`.
+
+- Pakai **restricted LMS** hanya untuk BB/U serta BB/PB atau BB/TB;
+  PB/TB/U dan LK/U menggunakan LMS biasa. Z-score dipertahankan pada
+  presisi penuh untuk perhitungan dan baru dibulatkan pada respons akhir.
+- Koreksi posisi sesuai `docs/CONTRACT.md` v0.4: umur <731 hari,
+  ukuran berdiri ditambah 0,7 cm; umur >=731 hari, ukuran berbaring
+  dikurangi 0,7 cm. Aturan WHO Anthro tentang pengukuran berdiri
+  sebelum usia 9 bulan perlu diputuskan pemilik kontrak.
+- WHO Anthro menggunakan interpolasi linear LMS antara dua baris WFL/WFH
+  berjarak 0,1 cm untuk ukuran pecahan. Utilitas sudah tersedia
+  **terpisah** tetapi tidak otomatis dipakai endpoint hingga aturan
+  presisi disetujui. Di luar domain WHO harus ditolak, bukan diekstrapolasi.
+- Patch 04 menguji kasus numerik dari tes upstream WHO Anthro serta
+  batas matematis. **Belum** ada evaluasi kesehatan atau klasifikasi
+  pada API dan **belum** ada validasi lima kasus end-to-end WHO Anthro.
+
+Referensi implementasi:
+
+- https://github.com/WorldHealthOrganization/anthro/blob/b776d8a12b1c97369c748b561159fd2ec4f4db58/R/z-score-helper.R
+- https://github.com/WorldHealthOrganization/anthro/blob/b776d8a12b1c97369c748b561159fd2ec4f4db58/R/z-score-weight-for-lenhei.R
+- https://github.com/WorldHealthOrganization/anthro/tree/b776d8a12b1c97369c748b561159fd2ec4f4db58/tests/testthat
