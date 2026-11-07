@@ -30,3 +30,11 @@ Paket ZIP diekstrak dari akar monorepo dan berisi frontend/. Patch berikutnya ha
 - Grafik kosong pada laporan memerlukan konfirmasi eksplisit cetak tanpa kurva. Legend checkbox terjangkau keyboard; tabel memiliki unit/z-score. Pita tidak mempunyai arti klasifikasi tambahan.
 - Verifikasi aktual: 15 tes Playwright API simulasi lulus, build/TypeScript lulus. Screenshot grafik 360px diperiksa sesudah perbaikan ukuran SVG; test menegaskan lebar SVG sama dengan wadah, supaya bug tidak lolos hanya dengan keberadaan elemen. Mode print grafik juga diperiksa.
 - Batas sebelumnya tetap: OTP belum ada; guides/questionnaire/domain WHO mengikuti kesiapan API; belum integrasi Go/engine asli. Peringatan bundle grafik sekitar 504 kB; lazy loaded, bukan kegagalan build.
+
+## Patch 004 (0.4.0)
+- KpspQuestionnaire.vue menyimpan jawaban per item_no, tepat 10 nomor unik, teks pertanyaan dari API, null/duplikat ditolak. Tidak menghitung skor. Parent submit menerima answers dari komponen; POST berhasil menampilkan result/yes_count backend dan fokus hasil.
+- KPSP GET history dan next memakai allSettled independen; error POST tidak menyediakan reload yang menghapus jawaban. Draft hanya memori komponen, tidak disimpan ke disk/browser storage.
+- FieldError.vue menghubungkan pesan backend ke aria-describedby kontrol tambahan; angka/null tetap forms.ts.
+- Laporan: identitas di awal, LK/sumber di tabel, alasan dibuka saat report, A4 CSS dan repeated table headers. displayMeasurement menggunakan status.latest atau riwayat terbaru (tanpa klasifikasi buatan).
+- Verifikasi aktual: 22 tes Playwright API simulasi lulus; TypeScript/build lulus. PDF A4 test dihasilkan dan media cetak diperiksa visual, data uji bukan data medis riil. Grafik lazy bundle warning ~504kB tetap.
+- Patch 005 tersisa untuk integrasi layanan asli. Tidak menyatakan seluruh kriteria penerimaan PRD terverifikasi; bank KPSP/guides/domain WHO bergantung backend. Mode demo tanpa OTP tetap.

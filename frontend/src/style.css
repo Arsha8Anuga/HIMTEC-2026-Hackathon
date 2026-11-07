@@ -838,3 +838,74 @@ a {
     color: inherit;
   }
 }
+.report-identity {
+  grid-template-columns: minmax(100px, 1fr) 2fr;
+}
+.report-page [tabindex="-1"]:focus {
+  outline: none;
+}
+@media print {
+  html {
+    scroll-padding: 0;
+  }
+  .report-page {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    font-size: 11pt;
+  }
+  .report-page h1 {
+    font-size: 22pt;
+  }
+  .report-page h2 {
+    font-size: 14pt;
+  }
+  .report-page .card {
+    break-inside: auto;
+    margin-bottom: 12px;
+  }
+  .report-page .detail-grid {
+    display: block;
+  }
+  .report-page .metrics {
+    margin: 12px 0;
+  }
+  .report-page .status-card {
+    print-color-adjust: exact;
+  }
+  .report-page .table-wrap {
+    overflow: visible;
+  }
+  .report-page table {
+    font-size: 10pt;
+    table-layout: fixed;
+  }
+  .report-page td,
+  .report-page th {
+    padding: 8px 5px;
+    overflow-wrap: anywhere;
+  }
+  .report-page thead {
+    display: table-header-group;
+  }
+  .report-page tr {
+    break-inside: avoid;
+  }
+  .report-page .chart {
+    break-inside: avoid;
+  }
+  .report-page details {
+    break-inside: auto;
+  }
+  .report-page .actions,
+  .report-page a,
+  .report-page .chart-legend {
+    display: none !important;
+  }
+  .report-page .evidence {
+    gap: 4px;
+  }
+  .report-page .title-row {
+    margin-bottom: 16px;
+  }
+}

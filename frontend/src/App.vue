@@ -15,6 +15,8 @@ import {
   Trash2,
 } from "lucide-vue-next";
 import { api, ApiError, today, dateLabel } from "./lib/api";
+import KpspQuestionnaire from "./components/KpspQuestionnaire.vue";
+import FieldError from "./components/FieldError.vue";
 import StatusBadge from "./components/StatusBadge.vue";
 import { isGrowthData } from "./lib/growth";
 import { childBody, measurementBody, foodBody } from "./lib/forms";
@@ -38,8 +40,6 @@ const busy = ref(false),
   notice = ref(""),
   fields = ref<Record<string, string>>({}),
   indicator = ref("lhfa"),
-  step = ref(0),
-  answers = ref<Record<number, boolean>>({}),
   deleteId = ref(""),
   reportWarning = ref(""),
   relatedGuides = ref<any[]>([]),
@@ -86,6 +86,17 @@ watch(deleteId, async (value) => {
   }
 });
 const reportReady = ref(false);
+const savedKpsp = ref<any>(null);
+const sourceLabel = (source: string) =>
+  (
+    ({ posyandu: "Posyandu", puskesmas: "Puskesmas", home: "Rumah" }) as Record<
+      string,
+      string
+    >
+  )[source] || source;
+const displayMeasurement = computed(
+  () => status.value?.latest || measurements.value[0],
+);
 const focusMain = () => document.getElementById("main")?.focus();
 const printReport = () => window.print();
 const validPage = computed(() =>
@@ -209,11 +220,10 @@ async function load() {
   status.value = null;
   growth.value = null;
   questionnaire.value = null;
+  savedKpsp.value = null;
   measurements.value = [];
   results.value = [];
   foods.value = [];
-  step.value = 0;
-  answers.value = {};
   form.value = {
     measured_at: today(),
     source: "posyandu",
@@ -266,8 +276,17 @@ async function load() {
           `/children/${id.value}/measurements`,
         );
       if (page.value === "kpsp") {
-        results.value = await request(`/children/${id.value}/kpsp`);
-        questionnaire.value = await request(`/children/${id.value}/kpsp/next`);
+        const responses = await Promise.allSettled([
+          request(`/children/${id.value}/kpsp`),
+          request(`/children/${id.value}/kpsp/next`),
+        ]);
+        if (version !== loadVersion) throw new StaleLoad();
+        results.value =
+          responses[0].status === "fulfilled" ? responses[0].value : [];
+        questionnaire.value =
+          responses[1].status === "fulfilled" ? responses[1].value : null;
+        const failed = responses.find((r) => r.status === "rejected");
+        if (failed?.status === "rejected") error.value = failed.reason.message;
       }
       if (page.value === "food")
         foods.value = await request(`/children/${id.value}/food-recalls`);
@@ -339,7 +358,10 @@ watch(indicator, () => {
     loadGrowth();
   }
 });
-async function submit(kind: string) {
+async function submit(
+  kind: string,
+  kpspAnswers?: { item_no: number; answer: boolean }[],
+) {
   const owner = route.path;
   saving.value = true;
   error.value = "";
@@ -360,15 +382,21 @@ async function submit(kind: string) {
       body = {
         questionnaire_age_months: questionnaire.value.questionnaire_age_months,
         answered_at: today(),
-        answers: Object.entries(answers.value).map(([item_no, answer]) => ({
-          item_no: Number(item_no),
-          answer,
-        })),
+        answers: kpspAnswers,
       };
       path = `/children/${id.value}/kpsp`;
     }
     const r = await api(path, "POST", body);
     if (route.path !== owner) return;
+    if (kind === "kpsp") {
+      savedKpsp.value = r;
+      results.value = [r, ...results.value];
+      questionnaire.value = null;
+      notice.value = "Jawaban berhasil disimpan.";
+      await nextTick();
+      document.getElementById("kpsp-result")?.focus();
+      return;
+    }
     if (kind === "new") await router.push(`/children/${r.id}`);
     else await go("");
     notice.value = "Data berhasil disimpan.";
@@ -433,7 +461,7 @@ async function remove() {
       <span>Pantau tumbuh kembang</span
       ><span class="header-label">Ruang orang tua</span>
     </header>
-    <main id="main" tabindex="-1">
+    <main id="main" tabindex="-1" :class="{ 'report-page': page === 'report' }">
       <div class="eyebrow">
         {{
           child
@@ -481,7 +509,8 @@ async function remove() {
             Jika pesan menyebut data sudah tersimpan, periksa riwayat sebelum
             mengirim ulang.
           </p>
-          <button v-else @click="load">Coba lagi</button
+          <button v-else-if="page !== 'kpsp' || !questionnaire" @click="load">
+            Coba lagi</button
           ><RouterLink
             v-if="id"
             :to="`/children/${id}/${page === 'food' ? 'food' : 'history'}`"
@@ -597,27 +626,44 @@ async function remove() {
                 >{{ fields[f.key] }}</small
               ></label
             ><label v-if="page === 'new'"
-              >Jenis kelamin<select v-model="form.sex">
+              >Jenis kelamin<select
+                v-model="form.sex"
+                :aria-invalid="!!fields.sex"
+                :aria-describedby="fields.sex ? 'sex-error' : undefined"
+              >
                 <option value="female">Perempuan</option>
-                <option value="male">Laki-laki</option>
-              </select></label
+                <option value="male">Laki-laki</option></select
+              ><FieldError field="sex" :fields="fields" /></label
             ><template v-else
               ><label
-                >Posisi pengukuran<select v-model="form.position">
+                >Posisi pengukuran<select
+                  v-model="form.position"
+                  :aria-invalid="!!fields.position"
+                  :aria-describedby="
+                    fields.position ? 'position-error' : undefined
+                  "
+                >
                   <option value="recumbent">Berbaring</option>
-                  <option value="standing">Berdiri</option>
-                </select></label
+                  <option value="standing">Berdiri</option></select
+                ><FieldError field="position" :fields="fields" /></label
               ><label
-                >Sumber pengukuran<select v-model="form.source">
+                >Sumber pengukuran<select
+                  v-model="form.source"
+                  :aria-invalid="!!fields.source"
+                  :aria-describedby="fields.source ? 'source-error' : undefined"
+                >
                   <option value="posyandu">Posyandu</option>
                   <option value="puskesmas">Puskesmas</option>
-                  <option value="home">Rumah</option>
-                </select></label
+                  <option value="home">Rumah</option></select
+                ><FieldError field="source" :fields="fields" /></label
               ><label
                 >Catatan (opsional)<textarea
                   v-model="form.note"
-                  maxlength="200"
-                /></label
+                  :aria-invalid="!!fields.note"
+                  :aria-describedby="fields.note ? 'note-error' : undefined"
+                  maxlength="200" /><FieldError
+                  field="note"
+                  :fields="fields" /></label
             ></template>
           </div>
           <label v-if="page === 'new'" class="check"
@@ -643,8 +689,19 @@ async function remove() {
             </button>
           </div>
         </form>
-        <template v-if="page === 'status' || page === 'report'"
-          ><div class="detail-grid">
+        <template v-if="page === 'status' || page === 'report'">
+          <section v-if="page === 'report' && child" class="card">
+            <h2>Identitas anak</h2>
+            <dl class="evidence report-identity">
+              <dt>Nama anak</dt>
+              <dd>{{ child.name }}</dd>
+              <dt>Jenis kelamin</dt>
+              <dd>{{ child.sex === "female" ? "Perempuan" : "Laki-laki" }}</dd>
+              <dt>Tanggal lahir</dt>
+              <dd>{{ dateLabel(child.birth_date) }}</dd>
+            </dl>
+          </section>
+          <div class="detail-grid">
             <section class="card status-card" :class="status?.level">
               <span class="eyebrow">STATUS TERKINI</span>
               <StatusBadge
@@ -652,8 +709,8 @@ async function remove() {
                 :label="status?.level_label"
               />
               <h2>{{ status?.level_label || "Status belum tersedia" }}</h2>
-              <p v-if="status?.latest">
-                Pengukuran {{ dateLabel(status.latest.measured_at) }}
+              <p v-if="displayMeasurement">
+                Pengukuran {{ dateLabel(displayMeasurement.measured_at) }}
               </p>
               <p v-else>Catatan pengukuran akan tampil di sini.</p>
               <RouterLink
@@ -669,14 +726,14 @@ async function remove() {
                 <div>
                   <span>Berat badan</span
                   ><strong
-                    >{{ status?.latest?.weight_kg ?? "—" }}
+                    >{{ displayMeasurement?.weight_kg ?? "—" }}
                     <small>kg</small></strong
                   >
                 </div>
                 <div>
                   <span>Panjang / tinggi</span
                   ><strong
-                    >{{ status?.latest?.length_height_cm ?? "—" }}
+                    >{{ displayMeasurement?.length_height_cm ?? "—" }}
                     <small>cm</small></strong
                   >
                 </div>
@@ -698,6 +755,7 @@ async function remove() {
           <section class="card">
             <h2>Hal yang perlu diperhatikan</h2>
             <details
+              :open="page === 'report'"
               v-for="(reason, index) in status?.reasons || []"
               :key="index"
             >
@@ -717,7 +775,7 @@ async function remove() {
                 />
               </summary>
               <p>{{ reason.message }}</p>
-              <details>
+              <details :open="page === 'report'">
                 <summary>Lihat detail</summary>
                 <dl class="evidence">
                   <template v-for="(value, key) in reason.evidence" :key="key"
@@ -818,6 +876,8 @@ async function remove() {
                   <th>Tanggal</th>
                   <th>Berat (kg)</th>
                   <th>PB/TB (cm)</th>
+                  <th v-if="page === 'report'">LK (cm)</th>
+                  <th v-if="page === 'report'">Sumber</th>
                   <th v-if="page !== 'report'">Tindakan</th>
                 </tr>
               </thead>
@@ -826,6 +886,10 @@ async function remove() {
                   <td>{{ dateLabel(m.measured_at) }}</td>
                   <td>{{ m.weight_kg }}</td>
                   <td>{{ m.length_height_cm ?? "—" }}</td>
+                  <td v-if="page === 'report'">
+                    {{ m.head_circumference_cm ?? "—" }}
+                  </td>
+                  <td v-if="page === 'report'">{{ sourceLabel(m.source) }}</td>
                   <td v-if="page !== 'report'">
                     <button
                       class="danger secondary"
@@ -843,62 +907,28 @@ async function remove() {
           </div>
           <p v-if="!measurements.length" class="muted">Belum ada pengukuran.</p>
         </section>
-        <template v-if="page === 'kpsp'"
-          ><section v-if="questionnaire" class="card form-card">
-            <h2>
-              Kuesioner {{ questionnaire.questionnaire_age_months }} bulan
-            </h2>
-            <p>{{ questionnaire.due ? "Jatuh tempo" : "Belum jatuh tempo" }}</p>
-            <template
-              v-if="questionnaire.due && questionnaire.items?.length === 10"
-              ><p>Butir {{ step + 1 }} dari 10</p>
-              <progress :value="step + 1" max="10" />
-              <h2>{{ questionnaire.items[step].question }}</h2>
-              <div class="actions">
-                <button
-                  v-for="answer in [true, false]"
-                  :key="String(answer)"
-                  :class="{
-                    secondary:
-                      answers[questionnaire.items[step].item_no] !== answer,
-                  }"
-                  :aria-pressed="
-                    answers[questionnaire.items[step].item_no] === answer
-                  "
-                  @click="answers[questionnaire.items[step].item_no] = answer"
-                >
-                  {{ answer ? "Ya" : "Tidak" }}
-                </button>
-              </div>
-              <div class="actions">
-                <button
-                  class="secondary"
-                  :disabled="step === 0"
-                  @click="step--"
-                >
-                  Sebelumnya</button
-                ><button
-                  v-if="step < 9"
-                  :disabled="
-                    answers[questionnaire.items[step].item_no] === undefined
-                  "
-                  @click="step++"
-                >
-                  Berikutnya</button
-                ><button
-                  v-else
-                  :disabled="Object.keys(answers).length !== 10 || saving"
-                  @click="submit('kpsp')"
-                >
-                  Simpan jawaban
-                </button>
-              </div></template
+        <template v-if="page === 'kpsp'">
+          <section v-if="savedKpsp" id="kpsp-result" tabindex="-1" class="card">
+            <h2>Hasil skrining</h2>
+            <p>
+              Hasil dari layanan: <strong>{{ savedKpsp.result }}</strong>
+            </p>
+            <p>Jawaban Ya: {{ savedKpsp.yes_count }} dari 10</p>
+            <p>Pra-skrining yang perlu dikonfirmasi di Posyandu.</p>
+            <RouterLink :to="`/children/${id}`"
+              >Lihat ringkasan dan tindak lanjut</RouterLink
             >
           </section>
+          <KpspQuestionnaire
+            v-else-if="questionnaire"
+            :questionnaire="questionnaire"
+            :saving="saving"
+            @submit="submit('kpsp', $event)"
+          />
           <section v-else-if="!error" class="card">
             Kuesioner belum tersedia.
-          </section></template
-        >
+          </section>
+        </template>
         <section v-if="page === 'kpsp' || page === 'report'" class="card">
           <h2>Riwayat skrining</h2>
           <p v-for="r in results" :key="r.id">
@@ -913,8 +943,14 @@ async function remove() {
               >Tanggal yang dicatat<input
                 type="date"
                 v-model="form.recall_date"
+                :aria-invalid="!!fields.recall_date"
+                :aria-describedby="
+                  fields.recall_date ? 'recall_date-error' : undefined
+                "
                 :max="today()"
-                required /></label
+                required /><FieldError
+                field="recall_date"
+                :fields="fields" /></label
             ><label class="check"
               ><input type="checkbox" v-model="form.breastfed" /> Minum ASI pada
               hari tersebut</label
@@ -939,7 +975,11 @@ async function remove() {
                   max="10"
                   step="1"
                   required
-                  v-model="form.meal_count" /></label
+                  v-model="form.meal_count"
+                  :aria-invalid="!!fields.meal_count"
+                  :aria-describedby="
+                    fields.meal_count ? 'meal_count-error' : undefined
+                  " /><FieldError field="meal_count" :fields="fields" /></label
               ><label
                 >Jumlah minum susu selain ASI (opsional)<input
                   type="number"
@@ -947,6 +987,10 @@ async function remove() {
                   max="10"
                   step="1"
                   v-model="form.milk_feed_count"
+                  :aria-invalid="!!fields.milk_feed_count"
+                  :aria-describedby="
+                    fields.milk_feed_count ? 'milk_feed_count-error' : undefined
+                  " /><FieldError field="milk_feed_count" :fields="fields"
               /></label>
             </div>
             <p v-for="(message, key) in fields" :key="key" class="field-error">

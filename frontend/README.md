@@ -52,3 +52,13 @@ Terapkan setelah Patch 002. Tidak ada dependensi baru; jalankan npm run dev sepe
 - Simpan/hapus yang selesai setelah pengguna berpindah halaman tidak mengalihkan halaman baru.
 
 Verifikasi: TypeScript/build lulus dan 15 uji browser lulus. Grafik ponsel diperiksa secara visual dan media cetak diuji pada browser. Data uji grafik adalah angka simulasi protokol, bukan tabel WHO. PDF A4 lengkap serta backend/engine asli belum diverifikasi. Modul grafik dimuat terpisah saat diperlukan; build memberi peringatan ukuran modul grafik sekitar 504 kB (sebelum kompresi), bukan kegagalan build.
+
+## Patch 004 — KPSP, validasi dan laporan A4
+
+Terapkan setelah Patch 003. Tidak ada dependensi baru. Jalankan npm run dev, npm run build, dan npm test seperti biasa.
+
+KPSP dipisahkan ke komponen tersendiri: hanya formulir API dengan sepuluh nomor butir unik 1–10 dan teks tersedia yang dapat diisi. Jawaban tetap tersimpan di layar ketika POST gagal, perpindahan butir mengelola fokus, dan hasil menampilkan result/yes_count dari backend tanpa menghitung skor. Pemuatan riwayat gagal tidak memblokir formulir yang berhasil dimuat. Bank KPSP engine asli tetap harus tersedia/terverifikasi; frontend tidak menambahkan pertanyaan sendiri.
+
+Pesan validasi sumber, posisi, catatan, jenis kelamin dan isian catatan makan terhubung ke kontrol masing-masing. Identitas laporan ditempatkan di awal; tabel memuat LK dan sumber. Pengukuran terakhir dapat dibaca dari riwayat jika evaluasi belum tersedia, tanpa membuat status medis pengganti. Laporan A4 membuka alasan saat cetak dan mempertahankan pemberitahuan data/kurva yang gagal dimuat.
+
+Verifikasi: 22 tes browser dengan API simulasi lulus; TypeScript/build lulus. Uji mencakup seluruh jawaban KPSP, kegagalan POST, bank rusak/nomor duplikat/null, history gagal, pesan field, dan pembuatan PDF A4. Tampilan media cetak diperiksa visual. PDF uji memakai data simulasi dan tidak disertakan ZIP. KPSP medis/WHO nyata, integrasi Go/PostgreSQL, dan laporan dengan data nyata tetap bagian verifikasi integrasi Patch 005. Peringatan ukuran modul grafik sebelumnya tetap ada; dimuat terpisah.
