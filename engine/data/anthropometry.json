@@ -1,0 +1,39 @@
+{
+  "sources": {
+    "classification": {
+      "title": "Permenkes Nomor 2 Tahun 2020, Lampiran Bab II B, halaman tercetak 14",
+      "url": "https://jdih.kemkes.go.id/storage/documents/pdfs/2020permenkes002.pdf",
+      "verified_on": "2026-11-07",
+      "enum_mapping": "docs/CONTRACT.md v0.4"
+    },
+    "flags": {
+      "repository": "https://github.com/WorldHealthOrganization/anthro",
+      "commit": "b776d8a12b1c97369c748b561159fd2ec4f4db58",
+      "files": ["R/z-score-weight-for-age.R", "R/z-score-length-for-age.R", "R/z-score-weight-for-lenhei.R"],
+      "application": "CONTRACT v0.4: compare full precision scores, exclude the whole measurement from classification/trends when flagged"
+    }
+  },
+  "classification": {
+    "wfa": [
+      {"upper": -3, "inclusive": false, "value": "severely_underweight"},
+      {"upper": -2, "inclusive": false, "value": "underweight"},
+      {"upper": 1, "inclusive": true, "value": "normal"},
+      {"upper": null, "inclusive": false, "value": "overweight_risk"}
+    ],
+    "lhfa": [
+      {"upper": -3, "inclusive": false, "value": "severely_stunted"},
+      {"upper": -2, "inclusive": false, "value": "stunted"},
+      {"upper": 3, "inclusive": true, "value": "normal"},
+      {"upper": null, "inclusive": false, "value": "tall"}
+    ],
+    "wfl_wfh": [
+      {"upper": -3, "inclusive": false, "value": "severely_wasted"},
+      {"upper": -2, "inclusive": false, "value": "wasted"},
+      {"upper": 1, "inclusive": true, "value": "normal"},
+      {"upper": 2, "inclusive": true, "value": "overweight_risk"},
+      {"upper": 3, "inclusive": true, "value": "overweight"},
+      {"upper": null, "inclusive": false, "value": "obese"}
+    ]
+  },
+  "plausibility": {"wfa": [-6, 5], "lhfa": [-6, 6], "wfl_wfh": [-5, 5]}
+}
