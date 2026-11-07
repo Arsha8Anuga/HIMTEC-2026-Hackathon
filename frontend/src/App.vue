@@ -754,12 +754,12 @@ async function remove() {
           </div>
           <section class="card">
             <h2>Hal yang perlu diperhatikan</h2>
-            <details
-              :open="page === 'report'"
+            <article
+              class="reason"
               v-for="(reason, index) in status?.reasons || []"
               :key="index"
             >
-              <summary>
+              <h3>
                 {{ reason.title }}
                 <StatusBadge
                   :level="reason.level"
@@ -773,7 +773,7 @@ async function remove() {
                     )[reason.level]
                   "
                 />
-              </summary>
+              </h3>
               <p>{{ reason.message }}</p>
               <details :open="page === 'report'">
                 <summary>Lihat detail</summary>
@@ -784,7 +784,7 @@ async function remove() {
                   >
                 </dl>
               </details>
-            </details>
+            </article>
             <p v-if="!status?.reasons?.length" class="muted">
               {{
                 status

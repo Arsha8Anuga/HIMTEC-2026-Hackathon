@@ -472,6 +472,17 @@ summary {
 details {
   border-bottom: 1px solid var(--border);
 }
+.reason {
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0 4px;
+}
+.reason h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+.reason details {
+  border-bottom: 0;
+}
 pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;

@@ -252,3 +252,30 @@ test("null questionnaire item is handled without rendering invalid questions", a
   ).toBeVisible();
   expect(errors).toEqual([]);
 });
+test("summary shows each reason message without opening anything", async ({
+  page,
+}) => {
+  await page.route("**/status", (route) =>
+    route.fulfill({
+      json: envelope({
+        level: "red",
+        level_label: "Segera periksakan",
+        reasons: [
+          {
+            code: "TEST_ONLY",
+            level: "red",
+            title: "Alasan uji",
+            message: "Pesan tindakan uji dari backend",
+            evidence: { from_date: "2026-01-01" },
+          },
+        ],
+      }),
+    }),
+  );
+  await page.goto("/#/children/test-child");
+  await expect(
+    page.getByText("Pesan tindakan uji dari backend", { exact: true }),
+  ).toBeVisible();
+  // Evidence stays collapsible.
+  await expect(page.getByText("from_date", { exact: true })).toBeHidden();
+});

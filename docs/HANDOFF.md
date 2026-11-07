@@ -11,7 +11,8 @@ Cara membuka sesi AI baru: tempel AGENTS.md, bagian kontrak yang relevan, lalu b
 
 ## Engine — Zena
 
-- **Diperbarui:** 2026-11-07 16:10 WIB (audit setelah Patch 09, basis `3648ca0`).
+- **Diperbarui:** 2026-11-07 17:30 WIB (data demo + tampilan alasan, basis `6d4cdf1`).
+- **Data demo (17:30):** `backend/migrations/005_seed_demo_measurements.sql` (dijalankan manual setelah 002, hari yang sama) dan `engine/scripts/verify_demo_seed.py`. Bukti: verifier 365 hari seed 0 kegagalan; lewat Go + PostgreSQL 16 + engine asli: Anisa red `WEIGHT_NOT_GAINING_2X`, Bima green, Citra red `STUNTED`, seed aman diulang; hapus dua titik terakhir Anisa → green, catat ulang → yellow → red. Ringkasan anak kini menampilkan kalimat tindakan tiap alasan tanpa diklik (Playwright 23 passed, termasuk tes baru).
 - **Status kode:** Patch 01–09 di main. Endpoint aktif: `health`, `growth/evaluate`, `kpsp/score`, `reference` (wfa, lhfa, hcfa). Belum: `kpsp/questionnaire` (sengaja, bank belum lengkap) dan `reference` wfl_wfh (503, menunggu kontrak).
 - **Bukti audit 16:10:** pytest 262 passed dengan tabel WHO asli (Linux, Python 3.13). Uji ujung ke ujung engine asli + Go + PostgreSQL 16: skenario Anisa green → yellow `WEIGHT_NOT_GAINING` → red `WEIGHT_NOT_GAINING_2X` dengan lhfa normal; catatan makan, skor KPSP, kurva wfa/lhfa/hcfa berhasil.
 - **IYCF selesai (core):** MDD kelompok unik +ASI, MMF menurut umur/menyusu dan jumlah makan/susu, EFF telur/flesh foods; pola tiga catatan terakhir dalam 14 tanggal; satu hari buruk hanya info, >=2 kegagalan yang tersedia dapat yellow; NO_RECENT_FOOD_RECALL. Teks pengguna tetap milik Go. Semua aturan/URL sumber berada di `data/iycf/rules.json`.
@@ -25,7 +26,8 @@ Cara membuka sesi AI baru: tempel AGENTS.md, bagian kontrak yang relevan, lalu b
 - **Dokumentasi:** versi kontrak v0.5 dan entri 07B yang telah disetujui/diberikan sebelumnya digabung kembali dengan docs GitHub terbaru, kemudian catatan IYCF ditambahkan. Hotfix dokumentasi menggabungkan ulang HANDOFF/CHANGELOG dari main, termasuk pembaruan backend 13:45 (OTP dan bukti uji pengguna); bagian backend/frontend/matriks dipertahankan persis dari sumber terbaru. Tidak mengubah API/enum/dependensi/backend/frontend.
 - **Belum selesai:** `kpsp/questionnaire` (gambar dan review klinis KPSP), `reference` wfl_wfh, lima kasus penuh WHO Anthro. IYCF ini adaptasi skrining proyek, bukan diagnosis atau evaluasi kecukupan gizi menyeluruh.
 - **Kontrak v0.6 (draf):** batas umur 1826 hari (asal 1856 dan alasannya di bagian "Penegasan v0.6"); `GET /children` tanpa ringkasan; `otp_dummy` dinyatakan di luar kontrak. Satu isu tetap terbuka dengan sadar: garis acuan `wfl_wfh` (kurva BB/PB-TB belum ada untuk demo).
-- **Langkah berikutnya:** umumkan v0.6 di grup; pastikan Go demo berjalan dalam mode `demo`; gladi penuh di laptop Windows demo.
+- **Menunggu keputusan Zena:** (1) KPSP: aktifkan bank teks berlabel atau biarkan nonaktif; (2) kurva BB/PB: Go memilih `wfl`/`wfh` dari umur (menambah enum API internal).
+- **Langkah berikutnya:** umumkan v0.6 di grup; pastikan Go demo berjalan dalam mode `demo`; seed 002+005 pada hari demo; gladi penuh di laptop Windows demo.
 
 ## Backend — tim backend
 

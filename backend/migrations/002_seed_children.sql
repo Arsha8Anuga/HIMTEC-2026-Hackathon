@@ -1,4 +1,4 @@
--- HANYA data identitas fiktif untuk demo; pengukuran medis jangan dikarang.
+-- HANYA data identitas fiktif untuk demo; pengukuran demo ada di 005 (dihitung dari tabel WHO, diverifikasi engine).
 -- Jalankan opsional dengan psql -f migrations/002_seed_children.sql.
 -- Jalankan startup backend sekali agar migrasi 001 + 003 selesai.
 BEGIN;

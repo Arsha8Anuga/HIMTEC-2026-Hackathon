@@ -85,10 +85,12 @@ Backend Go siap pada http://localhost:8080/api/v1 ...
 Jangan mengisi `AUTH_MODE=otp_dummy`. Mode itu ekstensi pengujian di luar kontrak, dan frontend
 akan menerima 401 di setiap halaman.
 
-Setelah server pertama kali berjalan, isi anak demo (terminal lain, dari `backend/`):
+Setelah server pertama kali berjalan, isi anak demo dan pengukurannya (terminal lain, dari `backend/`).
+Jalankan keduanya **pada hari yang sama**, berurutan:
 
 ```powershell
 psql -U postgres -d tumbuh -f migrations/002_seed_children.sql
+psql -U postgres -d tumbuh -f migrations/005_seed_demo_measurements.sql
 ```
 
 **Periksa:**
@@ -98,7 +100,7 @@ curl.exe http://localhost:8080/api/v1/children
 go run ./cmd/check-engine
 ```
 
-Yang pertama harus menampilkan Anisa, Bima, dan Citra. Yang kedua melaporkan endpoint engine yang belum ada;
+Yang pertama harus menampilkan Anisa, Bima, dan Citra; di peramban statusnya merah, hijau, merah. Yang kedua melaporkan endpoint engine yang belum ada;
 saat ini `GET /kpsp/questionnaire` memang belum ada (lihat "Batas yang diketahui").
 
 ## 4. Frontend Vue
@@ -170,7 +172,34 @@ psql -U postgres -c "DROP DATABASE tumbuh"
 psql -U postgres -c "CREATE DATABASE tumbuh"
 ```
 
-Jalankan Go lagi dari `backend/`, kemudian ulangi seed `002_seed_children.sql`.
+Jalankan Go lagi dari `backend/`, kemudian ulangi seed `002_seed_children.sql` dan `005_seed_demo_measurements.sql`.
+Lakukan ini **pada hari demo**: umur anak demo dihitung dari tanggal seed.
+
+## Data demo
+
+Semua nama dan angka fiktif. Angka dihitung dari tabel WHO pada z-score sasaran, dibulatkan 0,1,
+lalu diperiksa dengan engine asli. Tanggal pengukuran = tanggal lahir + umur bulan.
+
+| Anak | Pengukuran (umur bulan: BB kg / PB cm) | Status |
+| --- | --- | --- |
+| Anisa, perempuan, 11 bln | 6: 7,3/65,0 · 7: 7,6/66,5 · 8: 7,9/68,0 · 9: 8,2/69,4 · 10: 8,2/70,7 · 11: 8,2/72,0 | hijau sampai 9 bln → kuning (berat tidak naik) di 10 bln → merah (tidak naik dua kali) di 11 bln; PB/U tetap sekitar −0,3 |
+| Bima, laki-laki, 13 bln | 9–13 bln, BB 9,1 → 10,1, PB 72,2 → 77,2 | hijau, z sekitar +0,2 |
+| Citra, perempuan, 15 bln | 12–15 bln, BB 7,5 → 8,0, PB 67,6 → 70,7 | merah, pendek (PB/U sekitar −2,5) |
+
+Semua anak juga menampilkan info "Belum ada catatan makan terbaru"; itu benar, seed tidak mengisi catatan makan.
+
+**Memperagakan peringatan dini secara langsung:** di Riwayat Anisa, catat tanggal dua pengukuran
+terakhir, lalu hapus keduanya; status kembali hijau. Catat pengukuran ulang dengan tanggal yang sama,
+satu per satu: BB 8,2 / PB 70,7 / LK 44,2 / Posyandu → kuning; BB 8,2 / PB 72,0 / LK 44,6 / Posyandu → merah.
+Alur ini sudah diuji lewat Go dengan engine asli.
+
+**Memeriksa ulang angka seed** setelah engine atau aturan berubah (dari `engine/`):
+
+```powershell
+python scripts/verify_demo_seed.py --days 30
+```
+
+Harus berakhir `0 kegagalan`.
 
 ## Batas yang diketahui (kontrak v0.6)
 
@@ -179,7 +208,7 @@ Jalankan Go lagi dari `backend/`, kemudian ulangi seed `002_seed_children.sql`.
 | Halaman Perkembangan menampilkan "Endpoint perhitungan yang diminta belum tersedia" | kuesioner KPSP sengaja nonaktif sampai bank butir terverifikasi | jelaskan, jangan dibuka di demo |
 | Kurva "Berat menurut panjang / tinggi" gagal | garis acuan `wfl_wfh` masih isu terbuka | pakai kurva PB/U dan BB/U |
 | Halaman Panduan kosong | `guides.id.json` belum diisi | tidak ditampilkan |
-| Anak demo belum punya pengukuran | seed hanya berisi identitas | isi data demo terverifikasi sebelum H+10 |
+| Ringkasan menautkan "Formulir … Sudah jatuh tempo" | jadwal KPSP dihitung walau kuesioner nonaktif | jangan klik "Lihat skrining" saat demo |
 
 ## Masalah umum
 

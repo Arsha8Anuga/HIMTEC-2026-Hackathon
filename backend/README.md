@@ -54,9 +54,11 @@ Seed identitas fiktif Anisa/Bima/Citra, setelah startup migrasi selesai:
 
 ```powershell
 psql -U postgres -d tumbuh -f migrations/002_seed_children.sql
+psql -U postgres -d tumbuh -f migrations/005_seed_demo_measurements.sql
 ```
 
-Seed membatasi pengecekan nama berdasarkan pemilik dan dapat dijalankan berulang. Tidak ada angka pengukuran medis yang dibuat untuk seed.
+Kedua seed dapat dijalankan berulang; jalankan pada hari yang sama. 005 berisi pengukuran demo fiktif
+yang dihitung dari tabel WHO dan diverifikasi engine (`engine/scripts/verify_demo_seed.py`); rinciannya di `docs/SETUP.md` bagian "Data demo".
 
 ## API publik
 
