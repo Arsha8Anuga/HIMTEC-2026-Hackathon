@@ -1,0 +1,940 @@
+{
+  "source": {
+    "title": "Pedoman Pelaksanaan SDIDTK, revisi 23 Agustus 2022 — transkripsi Markdown unggahan tim",
+    "url": "https://apgpaud.org/wp-content/uploads/2023/02/BUKU-PEDOMAN-SDIDTK-revisi-23082022.pdf",
+    "verified_on": "2026-11-07",
+    "input_filename": "BUKU-PEDOMAN-SDIDTK-revisi-23082022.md",
+    "input_sha256": "caab23502a0674b296e799699a170f7ef6ff6d29c3dad685f44383b7692d8443",
+    "visual_assets_status": "missing",
+    "clinical_review_status": "text_transcription_only",
+    "image_dependent_items": {
+      "3": [
+        8,
+        9,
+        10
+      ],
+      "6": [
+        2,
+        3
+      ],
+      "9": [
+        1
+      ],
+      "12": [
+        2
+      ],
+      "21": [
+        3
+      ],
+      "30": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "36": [
+        2,
+        3
+      ],
+      "42": [
+        1,
+        3
+      ],
+      "48": [
+        1,
+        3
+      ],
+      "54": [
+        1,
+        2,
+        3
+      ],
+      "60": [
+        1,
+        2
+      ]
+    },
+    "observed_printed_pages": {
+      "3": [
+        122
+      ],
+      "6": [
+        123
+      ],
+      "9": [
+        124,
+        125
+      ],
+      "12": [
+        126
+      ],
+      "15": [
+        127
+      ],
+      "18": [
+        128
+      ],
+      "21": [
+        129
+      ],
+      "24": [
+        130
+      ],
+      "30": [
+        131
+      ],
+      "36": [
+        132,
+        133
+      ],
+      "42": [
+        134,
+        135
+      ],
+      "48": [
+        136,
+        137
+      ],
+      "54": [
+        138,
+        139
+      ],
+      "60": [
+        140,
+        141
+      ]
+    },
+    "equipment_source_lines": {
+      "3": [
+        "o Gulungan wool merah"
+      ],
+      "6": [
+        "o Gulungan wool merah o Kismis, kacang, atau uang logam",
+        "o Pensil o Mainan"
+      ],
+      "9": [
+        "o Gulungan wool merah o Kismis, kacang-kacangan, potongan biskuit atau kue",
+        "o 2 kubus o Mainan"
+      ],
+      "12": [
+        "o 2 kubus o Kismis, kacang-kacangan, atau potongan biskuit",
+        "o Pensil"
+      ],
+      "15": [
+        "o 2 kubus",
+        "o Cangkir"
+      ],
+      "18": [
+        "o Kubus o Pensil",
+        "o Bola tenis o Kertas"
+      ],
+      "21": [
+        "o 2 kubus o Bola tenis",
+        "o Pensil o Kertas"
+      ],
+      "24": [
+        "o 4 kubus o Pensil",
+        "o Bola tenis o Kertas"
+      ],
+      "30": [
+        "o 4 kubus o Kertas",
+        "o Bola tenis o Pensil"
+      ],
+      "36": [
+        "o 6 kubus o Kertas",
+        "o Bola tenis o Pensil"
+      ],
+      "42": [
+        "o 8 kubus o Pensil",
+        "o Kertas o Kertas warna-warni"
+      ],
+      "48": [
+        "o 3 kubus",
+        "o Kertas",
+        "o Pensil"
+      ],
+      "54": [
+        "o Kertas o Pensil",
+        "o Kertas warna-warni"
+      ],
+      "60": [
+        "o Kertas warna-warni",
+        "o Kertas",
+        "o Pensil"
+      ]
+    },
+    "note": "140 questions transcribed from user-provided text. No original figures available; runtime delivery is blocked pending visual and clinical verification. Ages 66/72 excluded by project scope."
+  },
+  "questionnaires": [
+    {
+      "questionnaire_age_months": 3,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_kasar",
+          "question": "Pada saat bayi terlentang, apakah masing-masing lengan dan tungkai bergerak dengan mudah? Jawab ‘Tidak’ bila salah satu atau kedua tungkai atau lengan bayi bergerak tak terarah atau tak terkendali."
+        },
+        {
+          "item_no": 2,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Jangan membuat suara apapun. Pada saat bayi terlentang apakah ia melihat dan menatap wajah Anda?"
+        },
+        {
+          "item_no": 3,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Pada saat Anda mengajak bayi berbicara dan tersenyum, apakah ia tersenyum kembali kepada Anda?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Apakah bayi dapat mengeluarkan suara-suara lain (mengoceh) selain menangis?"
+        },
+        {
+          "item_no": 5,
+          "aspect": "bicara_bahasa",
+          "question": "Apakah bayi suka tertawa keras walau tidak digelitik atau diraba-raba?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "gerak_halus",
+          "question": "Ambil gulungan wool merah, lalu letakkan di atas wajah di depan mata bayi. Gerakkan wool dari samping kiri ke kanan kepala atau sebaliknya. Apakah ia dapat mengikuti gerakan Anda dengan menggerakkan kepalanya dari kanan atau kiri ke tengah?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "gerak_halus",
+          "question": "Ambil gulungan wool merah, lalu letakkan di atas wajah di depan mata bayi. Gerakkan wool dari samping kiri ke kanan kepala atau sebaliknya. Apakah ia dapat mengikuti gerakan Anda dengan menggerakkan kepalanya dari satu sisi hampir sampai pada sisi yang lain?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "gerak_kasar",
+          "question": "Pada saat bayi tengkurap di alas yang datar, apakah ia dapat mengangkat kepalanya seperti pada gambar?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Pada saat bayi tengkurap di alas yang datar, apakah ia dapat mengangkat kepalanya sehingga membentuk sudut 45˚ seperti pada gambar?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Pada saat bayi tengkurap di alas yang datar, apakah ia dapat mengangkat kepalanya dengan tegak seperti pada gambar?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 6,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Bayi diposisikan terlentang. Ambil gulungan wool merah, letakkan di atas wajah di depan mata bayi. Gerakkan wool dari samping kiri ke kanan kepala. Apakah ia dapat mengikuti gerakan Anda dengan menggerakkan kepala sepenuhnya dari satu ke sisi yang lain?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_kasar",
+          "question": "Pada posisi bayi terlentang, pegang kedua tangannya lalu tarik perlahan ke posisi duduk. Dapatkah bayi mempertahankan lehernya secara kaku seperti pada gambar? Jawab ‘Tidak’ bila kepala bayi jatuh kembali seperti gambar."
+        },
+        {
+          "item_no": 3,
+          "aspect": "gerak_kasar",
+          "question": "Ketika bayi tengkurap di alas yang datar, apakah ia dapat mengangkat dada dengan kedua lengannya sebagai penyangga seperti pada gambar?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "gerak_kasar",
+          "question": "Bayi dipangku orang tua atau pengasuh. Dapatkah bayi mempertahankan posisi kepala dalam keadaan tegak dan stabil? Jawab ‘Tidak’ bila kepala bayi cenderung jatuh ke kanan, kiri, atau ke dadanya."
+        },
+        {
+          "item_no": 5,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Sentuhkan pensil di punggung tangan atau ujung jari bayi (jangan meletakkan di atas telapak tangan bayi). Apakah bayi dapat menggenggam pensil itu selama beberapa detik?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Dapatkah bayi mengarahkan matanya pada benda kecil sebesar kacang, kismis atau uang logam? Jawab ‘Tidak’ jika ia tidak dapat mengarahkan matanya."
+        },
+        {
+          "item_no": 7,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Dapatkah bayi meraih mainan yang diletakkan agak jauh namun masih berada dalam jangkauan tangannya?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "gerak_kasar",
+          "question": "Tanyakan kepada orang tua atau pengasuh, pernahkah bayi berbalik paling sedikit 2 kali, dari terlentang ke tengkurap atau sebaliknya?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, pernahkah bayi mengeluarkan suara gembira bernada tinggi atau memekik tetapi bukan menangis?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, pernahkah orang tua atau pengasuh melihat bayi tersenyum ketika melihat mainan yang lucu, gambar, atau binatang peliharaan pada saat ia bermain sendiri?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 9,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh, Taruh kismis di atas meja. Dapatkah bayi memungut dengan tangannya benda−benda kecil seperti kismis, kacang-kacangan, potongan biskuit dengan gerakan miring atau menggerapai seperti gambar?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Taruh 2 kubus di atas meja, buat agar bayi dapat memungut dan memegang kubus pada masing-masing tangannya. Dapatkah ia melakukannya?"
+        },
+        {
+          "item_no": 3,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Tarik perhatian bayi dengan memperlihatkan gulungan wool merah, kemudian jatuhkan ke lantai. Apakah bayi mencoba mencari benda tersebut, misalnya mencari di bawah meja atau di belakang kursi?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Bayi dipangku orang tua atau pengasuh. Letakkan suatu mainan yang diinginkan bayi di luar jangkauannya, apakah ia mencoba mendapatkan mainan dengan mengulurkan lengan atau badannya?"
+        },
+        {
+          "item_no": 5,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah bayi menengok ke belakang seperti mendengar kedatangan seseorang pada saat bayi sedang bermain sendiri dan seseorang diam-diam datang berdiri di belakangnya? Suara keras tidak ikut dihitung. Jawab ‘Ya’ hanya jika melihat reaksinya terhadap suara yang perlahan atau bisikan."
+        },
+        {
+          "item_no": 6,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat mengatakan 2 suku kata yang sama, misalnya: “Ma-ma”, “Da-da” atau “Pa-pa”? Jawab ‘Ya’ bila ia dapat mengeluarkan salah satu suara tersebut."
+        },
+        {
+          "item_no": 7,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah bayi dapat makan kue kering sendiri?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "gerak_halus",
+          "question": "Tanyakan kepada orang tua atau pengasuh apakah pernah melihat bayi memindahkan mainan atau kue kering dari satu tangan ke tangan yang lain? Benda−benda panjang seperti sendok atau kerincingan bertangkai tidak ikut dinilai."
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Tanpa disangga oleh bantal, kursi atau dinding, dapatkah bayi duduk sendiri selama 60 detik?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Jika Anda mengangkat bayi melalui ketiaknya ke posisi berdiri, dapatkah ia menyangga sebagian berat badan dengan kedua kakinya? Jawab ‘Ya’ bila ia mencoba berdiri dan sebagian berat badan tertumpu pada kedua kakinya."
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 12,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Letakkan pensil di telapak tangan anak. Coba ambil pensil tersebut dengan perlahan-lahan. Apakah anak menggenggam pensil dengan erat dan Anda merasa kesulitan mendapatkan pensil itu kembali?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Letakkan kismis di atas meja. Dapatkah anak memungut dengan tangannya benda−benda kecil seperti kismis, kacang−kacangan, potongan biskuit dengan gerakan miring atau menggerapai seperti gambar?"
+        },
+        {
+          "item_no": 3,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Berikan 2 kubus kepada bayi. Tanpa bantuan, apakah anak dapat mempertemukan 2 kubus kecil yang ia pegang?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Sebut 2−3 kata yang dapat ditiru oleh anak (tidak perlu kata−kata yang lengkap). Apakah ia mencoba meniru kata-kata tadi?"
+        },
+        {
+          "item_no": 5,
+          "aspect": "gerak_kasar",
+          "question": "Tanyakan kepada ibu atau pengasuh, apakah anak dapat mengangkat badannya ke posisi berdiri tanpa bantuan?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "gerak_kasar",
+          "question": "Tanyakan kepada ibu atau pengasuh, apakah anak dapat duduk sendiri tanpa bantuan dari posisi tidur atau tengkurap?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada ibu atau pengasuh, apakah anak dapat memahami makna kata ’jangan’?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada ibu atau pengasuh, apakah anak akan mencari atau terlihat mengharapkan muncul kembali jika ibu atau pengasuh bersembunyi di belakang sesuatu atau di pojok, kemudian muncul dan menghilang secara berulang-ulang di hadapan anak?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada ibu atau pengasuh, apakah anak dapat membedakan ibu atau pengasuh dengan orang yang belum ia kenal? Ia akan menunjukkan sikap malu-malu atau ragu-ragu pada saat permulaan bertemu dengan orang yang belum dikenalnya."
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Berdirikan anak. Apakah anak dapat berdiri dengan berpegangan pada kursi atau meja selama 30 detik atau lebih?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 15,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Berikan 2 kubus kepada anak. Tanpa bantuan, apakah anak dapat mempertemukan 2 kubus kecil yang ia pegang?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Berikan sebuah kubus dan cangkir. Apakah anak dapat memasukkan 1 kubus ke dalam cangkir?"
+        },
+        {
+          "item_no": 3,
+          "aspect": "gerak_kasar",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat berjalan dengan berpegangan?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat mengatakan ‘papa’ ketika ia memanggil atau melihat ayahnya, atau mengatakan ‘mama’ jika memanggil atau melihat ibunya? Jawab ‘Ya’ bila anak mengatakan salah satu di antaranya."
+        },
+        {
+          "item_no": 5,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat mengucapkan 1 kata yang bermakna selain ‘mama’, ‘papa’, atau nama panggilan orang?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat bertepuk tangan atau melambai-lambai tanpa bantuan? Jawab ‘Tidak’ bila ia membutuhkan bantuan."
+        },
+        {
+          "item_no": 7,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat menunjukkan apa yang diinginkannya tanpa menangis atau merengek? Jawab ‘Ya’ bila ia menunjuk, menarik atau mengeluarkan suara yang menyenangkan."
+        },
+        {
+          "item_no": 8,
+          "aspect": "gerak_kasar",
+          "question": "Coba berdirikan anak. Apakah anak dapat berdiri sendiri tanpa berpegangan selama 30 detik atau lebih?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Letakkan kubus di lantai, tanpa berpegangan atau menyentuh lantai, apakah anak dapat membungkuk untuk memungut kubus di lantai dan kemudian berdiri kembali?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Apakah anak dapat berjalan di sepanjang ruangan tanpa jatuh atau terhuyung-huyung?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 18,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Berikan anak sebuah pensil dan kertas. Apakah anak dapat mencoret-coret kertas tanpa bantuan atau petunjuk?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat menyebutkan sedikitnya 3 kata yang bermakna?"
+        },
+        {
+          "item_no": 3,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat menunjukkan apa yang diinginkannya tanpa menangis atau merengek?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat minum dari cangkir atau gelas sendiri tanpa banyak yang tumpah?"
+        },
+        {
+          "item_no": 5,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak suka meniru bila ibu atau pengasuh sedang melakukan pekerjaan rumah tangga (merapikan mainan, menyapu, dll)?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "gerak_halus",
+          "question": "Gelindingkan bola tenis ke arah anak. Apakah anak dapat menggelindingkan atau melempar bola tersebut kembali kepada Anda?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "gerak_kasar",
+          "question": "Letakkan kubus di lantai, tanpa berpegangan atau menyentuh lantai, apakah anak dapat membungkuk untuk memungut kubus di lantai dan kemudian berdiri kembali?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "gerak_kasar",
+          "question": "Minta anak untuk berjalan sepanjang ruangan. Dapatkah ia berjalan tanpa terhuyung-huyung atau terjatuh?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Dapatkah anak berjalan mundur minimal 5 langkah tanpa kehilangan keseimbangan?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "bicara_bahasa",
+          "question": "Berikan anak perintah berikut ini dengan bantuan telunjuk atau isyarat: “Ambil kertas” “Ambil pensil” “Tutup pintu” Dapatkah anak melakukan perintah tersebut dengan bantuan telunjuk atau isyarat?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 21,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Berikan anak sebuah pensil dan kertas. Apakah anak dapat mencoret-coret kertas tanpa bantuan atau petunjuk?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Minta anak untuk menyusun kubus. Apakah anak dapat menyusun 2 kubus?"
+        },
+        {
+          "item_no": 3,
+          "aspect": "bicara_bahasa",
+          "question": "Bayi dipangku orang tua atau pengasuh. Tunjukkan gambar di bawah pada anak dan minta ia untuk menunjuk gambar sesuai dengan yang Anda sebutkan namanya. Apakah anak dapat menunjuk minimal 1 gambar?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Bayi dipangku orang tua atau pengasuh. Tanpa bimbingan, petunjuk, atau bantuan Anda, dapatkah anak menunjuk paling sedikit 1 bagian tubuhnya dengan benar (rambut, mata, hidung, mulut, atau bagian badan yang lain)?"
+        },
+        {
+          "item_no": 5,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat mengucapkan minimal 7 kata yang mempunyai arti (selain kata ‘mama’ dan ‘papa’)?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat minum dari cangkir atau gelas sendiri tanpa banyak yang tumpah?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak suka meniru bila ibu atau pengasuh sedang melakukan pekerjaan rumah tangga (merapikan mainan, menyapu, dll)?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "gerak_kasar",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat berlari tanpa terjatuh?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Letakkan kubus di lantai, tanpa berpegangan atau menyentuh lantai, apakah anak dapat membungkuk untuk memungut kubus di lantai dan kemudian berdiri kembali?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Dapatkah anak berjalan mundur minimal 5 langkah tanpa kehilangan keseimbangan?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 24,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Berikan anak sebuah pensil dan kertas. Apakah anak dapat mencoret-coret kertas tanpa bantuan atau petunjuk?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Bayi dipangku orang tua atau pengasuh. Minta anak untuk menyusun kubus. Apakah anak dapat menyusun 4 kubus?"
+        },
+        {
+          "item_no": 3,
+          "aspect": "bicara_bahasa",
+          "question": "Bayi dipangku orang tua atau pengasuh. Tanpa bimbingan, petunjuk, atau bantuan Anda, dapatkah anak menunjuk paling sedikit 2 bagian tubuhnya dengan benar (rambut, mata, hidung, mulut, atau bagian badan yang lain)?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak mampu menggabungkan 2 kata berbeda ketika berbicara, misalnya “Minum susu” atau “Main bola”? “Terima kasih” dan “Da-dah” tidak termasuk."
+        },
+        {
+          "item_no": 5,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat melepas pakaiannya seperti baju, rok, atau celana?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat makan dengan menggunakan sendok sendiri tanpa banyak yang tumpah?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "gerak_kasar",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat berlari tanpa terjatuh?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "gerak_kasar",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat berjalan naik tangga sendiri? Jawab ‘Ya’ jika ia naik tangga dengan posisi tegak atau berpegangan pada dinding atau pegangan tangga. Jawab ‘Tidak’ jika ia naik tangga dengan merangkak, orang tua tidak memperbolehkan anak naik tangga, atau anak harus berpegangan pada seseorang."
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Letakkan bola tenis di depan kaki anak. Apakah ia dapat menendang ke depan tanpa berpegangan pada apapun?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "bicara_bahasa",
+          "question": "Ikuti perintah dengan seksama. Jangan memberi isyarat dengan telunjuk atau mata pada saat memberikan perintah berikut ini: “Ambil kertas” “Ambil pensil” “Tutup pintu” Dapatkah anak melakukan perintah tersebut?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 30,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Beri kubus di depan anak. Dapatkah anak menyusun 4 buah kubus menyerupai kereta api dengan cerobong asap (dicontohkan)?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Buat garis lurus ke bawah sepanjang sekurang-kurangnya 2,5 cm. Minta anak untuk menggambar garis lain di samping garis ini. Jawab ‘Ya’ bila ia menggambar garis seperti ini: Jawab ‘Tidak’ bila ia menggambar garis seperti ini:"
+        },
+        {
+          "item_no": 3,
+          "aspect": "bicara_bahasa",
+          "question": "Tanpa bimbingan, petunjuk, atau bantuan Anda, dapatkah anak menyebut 2 gambar di antara gambar-gambar di bawah dengan benar? Menyebut dengan suara binatang tidak ikut dinilai."
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Tanpa bimbingan, petunjuk, atau bantuan Anda, dapatkah anak menunjuk 4 gambar di antara gambar-gambar di atas ini dengan benar ketika Anda sebutkan namanya?"
+        },
+        {
+          "item_no": 5,
+          "aspect": "bicara_bahasa",
+          "question": "Tanpa bimbingan, petunjuk, atau bantuan Anda, dapatkah anak menunjuk paling sedikit 6 bagian tubuhnya?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat memahami perintah yang terdiri dari 2 langkah, misalnya “Tolong ambil bola dan berikan kepada Ayah”?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak berpakaian sendiri seperti baju, rok, celana (topi dan kaos kaki tidak ikut dinilai)?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak bermain peran, misalnya menyuapi boneka?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Letakkan bola tenis di depan kaki anak. Dapatkah anak menendang ke depan tanpa berpegangan pada apapun? Mendorong bola tidak ikut dinilai."
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Minta anak untuk melompat atau mengangkat kedua kakinya pada saat bersamaan. Dapatkah ia melakukannya?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 36,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Beri kubus di depan anak. Dapatkah anak menyusun 6 buah kubus satu persatu di atas kubus yang lain tanpa menjatuhkan kubus tersebut?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Buat garis lurus ke bawah sepanjang sekurang-kurangnya 2,5 cm. Minta anak untuk menggambar garis lain di samping garis ini. Jawab ‘Ya’ bila ia menggambar garis seperti ini: Jawab ‘Tidak’ bila ia menggambar garis seperti ini:"
+        },
+        {
+          "item_no": 3,
+          "aspect": "bicara_bahasa",
+          "question": "Tanpa bimbingan, petunjuk, atau bantuan Anda, dapatkah anak menyebut 4 gambar di antara gambar-gambar di bawah ini dengan benar? Menyebut dengan suara binatang tidak ikut dinilai."
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat memahami perintah yang terdiri dari 2 langkah, misalnya “Tolong ambil bola dan berikan kepada Ayah”?"
+        },
+        {
+          "item_no": 5,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah sebagian dari bicara anak dapat dipahami oleh orang asing (yang tidak bertemu setiap hari)?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak merangkai kalimat sederhana yang terdiri dari minimal 3 kata, misalnya “Aku makan roti” atau ”Ibu minta susu”?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak menggosok gigi dengan bantuan?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak mengenakan baju, celana, atau sepatu sendiri (tidak termasuk mengancing dan menali)?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Berikan kepada anak sebuah bola tenis. Minta ia untuk melemparkan ke arah dada Anda. Dapatkah anak melempar bola dengan lurus ke arah perut atau dada Anda dari jarak 1,5 meter?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Letakkan selembar kertas seukuran buku ini di atas lantai. Apakah anak dapat melompati bagian lebar kertas dengan mengangkat kedua kakinya secara bersamaan tanpa didahului lari?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 42,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Buat garis lurus ke bawah sepanjang sekurang-kurangnya 2,5 cm. Minta anak untuk menggambar garis lain di samping garis ini. Jawab ‘Ya’ bila ia menggambar garis seperti ini: Jawab ‘Tidak’ bila ia menggambar garis seperti ini:"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Beri kubus di depan anak. Dapatkah anak menyusun 8 buah kubus satu persatu di atas kubus yang lain tanpa menjatuhkannya?"
+        },
+        {
+          "item_no": 3,
+          "aspect": "bicara_bahasa",
+          "question": "Tunjukkan anak gambar di bawah ini dan tanyakan: “Mana yang dapat terbang?” “Mana yang dapat mengeong?” “Mana yang dapat bicara?” “Mana yang dapat menggonggong?” “Mana yang dapat meringkik?” Apakah anak dapat menunjuk 2 kegiatan yang sesuai?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada anak pertanyaan berikut ini satu persatu: “Apa yang kamu lakukan bila kedinginan?” Jawaban: pakai jaket, pakai selimut “Apa yang kamu lakukan bila kamu kelelahan?” Jawaban: tidur, berbaring, istirahat “Apa yang kamu lakukan bila kamu merasa lapar?” Jawaban: makan “Apa yang kamu lakukan bila kamu merasa haus?” Jawaban: minum Apakah anak dapat menjawab 3 pertanyaan dengan benar tanpa gerakan dan isyarat?"
+        },
+        {
+          "item_no": 5,
+          "aspect": "bicara_bahasa",
+          "question": "Minta anak untuk menyebut 1 warna. Dapatkah anak menyebut 1 warna dengan benar?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat mencuci tangannya sendiri dengan baik setelah makan?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak menyebut nama teman bermain di luar rumah atau saudara yang tidak tinggal serumah?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak mengenakan kaos (T-shirt) tanpa dibantu?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Letakkan selembar kertas seukuran buku ini di atas lantai. Apakah anak dapat melompati bagian lebar kertas dengan mengangkat kedua kakinya secara bersamaan tanpa didahului lari?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Minta anak untuk berdiri 1 kaki tanpa berpegangan. Jika perlu tunjukkan caranya dan beri anak kesempatan sebanyak 3 kali. Dapatkah ia mempertahankan keseimbangan dalam waktu 1 detik atau lebih?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 48,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Berikan contoh membuat jembatan dari 3 buah kubus, yaitu dengan meletakkan 2 kubus dengan sedikit jarak (kira kira satu jari), lalu letakkan balok ketiga di atas kedua balok sehingga terbentuk seperti jembatan. Minta anak untuk melakukan. Dapatkan anak melakukannya?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Beri pensil dan kertas. Jangan membantu anak dan jangan menyebut lingkaran. Buatlah lingkaran di atas kertas tersebut. Minta anak menirunya. Dapatkah anak menggambar lingkaran?"
+        },
+        {
+          "item_no": 3,
+          "aspect": "bicara_bahasa",
+          "question": "Tunjukkan anak gambar di bawah ini dan tanyakan: “Yang mana yang dapat terbang?” “Yang mana yang dapat mengeong?” “Yang mana yang dapat bicara?” “Yang mana yang dapat menggonggong?” “Yang mana yang dapat meringkik?” Apakah anak dapat menunjuk 2 kegiatan yang sesuai?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Dapatkah anak menyebut nama lengkapnya tanpa dibantu? Jawab ‘Tidak’ jika ia menyebut sebagian namanya atau ucapannya sulit dimengerti."
+        },
+        {
+          "item_no": 5,
+          "aspect": "bicara_bahasa",
+          "question": "Mengenal konsep angka satu Letakkan 5 kubus di atas meja dan selembar kertas di samping kubus. Katakan kepada anak “Ambil 1 kubus dan letakkan di atas kertas”. Setelah anak selesai meletakkan, tanyakan “Ada berapa banyak kubus di atas kertas?” Dapatkah anak melakukan dengan hanya mengambil satu kubus dan bisa menyebutkan “Satu”?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada anak pertanyaan di bawah satu persatu: “Apa kegunaan kursi?” Jawaban: untuk duduk “Apa kegunaan cangkir?” Jawaban: untuk minum “Apa kegunaan pensil?” Jawaban: untuk mencoret, menulis, menggambar Dapatkah anak menjawab ketiga pertanyaan terkait kegunaan benda tersebut dengan benar?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak mengikuti peraturan permainan saat bermain dengan teman-temannya (misal: ular tangga, petak umpet, dll)?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak mengenakan kaos (T-shirt) tanpa dibantu?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Letakkan selembar kertas seukuran buku ini di atas lantai. Apakah anak dapat melompati bagian lebar kertas dengan mengangkat kedua kakinya secara bersamaan tanpa didahului lari?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Minta anak untuk berdiri 1 kaki tanpa berpegangan. Jika perlu tunjukkan caranya dan beri anak kesempatan sebanyak 3 kali. Dapatkah ia mempertahankan keseimbangan dalam waktu 2 detik atau lebih?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 54,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Jangan mengoreksi atau membantu anak. Jangan menyebut kata “Lebih panjang”. Perlihatkan gambar kedua garis ini pada anak. Tanyakan: “Mana garis yang lebih panjang?” Minta anak menunjuk garis yang lebih panjang. Setelah anak menunjuk, putar lembar ini dan ulangi pertanyaan tersebut. Apakah anak dapat menunjuk garis yang lebih panjang sebanyak 3 kali dengan benar?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Jangan membantu anak dan jangan memberitahu nama gambar ini. Minta anak untuk menggambar seperti contoh di kertas kosong yang tersedia. Berikan 3 kali kesempatan. Apakah anak dapat menggambar + seperti contoh di bawah?"
+        },
+        {
+          "item_no": 3,
+          "aspect": "gerak_halus",
+          "question": "Berikan anak pensil dan kertas lalu katakan kepada anak “Buatlah gambar orang” (anak laki-laki, anak perempuan, papa, mama, dll). Jangan memberi perintah lebih dari itu. Jangan bertanya atau mengingatkan anak bila ada bagian yang belum tergambar. Dalam memberi nilai, hitunglah berapa bagian tubuh yang tergambar. Untuk bagian tubuh yang berpasangan seperti mata, telinga, lengan, dan kaki, setiap pasang dinilai 1 bagian. Pastikan anak telah menyelesaikan gambar sebelum memberikan penilaian. Dapatkah anak menggambar orang dengan sedikitnya 3 bagian tubuh? Jawaban ‘Ya’: Jawaban ‘Tidak’:"
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Memahami konsep 2 warna Minta anak untuk menyebutkan 2 warna. Dapatkah anak menyebut 2 warna dengan benar?"
+        },
+        {
+          "item_no": 5,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah bicara anak mampu dipahami seluruhnya oleh orang lain (yang tidak bertemu setiap hari)?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak mengikuti peraturan permainan saat bermain dengan teman- temannya (misal: ular tangga, petak umpet, dll)?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak menggosok gigi tanpa dibantu?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat mengancingkan bajunya atau pakaian boneka?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "bicara_bahasa",
+          "question": "Mengenal konsep 2 kata depan Minta anak untuk mengikuti perintah di bawah, jangan memberi isyarat. “Ambil benda (misalnya kertas, balok) dan letakkan di atas meja” “Ambil benda (misalnya kertas, balok) dan letakkan di bawah meja” “Ambil benda (misalnya kertas, balok) dan letakkan di depan ibu” “Ambil benda (misalnya kertas, balok) dan letakkan di samping ibu” “Ambil benda (misalnya kertas, balok) dan letakkan di belakang ibu” Dapatkah anak melakukan sedikitnya 2 perintah (memahami 2 kata depan)?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Minta anak untuk berdiri 1 kaki tanpa berpegangan. Jika perlu tunjukkan caranya dan beri anak kesempatan sebanyak 3 kali. Dapatkah ia mempertahankan keseimbangan dalam waktu 2 detik atau lebih?"
+        }
+      ]
+    },
+    {
+      "questionnaire_age_months": 60,
+      "items": [
+        {
+          "item_no": 1,
+          "aspect": "gerak_halus",
+          "question": "Perlihatkan gambar kedua garis ini pada anak. Tanyakan: “Mana garis yang lebih panjang?” Minta anak menunjuk garis yang lebih panjang. Setelah anak menunjuk, putar lembar ini dan ulangi pertanyaan tersebut. Apakah anak dapat menunjuk garis yang lebih panjang sebanyak 3 kali dengan benar?"
+        },
+        {
+          "item_no": 2,
+          "aspect": "gerak_halus",
+          "question": "Berikan anak pensil dan kertas lalu katakan kepada anak “Buatlah gambar orang” (anak laki-laki, anak perempuan, papa, mama, dll). Jangan memberi perintah lebih dari itu. Jangan bertanya atau mengingatkan anak bila ada bagian yang belum tergambar. Dalam memberi nilai, hitunglah berapa bagian tubuh yang tergambar. Untuk bagian tubuh yang berpasangan seperti mata, telinga, lengan dan kaki, setiap pasang dinilai 1 bagian. Pastikan anak telah menyelesaikan gambar sebelum memberikan penilaian. Dapatkah anak menggambar orang dengan sedikitnya 3 bagian tubuh? Jawaban ‘Ya’: Jawaban ‘Tidak’:"
+        },
+        {
+          "item_no": 3,
+          "aspect": "bicara_bahasa",
+          "question": "Memahami konsep 4 warna Minta anak untuk menyebutkan 4 warna. Dapatkah anak menyebut keempat warna tersebut dengan benar?"
+        },
+        {
+          "item_no": 4,
+          "aspect": "bicara_bahasa",
+          "question": "Tanyakan kepada anak pertanyaan berikut ini satu persatu: “Apa yang kamu lakukan saat kedinginan?” Jawaban: pakai jaket, pakai selimut “Apa yang kamu lakukan saat kelelahan?” Jawaban: tidur, berbaring, istirahat “Apa yang kamu lakukan saat merasa lapar?” Jawaban: makan “Apa yang kamu lakukan saat merasa haus?” Jawaban: minum Dapatkah anak menjawab 3 pertanyaan terkait kata sifat tersebut dengan benar?"
+        },
+        {
+          "item_no": 5,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak dapat mengancingkan bajunya atau pakaian boneka?"
+        },
+        {
+          "item_no": 6,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, apakah anak bereaksi dengan tenang dan tidak rewel (tanpa menangis atau menggelayut) pada saat ditinggal oleh orang tua atau pengasuh?"
+        },
+        {
+          "item_no": 7,
+          "aspect": "sosialisasi_kemandirian",
+          "question": "Tanyakan kepada orang tua atau pengasuh, dapatkah anak sepenuhnya berpakaian sendiri tanpa dibantu?"
+        },
+        {
+          "item_no": 8,
+          "aspect": "bicara_bahasa",
+          "question": "Mengenal konsep 4 kata depan Minta anak untuk mengikuti perintah di bawah, jangan memberi isyarat: “Ambil benda (misalnya kertas, balok) dan letakkan di atas meja” “Ambil benda (misalnya kertas, balok) dan letakkan di bawah meja” “Ambil benda (misalnya kertas, balok) dan letakkan di depan ibu” “Ambil benda (misalnya kertas, balok) dan letakkan di samping ibu” “Ambil benda (misalnya kertas, balok) dan letakkan di belakang ibu” Dapatkah anak melakukan sedikitnya 4 perintah (memahami 4 kata depan)?"
+        },
+        {
+          "item_no": 9,
+          "aspect": "gerak_kasar",
+          "question": "Minta anak untuk berdiri 1 kaki tanpa berpegangan. Jika perlu tunjukkan caranya dan beri anak kesempatan sebanyak 3 kali. Dapatkah ia mempertahankan keseimbangan dalam waktu 4 detik atau lebih?"
+        },
+        {
+          "item_no": 10,
+          "aspect": "gerak_kasar",
+          "question": "Minta anak untuk melompat dengan 1 kaki beberapa kali tanpa berpegangan (lompatan dengan 2 kaki tidak ikut dinilai). Dapatkah anak melompat 2-3 kali dengan 1 kaki?"
+        }
+      ]
+    }
+  ]
+}
