@@ -11,96 +11,127 @@ Cara membuka sesi AI baru: tempel AGENTS.md, bagian kontrak yang relevan, lalu b
 
 ## Engine — Zena
 
-- **Diperbarui:** 2026-11-07 10:47 WIB (patch ZIP 04).
-- **Selesai:** Patch 01 dependensi; patch 02 FastAPI, validasi Pydantic dan `/engine/v1/health`; patch 03 loader lima tabel WHO resmi (pinned commit + Git blob checksum), skrip unduh dan 48 tes; patch 04 `app/core/growth_math.py`: rumus LMS termasuk L=0, restricted LMS (WFA/WFL/WFH), invers LMS untuk SD, koreksi posisi ukur dengan ambang 731 hari, serta interpolasi linear LMS WFL/WFH sebagai fungsi terpisah. Total **91 tes pytest lulus** (termasuk 43 tes baru), dengan kasus pembanding dari tes WHO Anthro. Tidak ada perubahan endpoint atau kontrak.
-- **Sedang dikerjakan:** persiapan integrasi perhitungan dengan loader data WHO asli. Tabel resmi belum ada di sandbox; unduh di laptop tim saat setup melalui `python scripts/fetch_who_tables.py` sebelum uji integrasi klinis.
+- **Diperbarui:** 2026-11-07 11:06 WIB (hotfix ZIP 04A; basis GitHub `852ac74a75e781b32f56ac08aa233ebfe1acd4bf`).
+- **Selesai (implementasi):** Patch 01 dependensi; patch 02 FastAPI, validasi Pydantic dan `/engine/v1/health`; patch 03 loader lima tabel WHO dengan sumber/commit dan checksum; patch 04 matematika LMS/restricted LMS, invers, koreksi posisi dan interpolasi. Hotfix 04A melengkapi tanggal riwayat KPSP/recall, umur recall [6,24) menurut hari / 30,4375 pada tanggal recall, keunikan ID/tanggal pengukuran serta tanggal recall; koreksi posisi memakai aritmetika desimal agar kompatibel dengan grid WHO; tes health diisolasi dari data lokal. Tidak mengubah kontrak, endpoint, dependensi, atau batas umur pengukuran 1856 hari.
+- **Sudah diverifikasi pada sesi hotfix:** 22 pemeriksaan manual lulus (Python 3.12, Pydantic 2.14.2), termasuk seluruh 1.802 kombinasi grid koreksi posisi, urutan data, batas umur recall, dan lookup WHO asli. Kelima berkas WHO dari commit yang dipin lolos checksum dan loader membaca 13.366 baris; data dipakai lokal untuk pemeriksaan dan tidak dibundel ZIP. Kompilasi modul aplikasi/tes berhasil.
+- **Status pytest:** Patch 04 sebelumnya dilaporkan **91 tes lulus**. Itu bukan hasil hotfix. Tes regresi hotfix sudah ditambahkan tetapi suite **belum terverifikasi lulus**: `python -m pytest -q` gagal dengan `No module named pytest`; instalasi dependensi dari requirements maupun percobaan tanpa pin gagal pada lingkungan ini. Tes HTTP/TestClient belum dieksekusi. Versi Pydantic pemeriksaan manual 2.14.2 berbeda dari pin 2.13.5. Jangan menandai hotfix tervalidasi penuh sebelum suite dijalankan pada dependensi repository.
+- **Sedang dikerjakan:** validasi hotfix pada lingkungan dependensi yang dipatok, kemudian persiapan integrasi perhitungan dengan tabel WHO asli.
 - **Belum dimulai:** klasifikasi Permenkes 2/2020; kode alasan early warning; endpoint `/growth/evaluate`, `/reference`, `/kpsp/questionnaire`, `/kpsp/score`; logika IYCF; uji lintas layanan dan 5 kasus penuh terhadap aplikasi WHO Anthro.
-- **Cara menjalankan dan menguji:** `cd engine && python -m pip install -r requirements.txt && python -m pytest -q` (91 passed). Saat persiapan dengan internet: `python scripts/fetch_who_tables.py`. Jalankan server `python -m uvicorn app.main:app --host 0.0.0.0 --port 8001`. Health `who_tables_loaded=true` hanya berarti data ada dan terverifikasi, **bukan endpoint evaluasi selesai**.
-- **Masalah yang diketahui:** WHO Anthro LMS harian 0–1826 hari tetapi kontrak masih menerima sampai 1856; jangan ekstrapolasi. Tabel berat-panjang/tinggi beresolusi 0,1 cm; utilitas interpolasi tersedia berdasar WHO Anthro, tetapi kebijakan pemakaian input presisi lebih tinggi belum dikunci. WHO Anthro memberi flag khusus untuk pengukuran berdiri pada anak di bawah 9 bulan; kontrak v0.4 hanya mengatur koreksi 0,7 cm untuk umur <731 hari. Skema body `/kpsp/score` belum eksplisit; kontrak v0.4 masih draf. Periksa persyaratan lisensi WHO sebelum distribusi data. Bagian Backend muncul **dua kali** pada `HANDOFF.md` GitHub yang dicek pukul 10:47; duplikasi itu bukan perubahan Patch 04 dan sengaja tidak disentuh agar catatan anggota lain terjaga.
-- **Butuh dari orang lain:** keputusan pemilik kontrak tentang batas umur, kebijakan presisi 0,1 cm, flag posisi di bawah 9 bulan, dan skema `/kpsp/score`; backend mengikuti kontrak v0.4 dan tetap mengirim `food_recalls` sebagai array (boleh kosong).
-- **Langkah berikutnya:** perhitungan per pengukuran dengan lima tabel WHO asli; klasifikasi/flag mengacu sumber resmi, lalu endpoint `/growth/evaluate` dan pengujian kesetaraan hasil WHO Anthro. Semua pekerjaan diuji dengan pytest dan dikirim sebagai ZIP, tanpa push GitHub.
+- **Cara menjalankan dan menguji:** `cd engine && python -m pip install -r requirements.txt && python -m pytest -q`. Ulangi suite sesudah `python scripts/fetch_who_tables.py` untuk memeriksa kondisi data tersedia. Rincian penerapan dan bukti: `engine/debug/HOTFIX_04A.md`. Jalankan server `python -m uvicorn app.main:app --host 0.0.0.0 --port 8001`. Health `who_tables_loaded=true` hanya berarti data terverifikasi, bukan endpoint evaluasi selesai.
+- **Masalah yang diketahui:** tabel WHO harian 0–1826 hari tetapi kontrak menerima sampai 1856; jangan ekstrapolasi. Kebijakan input presisi lebih tinggi dari 0,1 cm, flag posisi berdiri sebelum 9 bulan, dan skema body `/kpsp/score` belum dikunci; kontrak v0.4 masih draf. Periksa persyaratan lisensi WHO sebelum distribusi data. Bagian Backend muncul dua kali pada basis GitHub dan tetap dipertahankan.
+- **Butuh dari orang lain:** hasil pytest dengan dependensi yang dipatok, keputusan pemilik kontrak tentang batas umur/presisi/posisi serta body `/kpsp/score`; backend tetap mengirim `food_recalls` sebagai array (boleh kosong).
+- **Langkah berikutnya:** tuntaskan verifikasi pytest hotfix; kemudian Patch 05 (evaluasi per pengukuran, klasifikasi/flag bersumber resmi), integrasi endpoint dan pembandingan WHO Anthro. Setiap patch dikirim sebagai ZIP tanpa push GitHub. HANDOFF/CHANGELOG diperiksa dari GitHub terbaru sebelum pengemasan; bila dokumen tim berubah lagi, merge bagian engine dan entri hotfix, jangan menimpa catatan anggota lain.
 
 ## Backend — tim backend
 
-- **Diperbarui:** 7 November 2026, setelah laporan uji pukul 10:03 WIB.
-- **Kontrak acuan:** `docs/CONTRACT.md` v0.4 (draf), `docs/PRD.md` v0.2. Tidak ada perubahan kontrak, port, ataupun endpoint yang diusulkan dalam pembaruan ini.
-- **Selesai (implementasi kode):** Go HTTP API pada `:8080/api/v1`; 14 route publik; model input/output dan validasi; PostgreSQL via `github.com/lib/pq`; migrasi otomatis `migrations/001_init.sql` untuk 4 tabel (`children`, `measurements`, `kpsp_results`, `food_recalls`) beserta relasi/indeks; repository dan service; client HTTP Go ke engine Python via `ENGINE_URL`; CORS sesuai `CORS_ORIGIN`; `data/messages.id.json` berbahasa Indonesia; `data/guides.id.json` masih `[]` menunggu materi resmi; migrasi seed identitas fiktif opsional `migrations/002_seed_children.sql`; dokumentasi `backend/README.md` dan berkas tes dasar.
-- **Sudah diamati di laptop backend:**
-  1. `go run ./cmd/server` semula gagal karena checksum dependensi `github.com/lib/pq` belum tercatat; setelah penanganan dependensi, error ini tidak muncul lagi.
-  2. Startup sempat menghentikan proses dengan pesan `DATABASE_URL wajib diisi; lihat ../.env.example`.
-  3. Setelah konfigurasi lingkungan, server menerima `GET http://localhost:8080/api/v1/` dan mengembalikan JSON `NOT_FOUND` (HTTP 404) sesuai catch-all router. **Ini membuktikan layanan HTTP Go hidup, bukan bahwa API CRUD sudah diuji.** Pada implementasi `main.go` saat ini, listener baru dijalankan setelah `PingContext` PostgreSQL dan migrasi berhasil; karenanya startup ini juga mengindikasikan koneksi awal database/migrasi lolos, selama kode yang dijalankan adalah versi backend ini.
-- **Sedang dikerjakan:** pengujian baca/tulis anak dan pengukuran pada PostgreSQL nyata, serta integrasi Python di jaringan hotspot.
-- **Belum diverifikasi:** hasil `GET /api/v1/children`, `POST /api/v1/children`, seluruh route lain pada DB nyata, `go test ./...` di laptop demo, fungsi engine Python, koneksi frontend, serta pengujian end-to-end. Jangan menandai hal-hal ini sebagai lulus sebelum ada bukti.
-- **Masalah / batasan diketahui:** `GET /api/v1/` tidak terdaftar dan memang mengembalikan 404, gunakan endpoint spesifik. Struktur ringkasan `GET /children` belum dicontohkan eksplisit dalam kontrak. Format skor KPSP dan respons reference engine perlu dicocokkan dengan implementasi Python Zena. `guides.id.json` kosong sampai isi bersumber resmi disetujui. `POST /measurements` dan `POST /food-recalls` menyimpan ke DB lebih dahulu, lalu memanggil engine; jika engine tidak aktif, API bisa membalas 503 meskipun data sudah tersimpan. Hindari mengirim POST ulang tanpa memeriksa riwayat.
-- **Butuh dari orang lain:** Zena menyediakan `ENGINE_URL` yang benar (IP laptop, bind `0.0.0.0:8001`), engine berjalan, format score/reference yang cocok dengan kontrak, dan materi panduan resmi; tim frontend menyepakati contoh JSON respons daftar anak serta menggunakan URL Go pada `VITE_API_URL` (IP laptop backend jika lintas laptop).
-- **Cara menjalankan:**
+- **Merge dokumentasi 11:53 WIB:** basis main `b4958d3c2725990c781e5287bc7f4176d3a666a0`; catatan engine/frontend asli dipertahankan. Backend merangkum paket ZIP yang dikerjakan pada sesi ini; merge dokumentasi bukan bukti kode paket sudah di-push/diterapkan. Kode engine pada main sudah mendapat modul evaluasi/early warning, tetapi main.py masih hanya mendaftarkan health. Bagian engine upstream di bawah/atas tetap dicatat sesuai sumber tanpa mengklaim tes baru.
 
-  Dari akar repository, buat `.env` lokal berdasar `.env.example` (jangan commit `.env`). Pastikan DB `tumbuh` dibuat di PostgreSQL port `5432`, lalu jalankan dari folder `backend/`:
+### Bukti terbaru dari laptop pengguna
 
-  ```powershell
-  go mod tidy
-  go test ./...
-  go run ./cmd/server
-  ```
+- go test ./... dilaporkan lulus pada Windows untuk versi yang dijalankan pengguna.
+- GET /children, POST /children dan GET /children/{id} berhasil; anak uji dapat dibaca kembali.
+- POST pengukuran menghasilkan ENGINE_UNAVAILABLE dengan pesan "Pengukuran sudah tersimpan"; GET riwayat menampilkan pengukuran yang sama. Penyimpanan PostgreSQL nyata terbukti untuk alur ini.
+- Screenshot pgAdmin memperlihatkan dua anak dengan parent_id terisi. Screenshot tersebut tidak menampilkan hasil lengkap tabel users/seluruh tabel, sehingga tidak menjadi bukti semua constraint telah diuji.
+- Request health ke http://192.168.43.20:8001/engine/v1/health gagal dengan "Unable to connect to the remote server". IP/port/startup/firewall/jaringan perlu diperiksa. Penyebab spesifik koneksi belum dipastikan.
+- Patch redirect GET/HEAD /api/v1 dan /api/v1/ ke /children sudah dibuat dan diuji di lingkungan pengembangan. Pengguna belum mengonfirmasi hasil setelah memasang paket root dan restart; 404 sebelumnya berasal dari root lama, terpisah dari koneksi engine.
+- Belum diverifikasi di laptop: semua tes integrasi native, isolasi lintas pemilik, catatan makan, KPSP, kurva, endpoint engine nyata, frontend, serta runtime paket root terbaru.
 
-  Variabel yang diperlukan: `DATABASE_URL=postgres://postgres:<PASSWORD>@localhost:5432/tumbuh?sslmode=disable`, `ENGINE_URL=http://<IP_LAPTOP_ZENA>:8001/engine/v1`, dan `CORS_ORIGIN=http://localhost:5173`. Isi nilai sebenarnya hanya di `.env` lokal.
 
-- **Langkah uji selanjutnya (PowerShell kedua):**
+- **Pembaruan routing 11:48 WIB:** GET/HEAD /api/v1 dan /api/v1/ memberi 307 ke /api/v1/children sesuai permintaan pengguna. Daftar anak tetap memakai route/model yang ada; unknown path tetap JSON 404, POST root tidak dialihkan. Suite Go/race, vet dan kompilasi Windows lulus; tes SQL integrasi tidak diulang untuk perubahan ini. Kegagalan health engine adalah masalah koneksi terpisah; daftar anak dan riwayat tidak bergantung pada engine.
 
-  ```powershell
-  # Route dasar /api/v1/ bukan health check; 404 di sini memang normal.
-  Invoke-RestMethod http://localhost:8080/api/v1/children
+- **Diperbarui:** 7 November 2026, 11:35 WIB.
+- **Acuan:** repository `af4193a6da0a9019a25f25738b0e9caf9243ffac` (`Document Update`), `docs/CONTRACT.md` v0.4 (draf), PRD dengan tabel users dan kepemilikan anak, serta hotfix engine 04A. Paket ini menggabungkan perbaikan backend dari arsip sebelumnya dan penyesuaian PRD terbaru. Belum di-push ke GitHub.
+- **Status serah terima:** implementasi dan tes paket selesai; penerapan pada PostgreSQL native/laptop Windows serta integrasi engine Python/ frontend nyata masih perlu dilakukan. Bagian backend yang terduplikasi di versi sumber sudah digabungkan menjadi satu di sini.
 
-  $body = @{name="Anak Demo"; sex="female"; birth_date="2026-01-07"; is_preterm=$false} | ConvertTo-Json
-  Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/children -ContentType 'application/json' -Body $body
+### Implementasi yang sudah tersedia
 
-  # Setelah IP dan engine dikonfirmasi Zena:
-  Invoke-RestMethod http://<IP_LAPTOP_ZENA>:8001/engine/v1/health
-  ```
+- Go API pada port 8080, prefix `/api/v1`, 14 route publik: daftar/tambah/detail anak, status, riwayat/input/hapus pengukuran, kurva, jadwal/input/riwayat KPSP, panduan, serta input/riwayat catatan makan.
+- Model dan validasi kontrak, amplop data/error, PostgreSQL melalui lib/pq, pembagian handler/service/repository/engineclient/model, CORS_ORIGIN dan client ENGINE_URL dengan timeout 3 detik.
+- `messages.id.json` untuk teks Indonesia; `guides.id.json` tetap kosong menunggu materi resmi. Engine tetap menghitung hasil medis; Go menyimpan riwayat dan menambahkan teks pengguna.
 
-  Harapan bila DB kosong: `GET /children` -> `{"data":[],"error":null}`. Catat respons nyata dan ID hasil POST, lalu uji pengukuran, status, growth, KPSP, serta food recall. Jika engine belum aktif, endpoint yang memerlukannya dapat membalas `ENGINE_UNAVAILABLE` (503).
-- **Git / serah terima:** pastikan `backend/go.mod` dan `backend/go.sum` ikut ter-commit setelah `go mod tidy`; **jangan commit `.env`, password, atau data anak asli**. Jalankan `git pull --rebase` sebelum push. Usulan commit: `backend: catat status implementasi dan uji awal` (bersama pembaruan `docs/CHANGELOG.md` dan `docs/HANDOFF.md`).
+### Perubahan database dan kepemilikan terbaru
 
-## Backend — tim backend
+1. `003_demo_parent.sql` menambahkan tabel users, akun parent demo, children.parent_id NOT NULL, FK ke users dan indeks parent. ID demo server: `00000000-0000-4000-8000-000000000001`.
+2. Startup menjalankan 001 lalu 003 dalam satu transaksi dengan advisory lock. Migrasi boleh dijalankan berulang. Bila gagal, transaksi dibatalkan. Seed identitas anak 002 tetap manual/opsional dan telah disesuaikan dengan parent.
+3. Anak legacy tanpa pemilik diberi parent demo. ID dan riwayat dipertahankan; parent yang sudah ada tidak ditimpa. Akun demo nonaktif/role berbeda tidak diaktifkan ulang diam-diam.
+4. Database yang dibuat dari DDL PRD dengan food_groups text[] di-upgrade ke JSONB menggunakan to_jsonb, mempertahankan nilai/urutan. Public JSON tetap array string; PRD mengizinkan penyesuaian tipe penyimpanan.
+5. Semua query repository memeriksa kepemilikan serta parent aktif, termasuk baca/tulis/hapus data turunan. Anak milik orang lain tidak dapat dibaca lewat detail dan tidak dapat ditulis melalui repository. Context parent dipilih server; tidak ada parent_id baru pada JSON publik.
+6. MVP tetap satu orang tua demo tanpa login. OTP, pengelolaan akun dan autentikasi multi-pengguna adalah pekerjaan setelah MVP.
 
-- **Diperbarui:** 7 November 2026, setelah laporan uji pukul 10:03 WIB.
-- **Kontrak acuan:** `docs/CONTRACT.md` v0.4 (draf), `docs/PRD.md` v0.2. Tidak ada perubahan kontrak, port, ataupun endpoint yang diusulkan dalam pembaruan ini.
-- **Selesai (implementasi kode):** Go HTTP API pada `:8080/api/v1`; 14 route publik; model input/output dan validasi; PostgreSQL via `github.com/lib/pq`; migrasi otomatis `migrations/001_init.sql` untuk 4 tabel (`children`, `measurements`, `kpsp_results`, `food_recalls`) beserta relasi/indeks; repository dan service; client HTTP Go ke engine Python via `ENGINE_URL`; CORS sesuai `CORS_ORIGIN`; `data/messages.id.json` berbahasa Indonesia; `data/guides.id.json` masih `[]` menunggu materi resmi; migrasi seed identitas fiktif opsional `migrations/002_seed_children.sql`; dokumentasi `backend/README.md` dan berkas tes dasar.
-- **Sudah diamati di laptop backend:**
-  1. `go run ./cmd/server` semula gagal karena checksum dependensi `github.com/lib/pq` belum tercatat; setelah penanganan dependensi, error ini tidak muncul lagi.
-  2. Startup sempat menghentikan proses dengan pesan `DATABASE_URL wajib diisi; lihat ../.env.example`.
-  3. Setelah konfigurasi lingkungan, server menerima `GET http://localhost:8080/api/v1/` dan mengembalikan JSON `NOT_FOUND` (HTTP 404) sesuai catch-all router. **Ini membuktikan layanan HTTP Go hidup, bukan bahwa API CRUD sudah diuji.** Pada implementasi `main.go` saat ini, listener baru dijalankan setelah `PingContext` PostgreSQL dan migrasi berhasil; karenanya startup ini juga mengindikasikan koneksi awal database/migrasi lolos, selama kode yang dijalankan adalah versi backend ini.
-- **Sedang dikerjakan:** pengujian baca/tulis anak dan pengukuran pada PostgreSQL nyata, serta integrasi Python di jaringan hotspot.
-- **Belum diverifikasi:** hasil `GET /api/v1/children`, `POST /api/v1/children`, seluruh route lain pada DB nyata, `go test ./...` di laptop demo, fungsi engine Python, koneksi frontend, serta pengujian end-to-end. Jangan menandai hal-hal ini sebagai lulus sebelum ada bukti.
-- **Masalah / batasan diketahui:** `GET /api/v1/` tidak terdaftar dan memang mengembalikan 404, gunakan endpoint spesifik. Struktur ringkasan `GET /children` belum dicontohkan eksplisit dalam kontrak. Format skor KPSP dan respons reference engine perlu dicocokkan dengan implementasi Python Zena. `guides.id.json` kosong sampai isi bersumber resmi disetujui. `POST /measurements` dan `POST /food-recalls` menyimpan ke DB lebih dahulu, lalu memanggil engine; jika engine tidak aktif, API bisa membalas 503 meskipun data sudah tersimpan. Hindari mengirim POST ulang tanpa memeriksa riwayat.
-- **Butuh dari orang lain:** Zena menyediakan `ENGINE_URL` yang benar (IP laptop, bind `0.0.0.0:8001`), engine berjalan, format score/reference yang cocok dengan kontrak, dan materi panduan resmi; tim frontend menyepakati contoh JSON respons daftar anak serta menggunakan URL Go pada `VITE_API_URL` (IP laptop backend jika lintas laptop).
-- **Cara menjalankan:**
+### Perubahan validasi dan perbaikan lain
 
-  Dari akar repository, buat `.env` lokal berdasar `.env.example` (jangan commit `.env`). Pastikan DB `tumbuh` dibuat di PostgreSQL port `5432`, lalu jalankan dari folder `backend/`:
+- Umur catatan makan pada recall_date memakai hari / 30,4375 tanpa pembulatan dengan rentang 6 sampai kurang dari 24 bulan, selaras engine 04A. KPSP menolak answered_at sebelum birth_date atau setelah hari ini.
+- Error HTTP/protokol engine diberi tipe internal terpisah dari error DB. Route engine belum tersedia, timeout, koneksi gagal atau respons invalid menjadi 503 ENGINE_UNAVAILABLE. HTTP 422 VALIDATION_ERROR diteruskan beserta fields; error DB saat evaluasi menjadi 500 INTERNAL; anak/pengukuran lokal yang tidak ada atau di luar scope menjadi 404 NOT_FOUND.
+- POST pengukuran/catatan makan tetap menyimpan sebelum evaluasi. Pesan menyebut sudah tersimpan bila evaluasi berikutnya gagal; ID dicatat di log. Frontend perlu membaca riwayat sebelum mengirim ulang. Amplop error tetap data:null sesuai kontrak.
+- Client menolak JSON rusak, data kosong/null, field error hilang dan respons lebih dari 4 MiB. Titik kurva berkoordinat kosong disaring. Skor KPSP hilang tidak dianggap nol; umur jadwal dan 10 butir kuesioner diperiksa.
+- Port 8080 di-bind sebelum membuka DB. Pesan siap dicetak sesudah bind, migrasi dan data statis berhasil; konflik port dilaporkan dengan instruksi memeriksa backend/proses lama.
+- Tidak menambah endpoint, field JSON publik, enum, port atau variabel runtime wajib; batas umur pengukuran tetap kontrak. Skema DB berubah sesuai PRD dan harus diterapkan bersama kode patch.
 
-  ```powershell
-  go mod tidy
-  go test ./...
-  go run ./cmd/server
-  ```
+### Hasil uji dan batas bukti
 
-  Variabel yang diperlukan: `DATABASE_URL=postgres://postgres:<PASSWORD>@localhost:5432/tumbuh?sslmode=disable`, `ENGINE_URL=http://<IP_LAPTOP_ZENA>:8001/engine/v1`, dan `CORS_ORIGIN=http://localhost:5173`. Isi nilai sebenarnya hanya di `.env` lokal.
+| Pemeriksaan | Hasil | Lingkungan/batas |
+| --- | --- | --- |
+| Unit/handler/client/service dan race detector | Lulus | Go 1.22.12 Linux; HTTP test server dan SQL mock |
+| Lima tes repository SQL | Lulus | lib/pq ke PGlite 0.3.2/PostgreSQL WASM melalui pglite-socket 0.0.7; bukan PostgreSQL native |
+| Migrasi fresh dan seed | Lulus | Lima tabel, satu parent demo, startup tidak menjalankan seed anak, migrasi/seed idempoten |
+| Migrasi legacy dan kepemilikan | Lulus | Anak/riwayat dipertahankan; parent existing tidak diubah |
+| Isolasi parent/admin/nonaktif | Lulus | Baca/tulis/hapus repository diuji, termasuk penolakan akses lintas parent |
+| Penyimpanan text[] PRD dan rollback | Lulus | Isi array dipertahankan; migrasi gagal tidak meninggalkan tabel parsial |
+| go vet | Lulus | Analisis statis Go |
+| Kompilasi Linux dan Windows amd64 | Lulus | buildvcs=false pada lingkungan pengembangan; Windows belum dijalankan |
+| Smoke HTTP backend yang berjalan | Lulus | Startup migrasi, tambah/baca anak, POST lalu engine 404, pesan sudah tersimpan, GET riwayat, duplikasi dan KPSP sebelum lahir |
+| Konflik port 8080 | Lulus | Pesan gagal jelas sebelum akses DB; tidak mencetak pesan siap |
 
-- **Langkah uji selanjutnya (PowerShell kedua):**
+Tes SQL integrasi disertakan dalam `internal/repository/postgres_integration_test.go` dan normalnya dilewati tanpa BACKEND_TEST_DATABASE_URL. Gunakan database pengujian terpisah dengan izin membuat schema; tes membuat dan menghapus schema unik backend_test_*. PGlite dan harness pengujian tidak menjadi dependensi atau isi paket backend.
 
-  ```powershell
-  # Route dasar /api/v1/ bukan health check; 404 di sini memang normal.
-  Invoke-RestMethod http://localhost:8080/api/v1/children
+**Laporan dari laptop pengguna:** go test ./... sebelumnya lulus pada Windows; go run sempat gagal bind port 8080 karena port sudah dipakai. Hasil itu untuk versi sebelum paket ini. Pengguna sebelumnya juga melaporkan POST pengukuran 503. Penyebab spesifik runtime 503 tersebut belum dipastikan dari log engine/Go.
 
-  $body = @{name="Anak Demo"; sex="female"; birth_date="2026-01-07"; is_preterm=$false} | ConvertTo-Json
-  Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/children -ContentType 'application/json' -Body $body
+**Batas pengujian:** CRUD dasar anak dan simpan/baca pengukuran telah dibuktikan pengguna pada layanan Windows/PostgreSQL lokal. Suite integrasi native lengkap, runtime paket root terbaru, engine Python nyata, frontend, alur lengkap dan ketepatan medis tetap belum diverifikasi. Keberhasilan SQL WASM/HTTP tiruan tidak menggantikan pemeriksaan tersebut.
 
-  # Setelah IP dan engine dikonfirmasi Zena:
-  Invoke-RestMethod http://<IP_LAPTOP_ZENA>:8001/engine/v1/health
-  ```
+### Masalah dan ketergantungan yang masih terbuka
 
-  Harapan bila DB kosong: `GET /children` -> `{"data":[],"error":null}`. Catat respons nyata dan ID hasil POST, lalu uji pengukuran, status, growth, KPSP, serta food recall. Jika engine belum aktif, endpoint yang memerlukannya dapat membalas `ENGINE_UNAVAILABLE` (503).
-- **Git / serah terima:** pastikan `backend/go.mod` dan `backend/go.sum` ikut ter-commit setelah `go mod tidy`; **jangan commit `.env`, password, atau data anak asli**. Jalankan `git pull --rebase` sebelum push. Usulan commit: `backend: catat status implementasi dan uji awal` (bersama pembaruan `docs/CHANGELOG.md` dan `docs/HANDOFF.md`).
+- Pada commit acuan, Python baru mendaftarkan /engine/v1/health. Fungsi matematika dan hotfix validasi ada, tetapi /growth/evaluate, /reference, /kpsp/questionnaire, /kpsp/score belum menjadi endpoint HTTP. Status/kurva/KPSP masih bisa 503. Health sukses atau who_tables_loaded=true belum membuktikan evaluasi siap.
+- Bentuk ringkasan GET /children, body lengkap score KPSP dan respons reference perlu dikunci bersama pemilik kontrak. Daftar anak tetap berupa Child tanpa field ringkasan tambahan yang belum disepakati.
+- Batas umur pengukuran kontrak 1856 hari versus tabel WHO 1826 hari tetap memerlukan keputusan pemilik kontrak/engine. Kebijakan presisi/posisi tidak diubah sepihak.
+- Materi guides masih menunggu sumber resmi. Riwayat KPSP lama dengan tanggal yang sudah tidak valid tidak dibuang otomatis; bila ditemukan saat integrasi, tinjau datanya secara eksplisit.
+- SQL langsung/skrip lama yang menambah anak harus mengikuti parent_id NOT NULL. Terapkan seluruh folder backend bersama migrasi 003; jangan hanya menyalin sebagian file Go.
+
+### Menjalankan dan menerapkan
+
+Hentikan backend lama dengan Ctrl+C. Backup database lama yang perlu dipertahankan, simpan perubahan lokal, lalu gabungkan isi ZIP ke akar repo. Hasilnya backend/go.mod dan docs/HANDOFF.md, bukan backend/backend. Pertahankan .env lokal.
+
+```dotenv
+DATABASE_URL=postgres://postgres:<PASSWORD>@localhost:5432/tumbuh?sslmode=disable
+ENGINE_URL=http://<IP_LAPTOP_ENGINE>:8001/engine/v1
+CORS_ORIGIN=http://localhost:5173
+```
+
+Database tumbuh harus sudah dibuat. Dari akar repo:
+
+```powershell
+cd backend
+go mod download
+go test ./...
+go run ./cmd/server
+```
+
+Startup menjalankan 001+003. Seed opsional: psql -U postgres -d tumbuh -f migrations/002_seed_children.sql. Go minimal 1.22, PostgreSQL minimal 13. Gunakan PowerShell kedua untuk GET http://localhost:8080/api/v1/children; /api/v1/ kini mengarahkan ke daftar anak dan bukan health check engine.
+
+Tes integrasi native pada DB uji terpisah:
+
+```powershell
+$env:BACKEND_TEST_DATABASE_URL="postgres://postgres:ISI_PASSWORD@localhost:5432/tumbuh_test?sslmode=disable"
+go test -count=1 ./internal/repository
+Remove-Item Env:BACKEND_TEST_DATABASE_URL
+```
+
+### Langkah berikutnya dan kebutuhan tim
+
+1. Terapkan dan uji ulang pada PostgreSQL native/Windows, termasuk DB lama dan seed opsional. Periksa users, parent_id dan riwayat setelah migrasi; simpan hasil respons aktual.
+2. Konfirmasikan ENGINE_URL, bind Python 0.0.0.0:8001 dan firewall hotspot. Uji evaluasi/reference/KPSP sesudah endpoint HTTP tersedia; gunakan log Go untuk menelusuri 503.
+3. Hubungkan frontend; tampilkan error.message tentang data tersimpan, baca riwayat sebelum POST ulang, dan uji status/kurva/KPSP/catatan makan ujung ke ujung.
+4. Minta pemilik kontrak mengunci bentuk respons yang belum lengkap serta rentang referensi; minta pemilik materi menyediakan panduan resmi.
+5. Gabungkan perubahan dokumen tim yang lebih baru sebelum menimpa file docs dari ZIP, lalu commit backend dan catatan dokumentasinya bersama. Tidak ada push GitHub pada pekerjaan ini.
 
 ## Desain + frontend — (nama)
 
@@ -129,4 +160,4 @@ Status pada tabel ini membedakan **route terimplementasi** dan **terbukti teruji
 | `GET /guides` | Ya, data masih kosong | — | ? | Belum |
 | `GET/POST /children/{id}/food-recalls` | Ya | ? | ? | Belum |
 
-**Temuan terkonfirmasi terakhir:** `GET /api/v1/` menghasilkan `NOT_FOUND` sesuai routing; belum ada bukti respons endpoint publik berbasis data. Tidak ada perubahan pada folder `engine/`, `frontend/`, ataupun `docs/CONTRACT.md` dalam pembaruan ini.
+**Status backend setelah merge:** CRUD dasar dan penyimpanan/pembacaan pengukuran telah dilaporkan berhasil pada PostgreSQL lokal pengguna. Koneksi health engine gagal; integrasi engine/frontend lengkap belum lulus. Patch root redirect sudah diuji pada lingkungan pengembangan dan menunggu konfirmasi penerapan laptop. Kolom end-to-end pada tabel di atas tetap Belum untuk integrasi seluruh layanan.
