@@ -66,10 +66,9 @@ class KpspScoreTests(unittest.TestCase):
 
 
 class KpspAgePrimitiveTests(unittest.TestCase):
-    def test_literal_contract_rounding_boundary(self):
-        # Day 16 remains pending owner decision; test current contract, not a
-        # claim that the contradictory official example has been resolved.
-        for days,expected in ((0,8),(15,8),(16,8),(17,9),(30,9)):
+    def test_user_confirmed_rounding_boundary(self):
+        # User explicitly resolved day 16 upward on 2026-11-07.
+        for days,expected in ((0,8),(15,8),(16,9),(17,9),(30,9)):
             self.assertEqual(round_kpsp_months(8,days),expected)
 
     def test_invalid_age_components(self):
@@ -89,7 +88,7 @@ class KpspBankTests(unittest.TestCase):
     def read(self,data):
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder)/"bank.json";path.write_text(json.dumps(data),encoding="utf-8")
-            return load_kpsp_bank(path)
+            return load_kpsp_bank(path, for_review=True)
 
     def test_complete_synthetic_format_can_be_parsed(self):
         bank=self.read(fake_bank())
