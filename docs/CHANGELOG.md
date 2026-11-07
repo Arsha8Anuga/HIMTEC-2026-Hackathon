@@ -14,9 +14,23 @@ Tandai `[MERUSAK]` bila mengganti nama, mengubah tipe, atau menghapus field/endp
 
 ## 2026-11-07
 
+- 13:45 · docs/backend · tim backend · perbarui file lampiran dengan seluruh pekerjaan backend sampai hasil verifikasi OTP dan GET /auth/me pengguna; bedakan implementasi, tes pengembangan dan bukti laptop; catatan engine/frontend serta riwayat sebelumnya dipertahankan · — · tim: lanjut uji sesi, isolasi pemilik dan integrasi engine/frontend nyata; tidak ada push GitHub pada pembaruan ini
+
+- 13:34 · backend · hasil uji pengguna · Go berjalan dalam AUTH_MODE=otp_dummy pada loopback; POST /auth/register menghasilkan challenge dan OTP terminal; pengguna kemudian berhasil POST /auth/verify serta GET /auth/me dengan bearer token, menampilkan akun uji role parent dan error:null; kode OTP/token tidak dicatat dalam dokumen · — · backend: lanjut uji daftar/tambah anak dengan sesi, login ulang, logout dan akses lintas akun; hasilnya belum dilaporkan
+
+- 13:31 · backend · tim backend · paket OTP dummy berbasis 1a0fe1b menambah register/login/verify/me/logout, migrasi 004 (otp_codes/auth_sessions/audit_logs dan indeks email lower), HMAC OTP sekali pakai 5 menit/5 percobaan, resend 60 detik/5 per jam/email, sesi hashed 24 jam dan audit tanpa kode/token; context pemilik per request berasal dari parent aktif; default demo lama tetap tersedia · [MERUSAK] mode OTP memerlukan Authorization Bearer dan menambah error 401/429; JSON medis tetap · frontend: kirim token; akun baru tidak otomatis mendapat anak demo lama
+
+- 13:31 · backend · tim backend · unit/race dan SQL auth via PGlite/PostgreSQL WASM lulus untuk pendaftaran/login/sesi/logout, expiry, replay, batas percobaan/request, restart, verifikasi bersamaan, isolasi dua parent dan akun nonaktif; smoke server Go nyata dengan DB pengujian lulus; vet dan kompilasi Linux/Windows lulus; perbaiki presisi waktu OTP pada batas mikrodetik DB; AUTH_TESTING.md disertakan · — · tim: hasil pengembangan tidak menggantikan suite PostgreSQL native/Windows lengkap
+
+- 13:12 · backend · hasil uji pengguna dengan fake engine · POST dan GET food-recalls berhasil dengan ID yang sama; growth?indicator=wfa mengembalikan titik berat tersimpan pada umur 304 hari, error:null; berat 0 ditolak VALIDATION_ERROR dan tanggal pengukuran duplikat ditolak aturan DB · — · backend: cek riwayat untuk memastikan tidak ada baris tambahan; diet/z-score/reference tetap dummy, bukan penilaian medis
+
+- 13:10 · backend · hasil uji pengguna dengan fake engine · status dan kpsp/next berhasil, 10 pertanyaan DUMMY TEST tampil; POST jawaban KPSP menghasilkan yes_count 10 dan result fixture sesuai, GET riwayat mengembalikan ID yang sama; baca/tulis PostgreSQL nyata terbukti pada alur tersebut · — · tim: hasil sesuai/Aman merupakan fixture dan tidak membuktikan perhitungan klinis
+
 - 13:01 · engine · engine (persiapan ZIP 07A) · core skor KPSP dan validasi 10 jawaban, primitif umur literal kontrak dan loader bank lokal; 19 tes unittest lulus, pytest penuh belum tersedia lokal. Bank pertanyaan, umur dari tanggal, due dan endpoint belum tersedia; batas tepat 16 hari masih berbeda antara kontrak dan contoh resmi · — · tim/pemilik kontrak: sediakan pedoman SDIDTK dan putuskan pembulatan tepat 16 hari; jangan anggap KPSP lengkap
 
 - 13:01 · docs · engine · selesaikan penanda konflik CHANGELOG dari main terbaru dengan mempertahankan seluruh entri unik kedua sisi; selaraskan bagian Engine HANDOFF dengan keberadaan kode Patch 05/06 dan status persiapan 07A; catatan backend/frontend dan matriks integrasi dipertahankan · — · semua: merge dokumen terbaru sebelum menerapkan ZIP
+
+- 12:52 · backend/testing · tim backend · tambah fake engine Python standar di 127.0.0.1:18001, diaktifkan eksplisit melalui override ENGINE_URL; health/growth/reference/kuesioner/skor dummy, 5 tes HTTP lulus; README, handoff/changelog addon tersedia; tidak mengubah engine asli/.env atau membuat acuan WHO palsu · — · tim: gunakan data uji, z-score null/reference kosong/diet null dan label Aman/sesuai hanya fixture; health pada /engine/v1/health, root /engine/v1 tetap 404
 
 - 11:53 · docs/backend · tim backend · gabungkan CHANGELOG/HANDOFF dari main b4958d3 dengan seluruh patch backend dan bukti uji pengguna: daftar/tambah/detail anak dan simpan/baca pengukuran berhasil pada PostgreSQL lokal; parent_id terisi; evaluasi masih 503 dan health engine IP yang diuji tidak terhubung; patch redirect root sudah dibuat/dites tetapi penerapan di laptop belum dikonfirmasi · — · tim: selesaikan koneksi engine dan verifikasi paket root terbaru
 

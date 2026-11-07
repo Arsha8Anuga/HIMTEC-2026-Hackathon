@@ -26,114 +26,77 @@ Cara membuka sesi AI baru: tempel AGENTS.md, bagian kontrak yang relevan, lalu b
 
 ## Backend — tim backend
 
-- **Merge dokumentasi 11:53 WIB:** basis main `b4958d3c2725990c781e5287bc7f4176d3a666a0`; catatan engine/frontend asli dipertahankan. Backend merangkum paket ZIP yang dikerjakan pada sesi ini; merge dokumentasi bukan bukti kode paket sudah di-push/diterapkan. Kode engine pada main sudah mendapat modul evaluasi/early warning, tetapi main.py masih hanya mendaftarkan health. Bagian engine upstream di bawah/atas tetap dicatat sesuai sumber tanpa mengklaim tes baru.
+- **Diperbarui:** 7 November 2026, 13:45 WIB; berdasarkan file lampiran dan hasil pengujian yang dilaporkan pengguna pada percakapan ini.
+- **Acuan:** kontrak medis v0.4, PRD users/children.parent_id, paket kompatibilitas backend, fake engine testing dan paket OTP dummy berbasis repository 1a0fe1b. Dokumen ini memperbarui status backend tanpa menimpa bagian engine/frontend.
+- **Status:** API dasar dan alur dengan fake engine telah diuji pengguna pada Windows/PostgreSQL lokal. Pendaftaran OTP, verifikasi dan pengenalan sesi /auth/me berhasil. Integrasi engine medis asli dan frontend lengkap belum terverifikasi. Tidak ada push GitHub pada pekerjaan dokumentasi ini; status commit/push pengguna di luar percakapan tidak diasumsikan.
 
-### Bukti terbaru dari laptop pengguna
+### Implementasi yang sudah dikerjakan
 
-- go test ./... dilaporkan lulus pada Windows untuk versi yang dijalankan pengguna.
-- GET /children, POST /children dan GET /children/{id} berhasil; anak uji dapat dibaca kembali.
-- POST pengukuran menghasilkan ENGINE_UNAVAILABLE dengan pesan "Pengukuran sudah tersimpan"; GET riwayat menampilkan pengukuran yang sama. Penyimpanan PostgreSQL nyata terbukti untuk alur ini.
-- Screenshot pgAdmin memperlihatkan dua anak dengan parent_id terisi. Screenshot tersebut tidak menampilkan hasil lengkap tabel users/seluruh tabel, sehingga tidak menjadi bukti semua constraint telah diuji.
-- Request health ke http://192.168.43.20:8001/engine/v1/health gagal dengan "Unable to connect to the remote server". IP/port/startup/firewall/jaringan perlu diperiksa. Penyebab spesifik koneksi belum dipastikan.
-- Patch redirect GET/HEAD /api/v1 dan /api/v1/ ke /children sudah dibuat dan diuji di lingkungan pengembangan. Pengguna belum mengonfirmasi hasil setelah memasang paket root dan restart; 404 sebelumnya berasal dari root lama, terpisah dari koneksi engine.
-- Belum diverifikasi di laptop: semua tes integrasi native, isolasi lintas pemilik, catatan makan, KPSP, kurva, endpoint engine nyata, frontend, serta runtime paket root terbaru.
+- Go API pada 8080/api/v1: daftar/tambah/detail anak; status; input/riwayat/hapus pengukuran; kurva; jadwal/input/riwayat KPSP; panduan; input/riwayat catatan makan. GET/HEAD /api/v1 dan /api/v1/ diarahkan 307 ke /children; unknown path tetap JSON 404 dan POST root tidak dialihkan.
+- Migrasi 001+003+004 dijalankan dalam satu transaksi dengan advisory lock. Seed anak 002 tetap opsional. Lima tabel bisnis ditambah tiga tabel auth menjadi delapan: users, children, measurements, kpsp_results, food_recalls, otp_codes, auth_sessions, audit_logs.
+- Migrasi 003 menambah parent demo, children.parent_id NOT NULL/FK/indeks; anak legacy tanpa pemilik diberi parent demo, pemilik existing dan riwayat dipertahankan. food_groups text[] dari DDL PRD diubah ke JSONB dengan nilai/urutan tetap; JSON API tidak berubah. Akun demo nonaktif/role berbeda tidak diaktifkan ulang otomatis.
+- Query anak dan seluruh data turunannya memeriksa pemilik serta parent aktif. Kegagalan engine dan DB dipisahkan; route engine belum tersedia/koneksi gagal/response invalid menjadi 503, validasi engine 422 diteruskan dengan fields, error DB menjadi 500, data lokal di luar scope/tidak ada menjadi 404.
+- POST pengukuran/catatan makan menyimpan sebelum evaluasi. Pesan kegagalan evaluasi menjelaskan data sudah tersimpan, ID dicatat di log, dan pengguna diminta membaca riwayat sebelum POST ulang. Duplikasi tanggal ditolak DB.
+- Validasi umur recall memakai hari/30,4375 pada recall_date untuk rentang [6,24), tanggal KPSP tidak boleh sebelum lahir/di masa depan. Titik grafik kosong disaring; client menolak respons kosong/null/rusak/lebih dari 4 MiB; skor KPSP hilang tidak dianggap nol, jadwal dan jumlah butir diperiksa.
+- Port 8080 di-bind sebelum DB; pesan siap muncul sesudah bind, migrasi dan data statis berhasil. guides.id.json tetap kosong menunggu materi resmi.
 
+### Fake engine — mode pengujian
 
-- **Pembaruan routing 11:48 WIB:** GET/HEAD /api/v1 dan /api/v1/ memberi 307 ke /api/v1/children sesuai permintaan pengguna. Daftar anak tetap memakai route/model yang ada; unknown path tetap JSON 404, POST root tidak dialihkan. Suite Go/race, vet dan kompilasi Windows lulus; tes SQL integrasi tidak diulang untuk perubahan ini. Kegagalan health engine adalah masalah koneksi terpisah; daftar anak dan riwayat tidak bergantung pada engine.
+- Addon backend/testing/fake_engine.py memakai Python standar, bind loopback port 18001, dijalankan dengan --testing-only; override ENGINE_URL hanya pada terminal Go, tidak mengganti .env/engine medis asli. Lima tes HTTP Python lulus pada pengembangan.
+- Endpoint health: /engine/v1/health dengan status ok dan who_tables_loaded=false. Root /engine/v1 memang 404; ini terpisah dari akses data Go/PostgreSQL.
+- Fixture growth selalu green, z-score null, klasifikasi/alasan kosong; reference array kosong, diet null, jadwal KPSP tetap 9 bulan, 10 pertanyaan DUMMY TEST dan result selalu sesuai. Tidak menguji WHO, IYCF atau validitas KPSP. Label Aman/sesuai pada pengujian bukan hasil kesehatan.
+- Sebelum OTP, pengguna berhasil menjalankan alur ini dengan data milik parent demo. Setelah mode OTP aktif, semua pengujian route data harus membawa bearer token dan UUID anak milik akun sesi.
 
-- **Diperbarui:** 7 November 2026, 11:35 WIB.
-- **Acuan:** repository `af4193a6da0a9019a25f25738b0e9caf9243ffac` (`Document Update`), `docs/CONTRACT.md` v0.4 (draf), PRD dengan tabel users dan kepemilikan anak, serta hotfix engine 04A. Paket ini menggabungkan perbaikan backend dari arsip sebelumnya dan penyesuaian PRD terbaru. Belum di-push ke GitHub.
-- **Status serah terima:** implementasi dan tes paket selesai; penerapan pada PostgreSQL native/laptop Windows serta integrasi engine Python/ frontend nyata masih perlu dilakukan. Bagian backend yang terduplikasi di versi sumber sudah digabungkan menjadi satu di sini.
+### OTP dummy — mode pengujian lokal
 
-### Implementasi yang sudah tersedia
+- Diaktifkan eksplisit dengan AUTH_MODE=otp_dummy; bind Go hanya pada 127.0.0.1:8080. Default/demo tetap alur parent demo lama tanpa login. Konfigurasi harus berada pada terminal yang menjalankan Go dan proses perlu di-restart setelah perubahan.
+- Endpoint tambahan: POST /auth/register (name/email), POST /auth/login (email), POST /auth/verify (challenge_id/code string), GET /auth/me, POST /auth/logout. Prefix seluruhnya /api/v1. Penjelasan ekstensi API dan perintah lengkap ada di backend/AUTH_TESTING.md; kontrak medis tidak diubah otomatis.
+- OTP dikirim hanya ke terminal Go, bukan email/SMS. challenge_id adalah UUID permintaan, berbeda dari kode enam digit. Akun parent baru dibuat setelah verifikasi berhasil; request role/parent_id tidak diterima.
+- OTP tersimpan HMAC, berlaku 5 menit, satu kali pakai, maksimal 5 percobaan; request minimal berselang 60 detik dan maksimal 5 per email per jam. Kode baru membatalkan kode sebelumnya; restart membatalkan OTP pending. Presisi waktu diselaraskan dengan mikrodetik DB.
+- Sesi token acak disimpan hashed (SHA-256), berlaku 24 jam, dicabut lewat logout; lookup memeriksa role parent/status aktif. Audit mencatat peristiwa tanpa OTP/access_token. Kode dan token aktual tidak dimasukkan ke dokumentasi.
+- Semua route bisnis di mode OTP membutuhkan Authorization: Bearer. Store/Service disalin per request dengan user dari sesi, tanpa mengubah ParentID shared atau fallback ke demo. CORS mengizinkan Authorization untuk origin yang dikonfigurasi.
+- Error auth tambahan: 401 UNAUTHORIZED dan 429 RATE_LIMITED. Browser tanpa header pada /children dapat 401. Akun baru mulai tanpa anak; data demo lama tidak otomatis dipindahkan. Admin/nonaktif tidak mendapat akses login parent.
 
-- Go API pada port 8080, prefix `/api/v1`, 14 route publik: daftar/tambah/detail anak, status, riwayat/input/hapus pengukuran, kurva, jadwal/input/riwayat KPSP, panduan, serta input/riwayat catatan makan.
-- Model dan validasi kontrak, amplop data/error, PostgreSQL melalui lib/pq, pembagian handler/service/repository/engineclient/model, CORS_ORIGIN dan client ENGINE_URL dengan timeout 3 detik.
-- `messages.id.json` untuk teks Indonesia; `guides.id.json` tetap kosong menunggu materi resmi. Engine tetap menghitung hasil medis; Go menyimpan riwayat dan menambahkan teks pengguna.
+### Bukti dari laptop pengguna
 
-### Perubahan database dan kepemilikan terbaru
-
-1. `003_demo_parent.sql` menambahkan tabel users, akun parent demo, children.parent_id NOT NULL, FK ke users dan indeks parent. ID demo server: `00000000-0000-4000-8000-000000000001`.
-2. Startup menjalankan 001 lalu 003 dalam satu transaksi dengan advisory lock. Migrasi boleh dijalankan berulang. Bila gagal, transaksi dibatalkan. Seed identitas anak 002 tetap manual/opsional dan telah disesuaikan dengan parent.
-3. Anak legacy tanpa pemilik diberi parent demo. ID dan riwayat dipertahankan; parent yang sudah ada tidak ditimpa. Akun demo nonaktif/role berbeda tidak diaktifkan ulang diam-diam.
-4. Database yang dibuat dari DDL PRD dengan food_groups text[] di-upgrade ke JSONB menggunakan to_jsonb, mempertahankan nilai/urutan. Public JSON tetap array string; PRD mengizinkan penyesuaian tipe penyimpanan.
-5. Semua query repository memeriksa kepemilikan serta parent aktif, termasuk baca/tulis/hapus data turunan. Anak milik orang lain tidak dapat dibaca lewat detail dan tidak dapat ditulis melalui repository. Context parent dipilih server; tidak ada parent_id baru pada JSON publik.
-6. MVP tetap satu orang tua demo tanpa login. OTP, pengelolaan akun dan autentikasi multi-pengguna adalah pekerjaan setelah MVP.
-
-### Perubahan validasi dan perbaikan lain
-
-- Umur catatan makan pada recall_date memakai hari / 30,4375 tanpa pembulatan dengan rentang 6 sampai kurang dari 24 bulan, selaras engine 04A. KPSP menolak answered_at sebelum birth_date atau setelah hari ini.
-- Error HTTP/protokol engine diberi tipe internal terpisah dari error DB. Route engine belum tersedia, timeout, koneksi gagal atau respons invalid menjadi 503 ENGINE_UNAVAILABLE. HTTP 422 VALIDATION_ERROR diteruskan beserta fields; error DB saat evaluasi menjadi 500 INTERNAL; anak/pengukuran lokal yang tidak ada atau di luar scope menjadi 404 NOT_FOUND.
-- POST pengukuran/catatan makan tetap menyimpan sebelum evaluasi. Pesan menyebut sudah tersimpan bila evaluasi berikutnya gagal; ID dicatat di log. Frontend perlu membaca riwayat sebelum mengirim ulang. Amplop error tetap data:null sesuai kontrak.
-- Client menolak JSON rusak, data kosong/null, field error hilang dan respons lebih dari 4 MiB. Titik kurva berkoordinat kosong disaring. Skor KPSP hilang tidak dianggap nol; umur jadwal dan 10 butir kuesioner diperiksa.
-- Port 8080 di-bind sebelum membuka DB. Pesan siap dicetak sesudah bind, migrasi dan data statis berhasil; konflik port dilaporkan dengan instruksi memeriksa backend/proses lama.
-- Tidak menambah endpoint, field JSON publik, enum, port atau variabel runtime wajib; batas umur pengukuran tetap kontrak. Skema DB berubah sesuai PRD dan harus diterapkan bersama kode patch.
-
-### Hasil uji dan batas bukti
-
-| Pemeriksaan | Hasil | Lingkungan/batas |
+| Pemeriksaan | Bukti yang diterima | Status |
 | --- | --- | --- |
-| Unit/handler/client/service dan race detector | Lulus | Go 1.22.12 Linux; HTTP test server dan SQL mock |
-| Lima tes repository SQL | Lulus | lib/pq ke PGlite 0.3.2/PostgreSQL WASM melalui pglite-socket 0.0.7; bukan PostgreSQL native |
-| Migrasi fresh dan seed | Lulus | Lima tabel, satu parent demo, startup tidak menjalankan seed anak, migrasi/seed idempoten |
-| Migrasi legacy dan kepemilikan | Lulus | Anak/riwayat dipertahankan; parent existing tidak diubah |
-| Isolasi parent/admin/nonaktif | Lulus | Baca/tulis/hapus repository diuji, termasuk penolakan akses lintas parent |
-| Penyimpanan text[] PRD dan rollback | Lulus | Isi array dipertahankan; migrasi gagal tidak meninggalkan tabel parsial |
-| go vet | Lulus | Analisis statis Go |
-| Kompilasi Linux dan Windows amd64 | Lulus | buildvcs=false pada lingkungan pengembangan; Windows belum dijalankan |
-| Smoke HTTP backend yang berjalan | Lulus | Startup migrasi, tambah/baca anak, POST lalu engine 404, pesan sudah tersimpan, GET riwayat, duplikasi dan KPSP sebelum lahir |
-| Konflik port 8080 | Lulus | Pesan gagal jelas sebelum akses DB; tidak mencetak pesan siap |
+| Daftar/tambah/detail anak | Respons data anak dan error:null | Berhasil, mode demo |
+| Simpan/baca pengukuran | ID yang sama terbaca setelah POST 503 dengan pesan sudah tersimpan | Berhasil, PostgreSQL lokal |
+| parent_id | Screenshot pgAdmin menampilkan parent_id terisi untuk dua anak | Terlihat terisi; bukan bukti seluruh constraint |
+| Status via fake engine | Respons green/Aman, pengukuran terbaca, error:null | Berhasil, fixture |
+| Kuesioner dummy | 10 item DUMMY TEST, umur jadwal 9, error:null | Berhasil, fixture |
+| POST/GET KPSP | yes_count 10, result fixture sesuai; ID POST sama dengan riwayat | Berhasil, penyimpanan lokal |
+| POST/GET food-recalls | Catatan tanggal 6 November terbaca dengan ID sama, error:null | Berhasil, penyimpanan lokal |
+| Growth wfa | Titik berat 8, umur 304 hari; z null/reference kosong | Berhasil, data protokol |
+| Berat tidak valid | weight_kg 0 ditolak VALIDATION_ERROR pada fields.weight_kg | Berhasil |
+| Tanggal pengukuran duplikat | Ditolak VALIDATION_ERROR pada fields.body | Penolakan berhasil; hasil GET riwayat setelah percobaan terakhir belum dikirim |
+| Startup OTP | Log AUTH_MODE=otp_dummy dan siap pada loopback | Berhasil |
+| Pendaftaran dan verifikasi OTP | Challenge cocok dengan log; verify menghasilkan user role parent | Berhasil pada Windows/PostgreSQL lokal |
+| GET /auth/me | User uji yang sama, role parent, error:null dengan bearer token | Sesi dikenali; berhasil |
+| Daftar/tambah anak akun OTP baru | Baru disarankan, belum ada hasil pengguna | Belum diverifikasi di laptop |
+| Login ulang/logout/expired/replay/isolasi akun | Belum ada hasil pengguna | Baru teruji di lingkungan pengembangan |
 
-Tes SQL integrasi disertakan dalam `internal/repository/postgres_integration_test.go` dan normalnya dilewati tanpa BACKEND_TEST_DATABASE_URL. Gunakan database pengujian terpisah dengan izin membuat schema; tes membuat dan menghapus schema unik backend_test_*. PGlite dan harness pengujian tidak menjadi dependensi atau isi paket backend.
+Hasil login awal merupakan verifikasi OTP pendaftaran yang langsung menerbitkan sesi. Keberhasilan endpoint /auth/login untuk akun existing dan /auth/logout pada laptop tidak disimpulkan dari /auth/me saja.
 
-**Laporan dari laptop pengguna:** go test ./... sebelumnya lulus pada Windows; go run sempat gagal bind port 8080 karena port sudah dipakai. Hasil itu untuk versi sebelum paket ini. Pengguna sebelumnya juga melaporkan POST pengukuran 503. Penyebab spesifik runtime 503 tersebut belum dipastikan dari log engine/Go.
+### Tes pada lingkungan pengembangan
 
-**Batas pengujian:** CRUD dasar anak dan simpan/baca pengukuran telah dibuktikan pengguna pada layanan Windows/PostgreSQL lokal. Suite integrasi native lengkap, runtime paket root terbaru, engine Python nyata, frontend, alur lengkap dan ketepatan medis tetap belum diverifikasi. Keberhasilan SQL WASM/HTTP tiruan tidak menggantikan pemeriksaan tersebut.
+- Go unit, race detector dan vet lulus; kompilasi Linux/Windows amd64 lulus. Kompilasi Windows tidak menggantikan runtime/pengujian lengkap laptop pengguna.
+- SQL melalui lib/pq ke PGlite 0.3.2/PostgreSQL WASM (socket 0.0.7) lulus untuk fresh/legacy migration, idempotensi, seed, preservasi array PRD, rollback dan isolasi repository.
+- Tes auth melalui SQL pengujian lulus untuk register/login/verify/me/logout, expiry, replay, rate/attempt limit, restart, role injection, akun nonaktif, request concurrent antar parent dan satu kode yang diverifikasi bersamaan hanya berhasil sekali.
+- Smoke server Go yang berjalan dengan DB pengujian lulus: startup migrasi, OTP terminal, aktivasi akun, me, tambah anak milik sesi, logout dan penolakan token lama. Tes fake engine lima kasus HTTP lulus.
+- Suite SQL/native otomatis lengkap di laptop belum dilaporkan. Uji lokal pengguna pada tabel di atas merupakan bukti aktual untuk endpoint tertentu, bukan bukti seluruh suite native/engine medis lulus.
 
-### Masalah dan ketergantungan yang masih terbuka
+### Menjalankan kembali dan langkah berikutnya
 
-- Pada commit acuan, Python baru mendaftarkan /engine/v1/health. Fungsi matematika dan hotfix validasi ada, tetapi /growth/evaluate, /reference, /kpsp/questionnaire, /kpsp/score belum menjadi endpoint HTTP. Status/kurva/KPSP masih bisa 503. Health sukses atau who_tables_loaded=true belum membuktikan evaluasi siap.
-- Bentuk ringkasan GET /children, body lengkap score KPSP dan respons reference perlu dikunci bersama pemilik kontrak. Daftar anak tetap berupa Child tanpa field ringkasan tambahan yang belum disepakati.
-- Batas umur pengukuran kontrak 1856 hari versus tabel WHO 1826 hari tetap memerlukan keputusan pemilik kontrak/engine. Kebijakan presisi/posisi tidak diubah sepihak.
-- Materi guides masih menunggu sumber resmi. Riwayat KPSP lama dengan tanggal yang sudah tidak valid tidak dibuang otomatis; bila ditemukan saat integrasi, tinjau datanya secara eksplisit.
-- SQL langsung/skrip lama yang menambah anak harus mengikuti parent_id NOT NULL. Terapkan seluruh folder backend bersama migrasi 003; jangan hanya menyalin sebagian file Go.
-
-### Menjalankan dan menerapkan
-
-Hentikan backend lama dengan Ctrl+C. Backup database lama yang perlu dipertahankan, simpan perubahan lokal, lalu gabungkan isi ZIP ke akar repo. Hasilnya backend/go.mod dan docs/HANDOFF.md, bukan backend/backend. Pertahankan .env lokal.
-
-```dotenv
-DATABASE_URL=postgres://postgres:<PASSWORD>@localhost:5432/tumbuh?sslmode=disable
-ENGINE_URL=http://<IP_LAPTOP_ENGINE>:8001/engine/v1
-CORS_ORIGIN=http://localhost:5173
-```
-
-Database tumbuh harus sudah dibuat. Dari akar repo:
-
-```powershell
-cd backend
-go mod download
-go test ./...
-go run ./cmd/server
-```
-
-Startup menjalankan 001+003. Seed opsional: psql -U postgres -d tumbuh -f migrations/002_seed_children.sql. Go minimal 1.22, PostgreSQL minimal 13. Gunakan PowerShell kedua untuk GET http://localhost:8080/api/v1/children; /api/v1/ kini mengarahkan ke daftar anak dan bukan health check engine.
-
-Tes integrasi native pada DB uji terpisah:
-
-```powershell
-$env:BACKEND_TEST_DATABASE_URL="postgres://postgres:ISI_PASSWORD@localhost:5432/tumbuh_test?sslmode=disable"
-go test -count=1 ./internal/repository
-Remove-Item Env:BACKEND_TEST_DATABASE_URL
-```
-
-### Langkah berikutnya dan kebutuhan tim
-
-1. Terapkan dan uji ulang pada PostgreSQL native/Windows, termasuk DB lama dan seed opsional. Periksa users, parent_id dan riwayat setelah migrasi; simpan hasil respons aktual.
-2. Konfirmasikan ENGINE_URL, bind Python 0.0.0.0:8001 dan firewall hotspot. Uji evaluasi/reference/KPSP sesudah endpoint HTTP tersedia; gunakan log Go untuk menelusuri 503.
-3. Hubungkan frontend; tampilkan error.message tentang data tersimpan, baca riwayat sebelum POST ulang, dan uji status/kurva/KPSP/catatan makan ujung ke ujung.
-4. Minta pemilik kontrak mengunci bentuk respons yang belum lengkap serta rentang referensi; minta pemilik materi menyediakan panduan resmi.
-5. Gabungkan perubahan dokumen tim yang lebih baru sebelum menimpa file docs dari ZIP, lalu commit backend dan catatan dokumentasinya bersama. Tidak ada push GitHub pada pekerjaan ini.
+1. Pertahankan .env lokal. Dari backend, jalankan fake engine di terminal terpisah: python testing/fake_engine.py --testing-only.
+2. Pada terminal Go: set $env:AUTH_MODE="otp_dummy" dan $env:ENGINE_URL="http://127.0.0.1:18001/engine/v1", lalu go run ./cmd/server. Hentikan proses Go lama dahulu bila port dipakai.
+3. Di terminal pengujian pertahankan $base, $session dan $headers. Uji GET "$base/children" -Headers $headers. Daftar kosong normal untuk akun baru; hasilnya belum diterima pada sesi ini.
+4. Tambah anak milik sesi dengan -Headers $headers, kemudian uji pengukuran/status/KPSP/catatan makan memakai ID baru. Uji logout dan login ulang setelah jeda request OTP; jangan mengirim token atau kode ke chat/dokumentasi.
+5. Uji dua akun untuk memastikan data terpisah; jalankan suite SQL pada database uji terpisah melalui BACKEND_TEST_DATABASE_URL. Jangan arahkan suite ke DB demo/produksi.
+6. Selesaikan koneksi engine asli (IP/port/bind/firewall) dan endpoint medis sesudah tersedia. Kegagalan koneksi real engine sebelumnya masih belum terpecahkan; fake engine hanya menyediakan fixture lokal.
+7. Hubungkan frontend dengan bearer header, lengkapi materi guides dan keputusan kontrak yang terbuka (ringkasan anak, reference, rentang WHO 1826 vs kontrak 1856, presisi/posisi). Integrasikan spesifikasi auth tambahan bersama pemilik kontrak.
+8. Gabungkan dokumen dan kode tim sebelum commit/push; hasil git di luar percakapan tidak diasumsikan. Pada pembaruan ini hanya file lampiran yang disunting, tidak ada kode atau push yang dijalankan.
 
 ## Desain + frontend — (nama)
 
@@ -162,4 +125,4 @@ Status pada tabel ini membedakan **route terimplementasi** dan **terbukti teruji
 | `GET /guides` | Ya, data masih kosong | — | ? | Belum |
 | `GET/POST /children/{id}/food-recalls` | Ya | ? | ? | Belum |
 
-**Status backend setelah merge:** CRUD dasar dan penyimpanan/pembacaan pengukuran telah dilaporkan berhasil pada PostgreSQL lokal pengguna. Koneksi health engine gagal; integrasi engine/frontend lengkap belum lulus. Patch root redirect sudah diuji pada lingkungan pengembangan dan menunggu konfirmasi penerapan laptop. Kolom end-to-end pada tabel di atas tetap Belum untuk integrasi seluruh layanan.
+**Status backend terkini:** alur dasar dan fixture fake engine telah dilaporkan berhasil di laptop; OTP pendaftaran, verifikasi dan /auth/me juga berhasil. Sesi logout/login ulang, isolasi akun native, frontend dan engine medis asli masih perlu diuji. Tabel end-to-end di atas tetap Belum karena integrasi seluruh layanan belum dibuktikan.
