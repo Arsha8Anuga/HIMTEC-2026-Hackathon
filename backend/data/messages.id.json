@@ -1,0 +1,22 @@
+{
+ "SEVERELY_STUNTED": {"title":"Panjang atau tinggi badan sangat pendek", "message":"Bawa {{name}} ke Puskesmas minggu ini untuk pemeriksaan lebih lanjut."},
+ "STUNTED": {"title":"Panjang atau tinggi badan pendek", "message":"Bawa riwayat pengukuran {{name}} ke Puskesmas untuk pemeriksaan lebih lanjut."},
+ "SEVERELY_WASTED": {"title":"Berat menurut panjang atau tinggi sangat kurang", "message":"Bawa {{name}} ke Puskesmas segera untuk pemeriksaan lebih lanjut."},
+ "WASTED": {"title":"Berat menurut panjang atau tinggi kurang", "message":"Bawa {{name}} ke Puskesmas minggu ini untuk pemeriksaan lebih lanjut."},
+ "SEVERELY_UNDERWEIGHT": {"title":"Berat badan sangat kurang menurut umur", "message":"Bawa {{name}} ke Puskesmas minggu ini untuk pemeriksaan lebih lanjut."},
+ "WEIGHT_NOT_GAINING_2X": {"title":"Berat badan tidak naik dua kali berturut-turut", "message":"Bawa {{name}} ke Posyandu untuk mendapat rujukan atau pemeriksaan lebih lanjut."},
+ "KPSP_DEVIATION": {"title":"Hasil pra-skrining perkembangan perlu pemeriksaan", "message":"Bawa {{name}} untuk pemeriksaan perkembangan oleh tenaga kesehatan. Ini alat skrining, bukan diagnosis."},
+ "PROJECTED_STUNTING": {"title":"Pertumbuhan diperkirakan mengarah ke risiko pendek", "message":"Lintasan pertumbuhan {{name}} diperkirakan dapat memburuk. Perbaiki MPASI dan ukur ulang bulan depan di Posyandu."},
+ "CROSSING_DOWN": {"title":"Pertumbuhan turun dari jalurnya", "message":"Perhatikan MPASI {{name}} dan lakukan pengukuran ulang bulan depan di Posyandu."},
+ "WEIGHT_NOT_GAINING": {"title":"Kenaikan berat badan belum mencukupi", "message":"Perhatikan MPASI {{name}} dan timbang lagi bulan depan di Posyandu."},
+ "UNDERWEIGHT": {"title":"Berat badan kurang menurut umur", "message":"Konsultasikan pertumbuhan {{name}} dengan kader Posyandu atau bidan."},
+ "OVERWEIGHT": {"title":"Berat menurut panjang atau tinggi berlebih", "message":"Konsultasikan pertumbuhan {{name}} dengan kader Posyandu atau bidan."},
+ "KPSP_DOUBTFUL": {"title":"Hasil pra-skrining perkembangan perlu perhatian", "message":"Lakukan stimulasi di rumah dan ulangi pra-skrining {{name}} dalam dua minggu. Konfirmasi ke Posyandu."},
+ "IMPLAUSIBLE_VALUE": {"title":"Pengukuran perlu diulang", "message":"Periksa kembali pengukuran {{name}}; nilai ini tidak digunakan untuk menilai tren."},
+ "HOME_MEASUREMENT": {"title":"Pengukuran dilakukan di rumah", "message":"Konfirmasi hasil pengukuran {{name}} di Posyandu agar lebih akurat."},
+ "NO_RECENT_LENGTH": {"title":"Belum ada pengukuran panjang atau tinggi terbaru", "message":"Status pertumbuhan panjang atau tinggi {{name}} belum dapat dinilai. Ukur di Posyandu."},
+ "NO_ANIMAL_SOURCE_FOOD": {"title":"Asupan telur atau pangan hewani perlu diperhatikan", "message":"Tinjau catatan makan {{name}} dan konsultasikan pilihan MPASI di Posyandu."},
+ "LOW_DIET_DIVERSITY": {"title":"Keragaman makanan perlu diperhatikan", "message":"Tinjau variasi MPASI {{name}} dan konsultasikan dengan kader Posyandu."},
+ "LOW_MEAL_FREQUENCY": {"title":"Frekuensi makan perlu diperhatikan", "message":"Tinjau catatan frekuensi makan {{name}} dan konsultasikan dengan kader Posyandu."},
+ "NO_RECENT_FOOD_RECALL": {"title":"Belum ada catatan makan terbaru", "message":"Isi Catatan Makan Kemarin untuk membantu memantau pola makan {{name}}."}
+}
