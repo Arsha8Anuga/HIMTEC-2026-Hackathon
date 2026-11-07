@@ -4,7 +4,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import create_app
-from app.schemas.growth import GrowthEvaluateRequest
 
 
 @pytest.mark.parametrize("loaded", [False, True])
@@ -26,17 +25,12 @@ def test_health_route_has_contract_prefix() -> None:
         assert unknown.json()["error"]["code"] == "NOT_FOUND"
         openapi = client.get("/openapi.json").json()
     assert "/engine/v1/health" in openapi["paths"]
-    assert "/engine/v1/growth/evaluate" not in openapi["paths"]
+    assert "/engine/v1/growth/evaluate" in openapi["paths"]
 
 
 def test_validation_error_uses_contract_envelope() -> None:
     application = create_app()
 
-    # Test-only route: production must not advertise an unimplemented
-    # clinical endpoint as ready.
-    @application.post("/engine/v1/growth/evaluate")
-    def test_only_endpoint(payload: GrowthEvaluateRequest) -> dict[str, bool]:
-        return {"valid": True}
 
     with TestClient(application) as client:
         response = client.post("/engine/v1/growth/evaluate", json={})
