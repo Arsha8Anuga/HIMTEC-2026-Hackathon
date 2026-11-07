@@ -14,6 +14,7 @@ Tandai `[MERUSAK]` bila mengganti nama, mengubah tipe, atau menghapus field/endp
 
 ## 2026-11-07
 
+- 10:13 · engine · engine (patch ZIP 02) · menambah fondasi FastAPI (`/engine/v1/health`), skema Pydantic input `/growth/evaluate` sesuai kontrak v0.4, amplop error validasi, 26 tes pytest lulus; `/health` melaporkan `who_tables_loaded=false` sampai tabel WHO resmi dimuat · — · backend: kirim `food_recalls` sebagai daftar (boleh kosong) sesuai kontrak v0.4; jangan anggap engine pertumbuhan sudah siap
 - 09:25 · docs · Zena · semua dokumen dipindah ke `docs/` (README, CONTRACT, PRD, CHANGELOG, HANDOFF); hanya AGENTS.md dan CLAUDE.md di akar · — · semua: perbarui rujukan path
 - 08:50 · kontrak v0.4 + PRD v0.2 · Zena · fitur Catatan Makan Kemarin: entitas `FoodRecall`, `POST/GET /children/{id}/food-recalls`, field `diet` di `/status`, `food_recalls` di `/growth/evaluate`, kode alasan `NO_ANIMAL_SOURCE_FOOD`, `LOW_DIET_DIVERSITY`, `LOW_MEAL_FREQUENCY`, `NO_RECENT_FOOD_RECALL` · — · backend: tabel + endpoint; frontend: layar catatan makan; engine: indikator IYCF
 - 08:37 · docs · Zena · menambah AGENTS.md, CLAUDE.md, CHANGELOG.md, HANDOFF.md · — · semua: baca AGENTS.md
