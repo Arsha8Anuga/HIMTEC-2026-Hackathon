@@ -1,1 +1,358 @@
-[]
+[
+  {
+    "id": "mpasi-6-8-porsi",
+    "category": "mpasi",
+    "age_from_months": 6,
+    "age_to_months": 8,
+    "aspect": null,
+    "title": "Porsi dan tekstur MPASI 6–8 bulan",
+    "body": "Lanjutkan menyusui. Mulai dari 2–3 sendok makan, bertahap hingga ½ mangkok ukuran 250 ml (125 ml) setiap kali makan. Berikan 2–3 kali makanan utama dan 1–2 kali makanan selingan setiap hari. Tekstur disaring: lumat dan kental.",
+    "source": "Buku KIA 2024, Kemenkes RI, hlm. 60–61",
+    "related_codes": [
+      "WEIGHT_NOT_GAINING",
+      "WEIGHT_NOT_GAINING_2X",
+      "CROSSING_DOWN",
+      "UNDERWEIGHT",
+      "LOW_MEAL_FREQUENCY"
+    ]
+  },
+  {
+    "id": "mpasi-9-11-porsi",
+    "category": "mpasi",
+    "age_from_months": 9,
+    "age_to_months": 11,
+    "aspect": null,
+    "title": "Porsi dan tekstur MPASI 9–11 bulan",
+    "body": "Lanjutkan menyusui. Berikan ½–¾ mangkok ukuran 250 ml (125–200 ml) setiap kali makan, 3–4 kali makanan utama dan 1–2 kali makanan selingan setiap hari. Tekstur dicincang. Perhatikan respons anak saat makan.",
+    "source": "Buku KIA 2024, Kemenkes RI, hlm. 60–61",
+    "related_codes": [
+      "WEIGHT_NOT_GAINING",
+      "WEIGHT_NOT_GAINING_2X",
+      "CROSSING_DOWN",
+      "UNDERWEIGHT",
+      "LOW_MEAL_FREQUENCY"
+    ]
+  },
+  {
+    "id": "mpasi-12-23-porsi",
+    "category": "mpasi",
+    "age_from_months": 12,
+    "age_to_months": 23,
+    "aspect": null,
+    "title": "Porsi dan tekstur MPASI 12–23 bulan",
+    "body": "Lanjutkan menyusui hingga 2 tahun atau lebih. Berikan ¾–1 mangkok ukuran 250 ml setiap kali makan, 3–4 kali makanan utama dan 1–2 kali makanan selingan setiap hari. Bahan makanan sama dengan orang dewasa, diiris-iris. Perhatikan respons anak saat makan.",
+    "source": "Buku KIA 2024, Kemenkes RI, hlm. 60–61",
+    "related_codes": [
+      "WEIGHT_NOT_GAINING",
+      "WEIGHT_NOT_GAINING_2X",
+      "CROSSING_DOWN",
+      "UNDERWEIGHT",
+      "LOW_MEAL_FREQUENCY"
+    ]
+  },
+  {
+    "id": "mpasi-6-23-protein-hewani",
+    "category": "mpasi",
+    "age_from_months": 6,
+    "age_to_months": 23,
+    "aspect": null,
+    "title": "Utamakan protein hewani",
+    "body": "Berikan MPASI yang kaya protein hewani, seperti ikan, ayam, daging, hati, udang, telur, serta susu dan hasil olahannya. Protein hewani diprioritaskan untuk membantu mencegah stunting.",
+    "source": "Buku KIA 2024, Kemenkes RI, hlm. 58–61 dan 66–67",
+    "related_codes": [
+      "NO_ANIMAL_SOURCE_FOOD",
+      "STUNTED",
+      "PROJECTED_STUNTING",
+      "CROSSING_DOWN",
+      "WEIGHT_NOT_GAINING"
+    ]
+  },
+  {
+    "id": "mpasi-6-23-ragam",
+    "category": "mpasi",
+    "age_from_months": 6,
+    "age_to_months": 23,
+    "aspect": null,
+    "title": "Variasi isi MPASI",
+    "body": "Susun MPASI dari makanan pokok (beras, jagung, gandum, sagu, umbi, kentang, singkong), protein hewani, kacang-kacangan (kedelai, kacang hijau, kacang polong, kacang tanah), lemak dari minyak atau santan, serta buah dan sayur kaya vitamin A dan C seperti jeruk, mangga, tomat, bayam, dan wortel.",
+    "source": "Buku KIA 2024, Kemenkes RI, hlm. 60–61",
+    "related_codes": [
+      "LOW_DIET_DIVERSITY"
+    ]
+  },
+  {
+    "id": "mpasi-6-23-cara",
+    "category": "mpasi",
+    "age_from_months": 6,
+    "age_to_months": 23,
+    "aspect": null,
+    "title": "Cara memberi MPASI yang aman",
+    "body": "Cuci tangan sebelum menyiapkan dan memberi makan, dan jaga kebersihan peralatan. Beri makan teratur pagi, siang, dan sore, paling lama 30 menit, tidak sambil bermain atau menonton TV. Ajari anak makan sendiri dengan sendok dan minum dengan gelas. Hindari makanan yang digoreng, berpengawet, serta tinggi gula dan garam.",
+    "source": "Buku KIA 2024, Kemenkes RI, hlm. 56–57, 60–61",
+    "related_codes": [
+      "LOW_MEAL_FREQUENCY",
+      "WEIGHT_NOT_GAINING",
+      "WEIGHT_NOT_GAINING_2X"
+    ]
+  },
+  {
+    "id": "stimulasi-6-8-gerak-kasar",
+    "category": "stimulasi",
+    "age_from_months": 6,
+    "age_to_months": 8,
+    "aspect": "gerak_kasar",
+    "title": "Melatih merangkak dan berdiri",
+    "body": "Letakkan mainan di luar jangkauan bayi agar ia merangkak ke arahnya dengan kedua tangan dan lutut. Tarik bayi perlahan ke posisi berdiri, lalu letakkan mainan di dekatnya agar ia berjalan berpegangan pada perabot untuk meraihnya.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 6–8 bulan, hlm. 43–45",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-6-8-gerak-halus",
+    "category": "stimulasi",
+    "age_from_months": 6,
+    "age_to_months": 8,
+    "aspect": "gerak_halus",
+    "title": "Memegang dan memasukkan benda",
+    "body": "Beri mainan di satu tangan, lalu mainan lain di tangan yang sama agar bayi memindahkannya. Ajari memasukkan benda ke wadah dan mengeluarkannya lagi; pilih benda yang tidak terlalu kecil agar tidak tertelan. Pangku bayi dan bantu ia mencoret-coret dengan krayon.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 6–8 bulan, hlm. 43–45",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-6-8-bicara",
+    "category": "stimulasi",
+    "age_from_months": 6,
+    "age_to_months": 8,
+    "aspect": "bicara_bahasa",
+    "title": "Mengoceh menjadi kata",
+    "body": "Ulangi suara bayi dan jadikan kata sederhana, misalnya \"Bah\" menjadi \"Botol\" atau \"Buku\". Bacakan buku bergambar beberapa menit setiap hari, puji bayi saat ia ikut mengoceh, dan sebut nama orang serta benda di sekitarnya.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 6–8 bulan, hlm. 43–45",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-6-8-sosial",
+    "category": "stimulasi",
+    "age_from_months": 6,
+    "age_to_months": 8,
+    "aspect": "sosialisasi_kemandirian",
+    "title": "Bermain bersama",
+    "body": "Peluk, senyum, ajak bicara, dan panggil namanya. Ajak bersalaman, tepuk tangan, dan melambaikan tangan \"da-daah\". Kenali suasana hatinya: lanjutkan bila ia senang, berhenti dan tenangkan bila tidak.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 6–8 bulan, hlm. 43–45",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-9-11-gerak-kasar",
+    "category": "stimulasi",
+    "age_from_months": 9,
+    "age_to_months": 11,
+    "aspect": "gerak_kasar",
+    "title": "Bergerak bebas dengan aman",
+    "body": "Sediakan tempat yang luas dan aman, dan tetap dekat dengan bayi. Latih duduk, merangkak, dan berdiri berpegangan. Letakkan mainan bertali agak jauh dan ajari bayi menariknya; simpan mainan bertali bila tidak diawasi.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 9–11 bulan, hlm. 47–49",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-9-11-gerak-halus",
+    "category": "stimulasi",
+    "age_from_months": 9,
+    "age_to_months": 11,
+    "aspect": "gerak_halus",
+    "title": "Menyusun dan mencoret",
+    "body": "Latih memegang mainan dengan dua tangan dan memasukkan benda kecil ke wadah. Ajari menyusun balok atau kotak dari karton atau kaleng kecil, dan ajak mencoret-coret dengan krayon.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 9–11 bulan, hlm. 47–49",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-9-11-bicara",
+    "category": "stimulasi",
+    "age_from_months": 9,
+    "age_to_months": 11,
+    "aspect": "bicara_bahasa",
+    "title": "Menirukan kata",
+    "body": "Bicara setiap hari dengan kata yang ia kenal, seperti minum, mandi, makan; ajak ia menirukan dan puji saat berhasil. Sebutkan benda yang ia tunjuk, bacakan buku dan minta ia menunjuk gambar, serta bersenandung bersama sesering mungkin.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 9–11 bulan, hlm. 47–49",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-9-11-sosial",
+    "category": "stimulasi",
+    "age_from_months": 9,
+    "age_to_months": 11,
+    "aspect": "sosialisasi_kemandirian",
+    "title": "Cilukba dan bergiliran",
+    "body": "Ajak bermain cilukba, petak umpet, dan permainan bergiliran. Ucapkan perasaannya, misalnya \"Kamu sedang sedih ya\". Katakan apa yang Anda inginkan alih-alih \"jangan\", misalnya \"Sekarang waktunya duduk\".",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 9–11 bulan, hlm. 47–49",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-12-17-gerak-kasar",
+    "category": "stimulasi",
+    "age_from_months": 12,
+    "age_to_months": 17,
+    "aspect": "gerak_kasar",
+    "title": "Berjalan, berjinjit, bermain bola",
+    "body": "Jadikan rumah aman untuk menjelajah. Latih berjalan mundur dengan mainan yang ditarik, membungkuk memungut mainan lalu berdiri, naik tangga sambil berpegangan dengan didampingi, berjinjit, serta melempar, menangkap, dan menendang bola.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 12–17 bulan, hlm. 50–53",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-12-17-gerak-halus",
+    "category": "stimulasi",
+    "age_from_months": 12,
+    "age_to_months": 17,
+    "aspect": "gerak_halus",
+    "title": "Balok, wadah, dan krayon",
+    "body": "Ajari menyusun balok kecil ke atas, memasukkan dan mengeluarkan benda dari wadah, serta memasukkan mangkok kecil ke mangkok besar dari bahan yang tidak mudah pecah. Beri krayon dan contohkan menggambar garis.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 12–17 bulan, hlm. 50–53",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-12-17-bicara",
+    "category": "stimulasi",
+    "age_from_months": 12,
+    "age_to_months": 17,
+    "aspect": "bicara_bahasa",
+    "title": "Mengenal tubuh dan benda",
+    "body": "Ajari nama bagian tubuh dan minta anak menunjuknya. Kembangkan kata yang ia coba ucapkan, misalnya \"Ya, itu truk biru yang besar\". Bacakan buku setiap hari, biarkan ia membalik halaman, dan ceritakan apa yang sedang Anda lakukan.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 12–17 bulan, hlm. 50–53",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-12-17-sosial",
+    "category": "stimulasi",
+    "age_from_months": 12,
+    "age_to_months": 17,
+    "aspect": "sosialisasi_kemandirian",
+    "title": "Belajar mandiri",
+    "body": "Ajak merapikan mainan, menirukan pekerjaan rumah, melepas pakaian, dan makan sendiri dengan sendok bersama keluarga. Peluk dan puji saat ia berperilaku baik; untuk perilaku yang tidak diinginkan, katakan \"tidak\" dengan tegas tanpa berteriak atau memukul.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 12–17 bulan, hlm. 50–53",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-18-23-gerak-kasar",
+    "category": "stimulasi",
+    "age_from_months": 18,
+    "age_to_months": 23,
+    "aspect": "gerak_kasar",
+    "title": "Keseimbangan dan melompat",
+    "body": "Beri ruang aman untuk bergerak. Latih berdiri dengan satu kaki bergantian, berpegangan bila perlu. Latih berjalan, berlari, melompat, naik turun tangga, serta melempar, menangkap, dan menendang bola.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 18–23 bulan, hlm. 55–58",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-18-23-gerak-halus",
+    "category": "stimulasi",
+    "age_from_months": 18,
+    "age_to_months": 23,
+    "aspect": "gerak_halus",
+    "title": "Bentuk, puzzle, dan kancing",
+    "body": "Buat kotak berlubang aneka bentuk untuk memasukkan benda, beri puzzle 2–3 keping, ajari menggambar garis, bulatan, dan wajah, serta mengancingkan baju.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 18–23 bulan, hlm. 55–58",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-18-23-bicara",
+    "category": "stimulasi",
+    "age_from_months": 18,
+    "age_to_months": 23,
+    "aspect": "bicara_bahasa",
+    "title": "Bercerita dan perintah sederhana",
+    "body": "Perlihatkan buku bergambar, ceritakan dengan kata sederhana, lalu minta anak menceritakan apa yang ia lihat. Tirukan kata-katanya, ajukan pertanyaan sederhana dan beri waktu menjawab, serta latih perintah sederhana seperti \"Letakkan cangkirmu di meja\".",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 18–23 bulan, hlm. 55–58",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-18-23-sosial",
+    "category": "stimulasi",
+    "age_from_months": 18,
+    "age_to_months": 23,
+    "aspect": "sosialisasi_kemandirian",
+    "title": "Berpakaian dan bermain dengan teman",
+    "body": "Biarkan anak memakai dan melepas pakaian sendiri, makan dengan sendok dan minum dari cangkir bersama keluarga, serta membereskan mainan. Ajak bermain dengan teman sebaya agar belajar bergiliran, dan lebih sering memuji perilaku baik daripada menghukum.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 18–23 bulan, hlm. 55–58",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-24-35-gerak-kasar",
+    "category": "stimulasi",
+    "age_from_months": 24,
+    "age_to_months": 35,
+    "aspect": "gerak_kasar",
+    "title": "Memanjat dan melompat",
+    "body": "Ajak memanjat, berlari, merayap di kolong meja, melompat dengan kedua kaki melewati garis atau handuk, berjinjit mengelilingi kursi, serta melempar dan menangkap bola besar.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 24–35 bulan, hlm. 59–62",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-24-35-gerak-halus",
+    "category": "stimulasi",
+    "age_from_months": 24,
+    "age_to_months": 35,
+    "aspect": "gerak_halus",
+    "title": "Puzzle, tempelan, dan balok",
+    "body": "Bantu menyelesaikan puzzle, membuat gambar tempelan dan karya dengan krayon atau cat, menyusun dan merobohkan balok, serta mengelompokkan benda menurut jenisnya dan menghitungnya bersama.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 24–35 bulan, hlm. 59–62",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-24-35-bicara",
+    "category": "stimulasi",
+    "age_from_months": 24,
+    "age_to_months": 35,
+    "aspect": "bicara_bahasa",
+    "title": "Membaca dan bertanya",
+    "body": "Bacakan buku bergambar besar, lalu tanyakan siapa, apa, kapan, di mana, mengapa, dan bagaimana. Dorong anak bercerita dan mengucapkan kata alih-alih menunjuk; beri contoh ucapan yang benar tanpa mengoreksi. Dampingi saat menonton TV atau gawai, paling lama 1 jam sehari.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 24–35 bulan, hlm. 59–62",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  },
+  {
+    "id": "stimulasi-24-35-sosial",
+    "category": "stimulasi",
+    "age_from_months": 24,
+    "age_to_months": 35,
+    "aspect": "sosialisasi_kemandirian",
+    "title": "Toilet dan pekerjaan ringan",
+    "body": "Latih buang air di kamar mandi, berpakaian sendiri, mencuci tangan, dan membantu pekerjaan rumah ringan, lalu puji usahanya. Tenangkan dengan pelukan saat ia kecewa, dan awasi saat bermain dengan teman karena ia belum memahami berbagi.",
+    "source": "Pedoman Pelaksanaan SDIDTK revisi 2022, Kemenkes RI, Tabel 3.7, umur 24–35 bulan, hlm. 59–62",
+    "related_codes": [
+      "KPSP_DOUBTFUL"
+    ]
+  }
+]

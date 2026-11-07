@@ -207,8 +207,7 @@ Harus berakhir `0 kegagalan`.
 | --- | --- | --- |
 | Halaman Perkembangan hanya menampilkan "Kuesioner untuk umur ini belum tersedia di aplikasi…" | hanya formulir 15, 18, 24 bulan yang tayang (tanpa butir bergambar) | peragakan KPSP dengan Citra (15 bulan); Anisa (formulir 9) dan Bima (formulir 12) menampilkan label ini |
 | Formulir KPSP berlabel "Transkripsi … belum ditinjau klinis" | butir diketik ulang dari pedoman SDIDTK 2022, belum ditinjau tenaga kesehatan | sebut terus terang saat demo |
-| Kurva BB/PB sumbu x mulai dari 0 cm | skala sumbu grafik frontend | tidak mengganggu; garis acuan mulai 45 cm |
-| Halaman Panduan kosong | `guides.id.json` belum diisi | tidak ditampilkan |
+| Kartu panduan hanya untuk 6–23 bulan (GiziCerdas) dan 6–35 bulan (Stimulasi) | isi disalin dari Buku KIA 2024 dan SDIDTK 2022 untuk rentang sasaran aplikasi | anak demo semuanya di rentang ini |
 
 ## Mode satu laptop (Docker Compose)
 

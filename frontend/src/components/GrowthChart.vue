@@ -82,6 +82,7 @@ function render() {
       grid: { left: 50, right: 20, top: 30, bottom: 55 },
       xAxis: {
         type: "value",
+        scale: d.x_unit === "cm", // sumbu cm mulai dari data, bukan 0 cm
         name: d.x_unit === "days" ? "Umur (bulan)" : "Panjang / tinggi (cm)",
         nameLocation: "middle",
         nameGap: 30,
