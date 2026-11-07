@@ -14,6 +14,7 @@ Tandai `[MERUSAK]` bila mengganti nama, mengubah tipe, atau menghapus field/endp
 
 ## 2026-11-07
 
+<<<<<<< HEAD
 - 11:53 · docs/backend · tim backend · gabungkan CHANGELOG/HANDOFF dari main b4958d3 dengan seluruh patch backend dan bukti uji pengguna: daftar/tambah/detail anak dan simpan/baca pengukuran berhasil pada PostgreSQL lokal; parent_id terisi; evaluasi masih 503 dan health engine IP yang diuji tidak terhubung; patch redirect root sudah dibuat/dites tetapi penerapan di laptop belum dikonfirmasi · — · tim: selesaikan koneksi engine dan verifikasi paket root terbaru
 
 - 11:48 · backend · tim backend · atas permintaan pengguna, GET/HEAD /api/v1 dan /api/v1/ diarahkan 307 ke /api/v1/children; unknown path tetap JSON 404, POST root tidak dialihkan; tes routing/race/vet dan kompilasi Windows lulus; gangguan koneksi engine tetap terpisah dari routing/data PostgreSQL · — · frontend: gunakan route data langsung; alamat dasar dapat dibuka melalui browser
@@ -40,6 +41,14 @@ Tandai `[MERUSAK]` bila mengganti nama, mengubah tipe, atau menghapus field/endp
 
 - 10:59 · backend · tim backend · patch awal memisahkan error engine/DB, menjelaskan POST sudah tersimpan jika evaluasi gagal, memperbaiki titik grafik kosong serta validasi response KPSP; API/port tetap · — · frontend: periksa riwayat sebelum POST ulang; engine: evaluasi/reference/KPSP masih diperlukan
 
+=======
+- 11:13 · docs · Zena · README.md kembali ke akar repo; tautan di README, kalimat di AGENTS.md, dan pohon folder PRD disesuaikan · — · semua: buka README dari akar repo
+- 11:08 · PRD · Zena · menambah bagian "Skema database": lima tabel (`users`, `children`, `measurements`, `kpsp_results`, `food_recalls`) dengan DDL acuan, sudah diuji di PostgreSQL 16; kontrak API tidak berubah · — · backend: `migrations/001_init.sql` saat ini belum punya tabel `users` dan kolom `children.parent_id`; tambahkan, seed satu orang tua demo, dan filter semua query anak dengan ID-nya (PostgreSQL < 13 butuh ekstensi `pgcrypto` untuk `gen_random_uuid()`)
+- 11:05 · PRD · Zena · peta jalan login setelah MVP: OTP ke pemilik akun, peran orang tua dan admin; admin mengelola akun tetapi tidak bisa melihat kode maupun data kesehatan anak; MVP tetap tanpa login · — · backend: lihat persiapan tabel `users` di entri 11:08
+
+- 11:06 · engine · engine (hotfix ZIP 04A) · melengkapi validasi tanggal KPSP/recall, umur recall menurut tanggalnya dan keunikan riwayat; koreksi posisi memakai desimal untuk grid WHO; tes health diisolasi dari data lokal dan tes regresi ditambahkan. 22 pemeriksaan manual serta kompilasi lulus; 5 checksum WHO cocok dan 13.366 baris termuat. Pytest hotfix belum terverifikasi (pytest/dependensi tidak tersedia di lingkungan ini); angka 91 lulus adalah hasil Patch 04 sebelumnya. Tidak mengubah kontrak/endpoint/dependensi; data WHO tidak dibundel · — · engine/tim: jalankan pytest dengan requirements repository sebelum menandai hotfix lulus dan melanjutkan Patch 05; lihat engine/debug/HOTFIX_04A.md
+
+>>>>>>> b4958d3c2725990c781e5287bc7f4176d3a666a0
 - 10:47 · engine · engine (patch ZIP 04) · menambah fungsi murni z-score LMS, restricted LMS (khusus indikator berbasis berat), invers LMS untuk garis SD, koreksi posisi berdasar 731 hari, dan interpolasi linear 0,1 cm sebagai utilitas terpisah; 91 tes pytest lulus (48 lama + 43 baru), termasuk kasus resmi WHO Anthro. Tidak menambah endpoint/field/enum dan data WHO tidak dibundel · — · backend: endpoint evaluasi medis belum tersedia; pemilik kontrak: tetapkan kebijakan presisi 0,1 cm, batas umur, dan penanganan posisi berdiri di bawah 9 bulan sebelum integrasi
 
 - 10:37 · docs · engine (hotfix ZIP dokumentasi patch 03) · merge ulang `docs/CHANGELOG.md` dan `docs/HANDOFF.md` dari versi terbaru GitHub; mempertahankan semua catatan backend pukul 09:39 dan 10:03, isi serah terima backend, dan matriks integrasi; tidak ada perubahan kode engine · — · semua: gunakan dokumentasi hasil merge; hindari menimpa dokumen terbaru dengan dokumen dari ZIP patch lama

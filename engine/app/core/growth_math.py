@@ -117,10 +117,12 @@ def correct_length_height_cm(
         raise ValueError("Panjang/tinggi harus positif")
     if position not in ("recumbent", "standing"):
         raise ValueError("Posisi ukur wajib recumbent atau standing")
+    # Decimal arithmetic preserves a 0.1-cm input grid through correction,
+    # e.g. 79.9 + 0.7 -> 80.6, without quantising higher-precision inputs.
     if age_days < 731 and position == "standing":
-        return measured + 0.7
+        return float(Decimal(str(measured)) + Decimal("0.7"))
     if age_days >= 731 and position == "recumbent":
-        return measured - 0.7
+        return float(Decimal(str(measured)) - Decimal("0.7"))
     return measured
 
 

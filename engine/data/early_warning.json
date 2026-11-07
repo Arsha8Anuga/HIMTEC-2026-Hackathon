@@ -1,0 +1,25 @@
+{
+  "source": {
+    "contract": "docs/CONTRACT.md v0.4, Logika peringatan dini",
+    "repository_commit": "1aeec608b6f8d99a615197e5f36153e742dc47ad",
+    "monthly_policy": "User clarification 2026-11-07: distinct calendar months; implementation uses consecutive calendar months, latest valid measurement per month, gaps break 2T",
+    "limitations": "Project screening heuristics, not WHO diagnostic criteria. KBM table not yet transcribed: contract explicitly permits temporary weight gain <= 0 g."
+  },
+  "crossing": {"min_days": 60, "max_days": 120, "drop_z": 0.67},
+  "projection": {"history_months": 6, "min_points": 3, "horizon_days": 90, "cutoff_z": -2},
+  "recent_length_days": 90,
+  "temporary_weight_gain_limit_g": 0,
+  "classification_reasons": {
+    "lhfa": {"severely_stunted": "SEVERELY_STUNTED", "stunted": "STUNTED"},
+    "wfl_wfh": {"severely_wasted": "SEVERELY_WASTED", "wasted": "WASTED", "overweight": "OVERWEIGHT", "obese": "OVERWEIGHT"},
+    "wfa": {"severely_underweight": "SEVERELY_UNDERWEIGHT", "underweight": "UNDERWEIGHT"}
+  },
+  "kpsp_reasons": {"penyimpangan": "KPSP_DEVIATION", "meragukan": "KPSP_DOUBTFUL"},
+  "levels": {
+    "SEVERELY_STUNTED": "red", "STUNTED": "red", "SEVERELY_WASTED": "red", "WASTED": "red",
+    "SEVERELY_UNDERWEIGHT": "red", "WEIGHT_NOT_GAINING_2X": "red", "KPSP_DEVIATION": "red",
+    "PROJECTED_STUNTING": "yellow", "CROSSING_DOWN": "yellow", "WEIGHT_NOT_GAINING": "yellow",
+    "UNDERWEIGHT": "yellow", "OVERWEIGHT": "yellow", "KPSP_DOUBTFUL": "yellow",
+    "IMPLAUSIBLE_VALUE": "info", "HOME_MEASUREMENT": "info", "NO_RECENT_LENGTH": "info"
+  }
+}

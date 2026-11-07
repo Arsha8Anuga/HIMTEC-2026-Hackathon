@@ -76,6 +76,8 @@ class GrowthEvaluateRequest(ContractModel):
     def validate_dates(self) -> "GrowthEvaluateRequest":
         if self.as_of < self.child.birth_date:
             raise ValueError("as_of tidak boleh sebelum birth_date")
+        measurement_ids: set[UUID4] = set()
+        measurement_dates: set[date] = set()
         for measurement in self.measurements:
             if measurement.measured_at < self.child.birth_date:
                 raise ValueError("measured_at tidak boleh sebelum birth_date")
@@ -83,7 +85,29 @@ class GrowthEvaluateRequest(ContractModel):
                 raise ValueError("measured_at tidak boleh setelah as_of")
             if (measurement.measured_at - self.child.birth_date).days > 1856:
                 raise ValueError("umur pada measured_at tidak boleh lebih dari 1856 hari")
+            if measurement.id in measurement_ids:
+                raise ValueError("id pengukuran tidak boleh duplikat")
+            if measurement.measured_at in measurement_dates:
+                raise ValueError("hanya satu pengukuran per tanggal")
+            measurement_ids.add(measurement.id)
+            measurement_dates.add(measurement.measured_at)
+        for item in self.kpsp_results:
+            if item.answered_at < self.child.birth_date:
+                raise ValueError("answered_at tidak boleh sebelum birth_date")
+            if item.answered_at > self.as_of:
+                raise ValueError("answered_at tidak boleh setelah as_of")
+        recall_dates: set[date] = set()
         for item in self.food_recalls:
+            if item.recall_date < self.child.birth_date:
+                raise ValueError("recall_date tidak boleh sebelum birth_date")
             if item.recall_date > self.as_of:
                 raise ValueError("recall_date tidak boleh setelah as_of")
+            # CONTRACT v0.4 defines months as days / 30.4375. Use the
+            # unrounded age on the recall date, not the display age/as_of.
+            age_months = (item.recall_date - self.child.birth_date).days / 30.4375
+            if not 6 <= age_months < 24:
+                raise ValueError("umur pada recall_date harus 6 sampai kurang dari 24 bulan")
+            if item.recall_date in recall_dates:
+                raise ValueError("hanya satu catatan makan per tanggal")
+            recall_dates.add(item.recall_date)
         return self

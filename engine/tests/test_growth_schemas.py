@@ -1,5 +1,8 @@
 """Contract v0.4 schema tests; never fabricate WHO/KPSP reference values."""
 
+from copy import deepcopy
+from datetime import date, timedelta
+
 import pytest
 from pydantic import ValidationError
 
@@ -147,3 +150,67 @@ def test_measurement_uuid_must_be_v4(payload: dict) -> None:
     payload["measurements"][0]["id"] = "9b1d0c2e-0000-1000-8000-000000000001"
     with pytest.raises(ValidationError, match="id"):
         GrowthEvaluateRequest.model_validate(payload)
+
+
+@pytest.mark.parametrize("answered_at", ["2025-02-28", "2026-01-16"])
+def test_kpsp_history_must_be_between_birth_and_as_of(payload: dict, answered_at: str) -> None:
+    payload["kpsp_results"][0]["answered_at"] = answered_at
+    with pytest.raises(ValidationError, match="answered_at"):
+        GrowthEvaluateRequest.model_validate(payload)
+
+
+def test_food_recall_cannot_precede_birth(payload: dict) -> None:
+    payload["food_recalls"][0]["recall_date"] = "2025-02-28"
+    with pytest.raises(ValidationError, match="sebelum birth_date"):
+        GrowthEvaluateRequest.model_validate(payload)
+
+
+@pytest.mark.parametrize("age_days, valid", [(182, False), (183, True), (730, True), (731, False)])
+def test_food_recall_age_boundaries_use_contract_months(payload: dict, age_days: int, valid: bool) -> None:
+    # CONTRACT v0.4: months = days / 30.4375; eligibility is [6, 24).
+    birth = date(2024, 1, 1)
+    payload["child"]["birth_date"] = birth.isoformat()
+    payload["as_of"] = "2026-01-15"
+    payload["measurements"] = []
+    payload["kpsp_results"] = []
+    payload["food_recalls"][0]["recall_date"] = (birth + timedelta(days=age_days)).isoformat()
+    if valid:
+        # Child is already older than 24 months at as_of; only recall age matters.
+        assert GrowthEvaluateRequest.model_validate(payload).food_recalls
+    else:
+        with pytest.raises(ValidationError, match="umur pada recall_date"):
+            GrowthEvaluateRequest.model_validate(payload)
+
+
+def test_measurement_ids_must_be_unique_even_on_distinct_dates(payload: dict) -> None:
+    duplicate = deepcopy(payload["measurements"][0])
+    duplicate["measured_at"] = "2026-01-14"
+    payload["measurements"].append(duplicate)
+    with pytest.raises(ValidationError, match="id pengukuran tidak boleh duplikat"):
+        GrowthEvaluateRequest.model_validate(payload)
+
+
+def test_measurement_dates_must_be_unique_even_with_distinct_ids(payload: dict) -> None:
+    duplicate = deepcopy(payload["measurements"][0])
+    duplicate["id"] = "9b1d0c2e-0000-4000-8000-000000000002"
+    payload["measurements"].append(duplicate)
+    with pytest.raises(ValidationError, match="satu pengukuran per tanggal"):
+        GrowthEvaluateRequest.model_validate(payload)
+
+
+def test_food_recall_dates_must_be_unique(payload: dict) -> None:
+    payload["food_recalls"].append(deepcopy(payload["food_recalls"][0]))
+    with pytest.raises(ValidationError, match="satu catatan makan per tanggal"):
+        GrowthEvaluateRequest.model_validate(payload)
+
+
+def test_distinct_unsorted_history_is_preserved(payload: dict) -> None:
+    earlier = deepcopy(payload["measurements"][0])
+    earlier.update(id="9b1d0c2e-0000-4000-8000-000000000002", measured_at="2026-01-14")
+    payload["measurements"].append(earlier)
+    earlier_recall = deepcopy(payload["food_recalls"][0])
+    earlier_recall["recall_date"] = "2026-01-13"
+    payload["food_recalls"].append(earlier_recall)
+    data = GrowthEvaluateRequest.model_validate(payload)
+    assert [m.measured_at.isoformat() for m in data.measurements] == ["2026-01-15", "2026-01-14"]
+    assert [r.recall_date.isoformat() for r in data.food_recalls] == ["2026-01-14", "2026-01-13"]
