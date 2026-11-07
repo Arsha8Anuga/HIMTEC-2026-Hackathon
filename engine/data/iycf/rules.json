@@ -1,0 +1,23 @@
+{
+  "sources": {
+    "guide": "WHO/UNICEF 2021, Indicators for assessing infant and young child feeding practices, ISBN 9789240018389",
+    "guide_url": "https://www.who.int/publications/i/item/9789240018389",
+    "mmf_definition": "https://www.who.int/data/gho/data/indicators/indicator-details/GHO/minimum-meal-frequency-6-23-months",
+    "mdd_eff_definition": "https://data.unicef.org/topic/nutrition/diets/",
+    "verified_on": "2026-11-07",
+    "project_rules": "docs/CONTRACT.md: age uses days/30.4375; reason patterns and 7/14-day windows are project heuristics, not WHO diagnostic criteria.",
+    "window_alignment": "backend/internal/repository/postgres.go at 4ca72a386b03ee92213f6cfe8109ba7ea7c499e3: CURRENT_DATE-13 through CURRENT_DATE",
+    "age_caveat": "WHO 2021 formula uses 183 <= days <730; current project schema uses 6 <= days/30.4375 <24 (183..730 inclusive). Preserve project validation; not exact WHO survey age eligibility.",
+    "missing_milk": "WHO 2021 calculation guidance scores missing feed-frequency answers as zero. Project optional milk_feed_count=None is zero for MMF; never infer dairy checkbox from this count."
+  },
+  "age": {"days_per_month": 30.4375, "min_months": 6, "max_months_exclusive": 24},
+  "mdd_min_groups": 5,
+  "mmf": {"older_breastfed_from_months": 9, "young_breastfed_min_meals": 2, "older_breastfed_min_meals": 3, "non_breastfed_min_feeds": 4, "non_breastfed_min_solid_meals": 1},
+  "eff_food_groups": ["eggs", "flesh_foods"],
+  "history_days": 14,
+  "recent_days": 7,
+  "pattern_last_records": 3,
+  "pattern_min_failures": 2,
+  "reason_codes": {"eff": "NO_ANIMAL_SOURCE_FOOD", "mdd": "LOW_DIET_DIVERSITY", "mmf": "LOW_MEAL_FREQUENCY"},
+  "missing_reason": "NO_RECENT_FOOD_RECALL"
+}

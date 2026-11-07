@@ -4,7 +4,7 @@ Nov 7, 2026 · @Zenacia
 
 ## Tujuan dan aturan main
 
-Kontrak ini mengikat bentuk data dan API antara frontend, backend Go, dan engine Python. Kode yang tidak cocok dengan kontrak dianggap salah, bukan kontraknya. Versi saat ini (v0.5 menyelaraskan mode OTP lokal dan klarifikasi KPSP Patch 07B; v0.4 menambah Catatan Makan Kemarin): **v0.5 (draf sinkronisasi; perlu review pemilik kontrak)**, dibekukan menjadi v1.0 paling lambat satu jam setelah mulai.
+Kontrak ini mengikat bentuk data dan API antara frontend, backend Go, dan engine Python. Kode yang tidak cocok dengan kontrak dianggap salah, bukan kontraknya. Versi saat ini (v0.5 memperjelas umur/jadwal KPSP sesuai keputusan pengguna; v0.4 menambah Catatan Makan Kemarin; v0.3 jaringan demo dan kartu panduan): **v0.5 (draf)**, dibekukan menjadi v1.0 paling lambat satu jam setelah mulai.
 
 **Masalah.** Orang tua balita 6–24 bulan menerima angka penimbangan Posyandu setiap bulan, tetapi tidak memahami artinya. Perlambatan pertumbuhan baru ketahuan setelah anak melewati −2 SD, ketika jendela intervensi hampir tertutup. Kemenkes menyebut usia 12–24 bulan sebagai tantangan terbesar, saat anak masuk fase MPASI ([InfoPublik, Mei 2026](https://infopublik.id/kategori/nasional-sosial-budaya/970585/intervensi-masa-krusial-jadi-fokus-kemenkes-tekan-angka-stunting)). Prevalensi nasional 19,8% (SSGI 2024), target 17,5% pada 2026.
 
@@ -88,8 +88,6 @@ Semua JSON memakai snake\_case, satuan metrik, tanggal ISO, dan satu bentuk ampl
 | `NOT_FOUND` | 404 | anak/pengukuran tidak ada |
 | `ENGINE_UNAVAILABLE` | 503 | Go gagal memanggil engine Python |
 | `INTERNAL` | 500 | selain di atas |
-| `UNAUTHORIZED` | 401 | kode/sesi tidak valid, expired, sudah dipakai, atau parent tidak aktif pada mode OTP |
-| `RATE_LIMITED` | 429 | batas permintaan OTP tercapai pada mode OTP |
 
 ## Model data
 
@@ -189,18 +187,34 @@ Nilai enum klasifikasi di JSON: `severely_underweight`, `underweight`, `normal`,
 **KPSP**
 
 1. Jadwal umur kuesioner: 3, 6, 9, 12, 15, 18, 21, 24, 30, 36, 42, 48, 54, 60 bulan.
-2. Pembulatan umur KPSP: sisa **16 hari atau lebih** dibulatkan ke atas satu bulan, selaras klarifikasi pengguna yang tercatat pada `engine/debug/PATCH_07B.md` dan `engine/data/kpsp/rules.json`. Komponen umur KPSP mengikuti peminjaman 30 hari yang diterapkan Patch 07B, terpisah dari umur tampilan pertumbuhan hari/30,4375. Tidak ada perhitungan KPSP tambahan di Go.
+2. Pembulatan umur: sisa **16 hari atau lebih (≥16)** dibulatkan ke atas satu bulan, sesuai klarifikasi pengguna 7 November 2026. Komponen umur dihitung dengan pengurangan tahun/bulan/hari; bila meminjam pada kolom hari, satu bulan = 30 hari dan satu tahun = 12 bulan, mengacu pedoman SDIDTK 2022 halaman 117. Ini berbeda dari umur tampilan pertumbuhan (hari ÷ 30,4375). Koreksi prematur tetap di luar cakupan.
 3. Umur di luar jadwal memakai kuesioner umur jadwal terdekat yang lebih muda.
 4. Skor dari jumlah jawaban "Ya": 9–10 = `sesuai`; 7–8 = `meragukan` (stimulasi, ulangi 2 minggu lagi); ≤ 6 = `penyimpangan` (rujuk).
 5. Butir pertanyaan diketik dari Buku Pedoman SDIDTK Kemenkes, disimpan engine sebagai JSON statis.
 
-**Indikator pemberian makan** (WHO/UNICEF IYCF 2021, umur 6–23 bulan, v0.4). Ambang ditulis dari ingatan dan wajib dicocokkan dengan pedomannya.
+**Penegasan KPSP v0.5 (draf).** Sumber yang dipilih tim: Pedoman Pelaksanaan SDIDTK revisi 23 Agustus 2022, berdasarkan Markdown unggahan pengguna. Daftar 14 formulir 3–60 bulan di atas tetap cakupan proyek; jangan menyamakannya dengan seluruh jadwal kunjungan rutin dalam pedoman.
+
+- `next_kpsp`: sebelum umur bulat 3 bulan mengembalikan formulir 3 bulan dengan `due=false`. Bila belum ada hasil sesuai untuk formulir yang cocok dengan umur, `due=true`. Hasil sesuai untuk formulir umur saat ini memindahkan tampilan ke formulir jadwal berikutnya dengan `due=false` sampai umur tersebut tercapai; pada formulir terakhir tetap 60/`false`.
+- Hasil terakhir meragukan mengulang formulir yang sama setelah ≥14 hari, termasuk bila batas umur formulir berikutnya telah terlewati; mengacu evaluasi intervensi halaman 119. Hasil terakhir penyimpangan tidak menjadwalkan skrining mandiri ulang secara otomatis (`due=false`); alasan rujukan tetap aktif. Riwayat terbaru ditentukan oleh tanggal, umur kuesioner terbesar sebagai pemecah tanggal seri.
+- Umur bulat di luar 0–60 ditolak oleh core KPSP; konflik batas 1856 hari untuk pengukuran versus domain WHO tetap isu terbuka dan tidak diubah di sini.
+- Bentuk JSON skor tetap `{questionnaire_age_months, answers:[{item_no, answer}]}`, cocok dengan client Go; respons skor `{yes_count, result}` di dalam amplop umum.
+- Bank yang hanya ditranskripsi dari Markdown dan belum memiliki gambar/rubrik serta verifikasi klinis tidak boleh disajikan sebagai kuesioner siap pakai. Format referensi aset gambar pada API belum ditetapkan; jangan menambah field baru sepihak. Sampai lengkap, endpoint questionnaire tetap belum diaktifkan.
+
+**Indikator pemberian makan** (WHO/UNICEF IYCF 2021, umur 6–23 bulan, v0.4). Definisi MDD, MMF dan EFF sudah dibandingkan dengan WHO/UNICEF 2021 pada Patch 08; perbedaan batas umur harian proyek dicatat di bawah dan belum diubah sepihak.
 
 | Indikator | Kode | Terpenuhi jika |
 | --- | --- | --- |
 | Keragaman pangan minimum | `mdd` | ≥ 5 dari 8 kelompok (ASI dihitung satu kelompok) |
 | Frekuensi makan minimum | `mmf` | menyusu: ≥ 2 kali makan (6–8 bulan) atau ≥ 3 kali (9–23 bulan); tidak menyusu: ≥ 4 kali makan + susu, minimal 1 di antaranya makan |
 | Konsumsi telur atau daging | `eff` | `eggs` atau `flesh_foods` ada |
+
+**Penegasan implementasi IYCF (Patch 08, kontrak v0.5 draf).**
+- Definisi: [WHO/UNICEF 2021](https://www.who.int/publications/i/item/9789240018389), [MMF WHO](https://www.who.int/data/gho/data/indicators/indicator-details/GHO/minimum-meal-frequency-6-23-months), dan [indikator UNICEF](https://data.unicef.org/topic/nutrition/diets/).
+- Umur pada recall_date tetap mengikuti skema proyek: 6 ≤ hari/30,4375 <24 (hari 183–730). Rumus survei WHO memakai 183 ≤ hari <730; ada selisih satu hari di batas atas, sehingga jangan mengklaim kelayakan umur persis sama dengan WHO. Perhitungan MMF memakai umur pada tanggal recall, bukan as_of.
+- Hitung kelompok pangan unik; ASI menambah satu. `milk_feed_count=null` dihitung nol untuk MMF sesuai konvensi frekuensi hilang, bukan bukti pasti tidak ada konsumsi. Nilai itu tidak otomatis mencentang dairy. MMF bukan indikator minimum susu atau minimum acceptable diet; EFF khusus eggs/flesh_foods, bukan dairy.
+- Jendela evaluasi 14 tanggal adalah as_of−13 sampai as_of, selaras query backend. Tujuh tanggal untuk NO_RECENT_FOOD_RECALL adalah as_of−6 sampai as_of. Gunakan maksimal tiga catatan terbaru; dua kegagalan yang tersedia sudah cukup untuk yellow, tanpa harus menunggu catatan ketiga. Kegagalan tunggal hanya info bila terbaru gagal. Pola yellow dapat tetap ada setelah satu hari terbaru membaik.
+- `diet` memakai catatan terbaru dalam jendela, atau null bila tidak ada; di luar umur sasaran pada as_of tidak ada evaluasi/reasons diet aktif. Data historis tidak dihapus. Catatan berumur 7–13 hari dapat menghasilkan pola dan NO_RECENT_FOOD_RECALL bersamaan.
+- Tingkat akhir tetap alasan tertinggi dari pertumbuhan/KPSP-history dan diet. Format API tidak berubah; ketiga indikator bukan diagnosis, penilaian porsi/energi atau bukti sebab stunting.
 
 **Verifikasi sebelum v1.0**
 
@@ -209,7 +223,7 @@ Nilai enum klasifikasi di JSON: `severely_underweight`, `underweight`, `normal`,
 - [ ] Ketik butir KPSP per umur dari pedoman SDIDTK
 - [ ] Uji engine dengan minimal 5 kasus yang hasilnya dibandingkan dengan WHO Anthro
 
-* [ ] Cocokkan ambang indikator pemberian makan dengan pedoman WHO/UNICEF IYCF 2021
+* [x] Bandingkan definisi MDD/MMF/EFF dengan WHO/UNICEF IYCF 2021; selisih kelayakan umur dicatat, belum dinyatakan identik
 
 ## Logika peringatan dini
 
@@ -255,7 +269,7 @@ Bila kode pola makan muncul bersamaan dengan `CROSSING_DOWN`, `WEIGHT_NOT_GAININ
 
 ## API publik (frontend ↔ Go)
 
-Frontend hanya berbicara dengan Go di `http://localhost:8080/api/v1`. Mode `demo` (default) memakai satu akun orang tua demo tanpa login. Mode lokal opsional `AUTH_MODE=otp_dummy` menyediakan daftar/login parent dan mewajibkan bearer token pada route bisnis; Go bind loopback. Mode dummy bukan autentikasi untuk deployment publik. Go mengizinkan CORS dari `http://localhost:5173`.
+Frontend hanya berbicara dengan Go di `http://localhost:8080/api/v1`. MVP tanpa login: satu akun orang tua demo di-seed. Go mengizinkan CORS dari `http://localhost:5173`.
 
 | Metode | Path | Fungsi |
 | --- | --- | --- |
@@ -469,7 +483,7 @@ Demo harus menunjukkan satu hal: sistem menangkap perlambatan pertumbuhan sebelu
 
 Angka pengukurannya disusun setelah engine jadi dan dicek dengan engine itu sendiri, bukan dikarang di slide.
 
-**Di luar cakupan MVP** (cukup disebut di slide sebagai pengembangan lanjutan): login produksi/OTP email atau SMS nyata dan pengelolaan multi-pengguna produksi, dashboard kader, peta sebaran, LLM penjelas, koreksi umur prematur, pengukuran lewat kamera, notifikasi push, integrasi data Posyandu sungguhan.
+**Di luar cakupan MVP** (cukup disebut di slide sebagai pengembangan lanjutan): login dan banyak pengguna, dashboard kader, peta sebaran, LLM penjelas, koreksi umur prematur, pengukuran lewat kamera, notifikasi push, integrasi data Posyandu sungguhan.
 
 Jika waktu tersisa, LLM penjelas masuk sebagai `POST /children/{id}/explain`. Ia hanya menerima output `/growth/evaluate` dan tidak pernah menghitung atau memutuskan tingkat.
 
@@ -482,24 +496,3 @@ Jika waktu tersisa, LLM penjelas masuk sebagai `POST /children/{id}/explain`. Ia
 5. H+10 — data demo di-seed; gladi alur demo pertama.
 6. H+11 — slide dan laporan, masing-masing menulis bagiannya.
 7. H+12 — gladi akhir; rekam video demo sebagai cadangan.
-
-
-## Tambahan v0.5 — autentikasi dummy lokal dan alamat dasar
-
-Draf ini menyatukan implementasi yang diminta pengguna dengan klarifikasi Patch 07B; belum menyatakan persetujuan akhir pemilik kontrak atau validasi medis. Endpoint medis yang sudah ada tetap memakai bentuk v0.4.
-
-GET/HEAD `/api/v1` dan `/api/v1/` mengarahkan HTTP 307 ke `/api/v1/children`. Path yang tidak dikenal tetap JSON 404. Mode OTP mewajibkan Authorization untuk daftar anak; redirect bukan health check.
-
-| Metode/path di bawah /api/v1 | Request | Data respons sukses |
-| --- | --- | --- |
-| POST /auth/register | name, email | 202: challenge_id, expires_in=300 |
-| POST /auth/login | email | 202: challenge_id, expires_in=300 |
-| POST /auth/verify | challenge_id, code string 6 digit | 200: access_token, token_type=Bearer, expires_in=86400, user |
-| GET /auth/me | Authorization: Bearer token | 200: user |
-| POST /auth/logout | Authorization: Bearer token | 200: logged_out=true |
-
-User: `{id,name,email,role}`; pendaftaran selalu role parent. Tidak ada pemilihan role/parent_id oleh client. Akun baru kosong; data demo tidak dipindahkan. OTP terminal berlaku 5 menit, sekali pakai, maksimum 5 percobaan; request 60 detik dan 5 per jam/email. Sesi hashed 24 jam, logout mencabut sesi. Kode/token tidak ditulis ke audit. Lihat `backend/AUTH_TESTING.md`.
-
-Seluruh endpoint bisnis memeriksa sesi parent aktif dalam mode OTP. Request-local Store/Service memakai ID parent dari sesi. Akses anak lain menghasilkan 404. CORS mengizinkan Content-Type dan Authorization dari CORS_ORIGIN.
-
-Status implementasi engine pada basis 6551237: main.py hanya mendaftarkan health. Health/tabel WHO termuat tidak menjamin endpoint evaluasi tersedia. Backend membalas ENGINE_UNAVAILABLE bila route evaluasi Python belum tersedia; tidak mengganti hasil dengan fake otomatis. Fake engine testing harus dipilih eksplisit melalui ENGINE_URL dan tidak menghasilkan penilaian medis.
