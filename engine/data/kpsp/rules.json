@@ -1,0 +1,18 @@
+{
+  "sources": {
+    "contract": "docs/CONTRACT.md v0.4, KPSP",
+    "score_verification": "https://p2.kemkes.go.id/wp-content/uploads/2025/05/Final_Pedoman-Nasional-Tata-Laksana-Klinis-Komunitas-dan-Lingkungan-Akibat-Pajanan-Timbal-Pada-Anak-dan-Ibu-Hamil.pdf",
+    "location": "Lampiran 2, halaman tercetak 115 / PDF ke-132",
+    "verified_on": "2026-11-07",
+    "rounding_issue": "Contract says >16 days; official source text says >16 but its example rounds exactly 16. Rule remains literal contract pending owner decision.",
+    "question_bank": "Not bundled; awaiting team-provided SDIDTK source and verification. No fabricated clinical questions."
+  },
+  "schedule_months": [3,6,9,12,15,18,21,24,30,36,42,48,54,60],
+  "answer_count": 10,
+  "round_up_after_days": 16,
+  "score_bands": [
+    {"min_yes": 9, "result": "sesuai"},
+    {"min_yes": 7, "result": "meragukan"},
+    {"min_yes": 0, "result": "penyimpangan"}
+  ]
+}
