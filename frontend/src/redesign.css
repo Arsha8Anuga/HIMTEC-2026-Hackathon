@@ -999,3 +999,19 @@ main {
 
 }
 
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  max-width: 32rem;
+  margin: auto;
+  padding: 24px;
+}
+.auth-card { padding: clamp(20px, 5vw, 40px); }
+.auth-card .header-brand { margin-bottom: 24px; }
+.auth-form { display: grid; gap: 14px; }
+.auth-form input { min-height: 44px; font-size: 16px; }
+.auth-form button, .account-actions button { min-height: 44px; }
+.account-actions { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.account-actions span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

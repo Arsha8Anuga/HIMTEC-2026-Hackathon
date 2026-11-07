@@ -20,6 +20,8 @@ import StatusBadge from "./components/StatusBadge.vue";
 import AssistantChat from "./components/AssistantChat.vue";
 import { isGrowthData } from "./lib/growth";
 import { childBody, measurementBody, foodBody } from "./lib/forms";
+defineProps<{ userName?: string; loggingOut: boolean }>();
+defineEmits<{ logout: [] }>();
 const GrowthChart = defineAsyncComponent(
   () => import("./components/GrowthChart.vue"),
 );
@@ -460,7 +462,12 @@ async function remove() {
   <div class="workspace">
     <header>
       <RouterLink to="/" class="header-brand">Pantau<span class="header-divider">/</span><span>Tumbuh kembang anak</span></RouterLink
-      ><span class="header-label"><span class="presence-dot" aria-hidden="true"></span>Ruang orang tua</span>
+      >
+      <div v-if="userName" class="account-actions">
+        <span>{{ userName }}</span>
+        <button class="secondary" :disabled="loggingOut" @click="$emit('logout')">Keluar</button>
+      </div>
+      <span v-else class="header-label"><span class="presence-dot" aria-hidden="true"></span>Ruang orang tua</span>
     </header>
     <main id="main" tabindex="-1" :class="['page-' + page, { 'report-page': page === 'report' }]">
       <div class="eyebrow">

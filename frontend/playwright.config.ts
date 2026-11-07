@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: "npm run dev -- --port 5175",
+    command: "npm run dev -- --host 127.0.0.1 --port 5175",
     url: "http://127.0.0.1:5175",
     reuseExistingServer: false,
     env: { VITE_API_URL: "http://127.0.0.1:18080/api/v1" },

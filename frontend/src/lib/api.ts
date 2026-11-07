@@ -1,3 +1,31 @@
+const tokenKey = "pantau.access_token";
+let token = "";
+try {
+  token = sessionStorage.getItem(tokenKey) || "";
+} catch {
+  // Storage may be unavailable in restricted browser contexts.
+}
+export function setToken(value: string) {
+  token = value;
+  try {
+    if (value) sessionStorage.setItem(tokenKey, value);
+    else sessionStorage.removeItem(tokenKey);
+  } catch {
+    // The in-memory token still applies to requests in this tab.
+  }
+}
+export const sessionExpired = new EventTarget();
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+export interface VerifiedSession {
+  access_token: string;
+  user: AuthUser;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -22,12 +50,20 @@ export async function api<T = any>(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
+    const requestToken = token;
     const response = await fetch(base + path, {
       method,
       signal: controller.signal,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(requestToken && { Authorization: "Bearer " + requestToken }),
+      },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
+    if (response.status === 401 && !path.startsWith("/auth/") && requestToken === token) {
+      setToken("");
+      sessionExpired.dispatchEvent(new Event("expired"));
+    }
     if (response.status === 204) return null as T;
     let result;
     try {

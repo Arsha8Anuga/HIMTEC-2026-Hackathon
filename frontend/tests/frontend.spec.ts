@@ -9,6 +9,7 @@ const envelope = (data: unknown) => ({ data, error: null });
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/auth/me")) return route.fulfill({ status: 404 });
     const data = path.endsWith("/children")
       ? [child]
       : path.endsWith("/test-child")

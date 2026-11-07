@@ -19,6 +19,7 @@ const questionnaire = {
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/auth/me")) return route.fulfill({ status: 404 });
     return route.fulfill({
       json: envelope(
         path.endsWith("/test-child")

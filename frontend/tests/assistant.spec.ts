@@ -5,6 +5,7 @@ const envelope = (data: unknown) => ({ data, error: null });
 function routes(page: any, enabled: boolean) {
   return page.route("**/api/v1/**", (route: any) => {
     const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/auth/me")) return route.fulfill({ status: 404 });
     if (path.endsWith("/assistant") && route.request().method() === "GET")
       return route.fulfill({ json: envelope({ enabled }) });
     if (path.endsWith("/test-child")) return route.fulfill({ json: envelope(child) });
