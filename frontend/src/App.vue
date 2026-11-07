@@ -3,7 +3,6 @@ import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   Activity,
-  House,
   BookOpen,
   Plus,
   ArrowUpRight,
@@ -120,7 +119,7 @@ class StaleLoad extends Error {}
 const heading = computed(
   () =>
     ({
-      home: "Langkah kecil, tumbuh bersama.",
+      home: "Catatan tumbuh kembang",
       new: "Tambahkan profil anak",
       guides: "Panduan untuk keseharian",
       status: "Ringkasan anak",
@@ -440,34 +439,35 @@ async function remove() {
 
 <template>
   <a href="#main" @click.prevent="focusMain()" class="skip">Lewati ke isi</a>
-  <aside class="sidebar">
+  <aside class="sidebar" aria-label="Navigasi utama">
     <RouterLink to="/" class="brand"
       ><Activity />
       <span>Pantau<small>Tumbuh kembang anak</small></span></RouterLink
     >
-    <div class="nav-caption">RUANG KELUARGA</div>
+    <div class="nav-caption">Ruang keluarga</div>
     <nav>
       <RouterLink to="/" :class="{ active: page !== 'guides' }"
-        ><House /> Beranda</RouterLink
-      ><RouterLink to="/guides"><BookOpen /> Panduan</RouterLink>
+        ><span class="nav-number" aria-hidden="true">01</span> Beranda</RouterLink
+      ><RouterLink to="/guides"><span class="nav-number" aria-hidden="true">02</span> Panduan</RouterLink>
     </nav>
     <div class="sidebar-foot">
-      <Heart />
-      <p>Setiap langkah<br />punya cerita.</p>
+      <span class="sidebar-kicker">Catatan keluarga</span>
+      <p>Temani setiap<br />tahap tumbuhnya.</p>
+      <RouterLink to="/guides" class="sidebar-guide">Baca panduan <span aria-hidden="true">↗</span></RouterLink>
       <small>HIMTEC 2026</small>
     </div>
   </aside>
   <div class="workspace">
     <header>
-      <span>Pantau tumbuh kembang</span
-      ><span class="header-label">Ruang orang tua</span>
+      <RouterLink to="/" class="header-brand">Pantau<span class="header-divider">/</span><span>Tumbuh kembang anak</span></RouterLink
+      ><span class="header-label"><span class="presence-dot" aria-hidden="true"></span>Ruang orang tua</span>
     </header>
-    <main id="main" tabindex="-1" :class="{ 'report-page': page === 'report' }">
+    <main id="main" tabindex="-1" :class="['page-' + page, { 'report-page': page === 'report' }]">
       <div class="eyebrow">
         {{
           child
             ? child.name + " · " + age(child) + " bulan"
-            : "BERSAMA DI SETIAP TAHAP"
+            : "Catatan keluarga"
         }}
       </div>
       <div class="title-row">
@@ -499,7 +499,7 @@ async function remove() {
           :key="link.path"
           :to="`/children/${id}/${link.path}`"
           :class="{ selected: page === (link.path || 'status') }"
-          ><component :is="link.icon" />{{ link.label }}</RouterLink
+           :aria-current="page === (link.path || 'status') ? 'page' : undefined">{{ link.label }}</RouterLink
         >
       </nav>
       <div v-if="error" role="alert" tabindex="-1" class="message error">
@@ -527,21 +527,22 @@ async function remove() {
           <RouterLink to="/">Kembali ke beranda</RouterLink>
         </section>
         <template v-if="page === 'home'"
-          ><section class="welcome">
-            <div>
-              <span class="eyebrow">CATATAN HARI INI</span>
-              <h2>Kenali perjalanannya,<br />satu catatan setiap waktu.</h2>
-              <p>
-                Mulai dari profil anak, lalu simpan pengukuran<br
-                  class="desktop"
-                />
-                dari kunjungan Posyandu terakhir.
-              </p>
-            </div>
-            <div class="hero-art" aria-hidden="true">
-              <span></span><Activity :size="86" /><i></i>
-            </div>
+          ><div class="home-intro">
+          <section class="welcome">
+            <span class="eyebrow">Satu tempat untuk setiap tahap</span>
+            <h2>Catatan kecil hari ini.<br />Bekal untuk tumbuhnya.</h2>
+            <p>Simpan pengukuran dari kunjungan Posyandu, catat makan, dan ikuti perkembangan si kecil.</p>
+            <RouterLink to="/guides" class="welcome-link">Baca panduan orang tua <span aria-hidden="true">↗</span></RouterLink>
           </section>
+          <aside class="home-steps" aria-label="Cara menggunakan Pantau">
+            <h2>Mulai dari sini</h2>
+            <ol>
+              <li><span>01</span><div><strong>Kenali profilnya</strong><p>Nama dan tanggal lahir anak.</p></div></li>
+              <li><span>02</span><div><strong>Simpan pengukuran</strong><p>Catat hasil kunjungan terakhir.</p></div></li>
+              <li><span>03</span><div><strong>Lihat perkembangannya</strong><p>Buka ringkasan dan riwayat anak.</p></div></li>
+            </ol>
+          </aside>
+          </div>
           <div class="section-title">
             <h2>Anak dalam pantauan</h2>
             <span>{{ children.length }} profil anak</span>
@@ -1065,8 +1066,8 @@ async function remove() {
     </main>
   </div>
   <nav class="mobile-nav">
-    <RouterLink to="/"><House />Beranda</RouterLink
-    ><RouterLink to="/guides"><BookOpen />Panduan</RouterLink>
+    <RouterLink to="/">Beranda</RouterLink
+    ><RouterLink to="/guides">Panduan</RouterLink>
   </nav>
   <div
     v-if="deleteId"
