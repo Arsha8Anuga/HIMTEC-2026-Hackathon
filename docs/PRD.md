@@ -59,6 +59,18 @@ Kartu GiziCerdas dan Stimulasi disajikan Go lewat `GET /api/v1/guides`, sehingga
 
 **Peta jalan setelah MVP.** Fase 2: pencatatan porsi memakai Ukuran Rumah Tangga dan Tabel Komposisi Pangan Indonesia, dengan takaran bergambar khusus balita. Fase 3: estimasi porsi dari foto makanan, satu-satunya bagian yang membutuhkan machine learning, dilatih dari data yang terkumpul di fase 2.
 
+**Login dan peran (setelah MVP).** Masuk memakai kode sekali pakai (OTP) yang dikirim ke nomor ponsel atau email pemilik akun. Akses ditolak secara bawaan; setiap endpoint menyebut peran yang diizinkan.
+
+| Peran | Boleh | Tidak boleh |
+| --- | --- | --- |
+| Orang tua | mengelola anak dan data miliknya sendiri | melihat anak milik akun lain |
+| Admin | mendaftarkan dan menonaktifkan akun, memicu pengiriman kode ke pemilik akun | melihat kode autentikasi; melihat data kesehatan anak |
+| Peran lain (misalnya kader atau bidan) | ditentukan kemudian; data anak hanya dengan persetujuan orang tua | — |
+
+Kode disimpan dalam bentuk hash, sekali pakai, kedaluwarsa dalam beberapa menit, dan jumlah percobaannya dibatasi. Setiap tindakan admin dicatat di log audit.
+
+**Persiapan yang dikerjakan di MVP:** tabel `users` dengan kolom `role` (`parent`, `admin`), kolom `children.parent_id` yang mengarah ke `users.id`, dan satu orang tua demo di-seed. Semua query anak difilter dengan ID orang tua tersebut. Kontrak API tidak berubah.
+
 ## Alur utama
 
 Satu kunjungan Posyandu harus berubah menjadi satu keputusan yang jelas bagi orang tua dalam waktu kurang dari satu menit.
@@ -144,18 +156,92 @@ Risiko terbesar bukan teknis, melainkan angka medis yang salah dan demo yang put
 - [ ] Apakah panitia menyediakan templat laporan dan proposal
 - [ ] Jumlah kartu GiziCerdas dan Stimulasi yang realistis disiapkan sebelum H+9
 
+## Skema database
+
+Lima tabel PostgreSQL, semuanya dimiliki Go. Satu orang tua memiliki banyak anak; setiap anak memiliki banyak pengukuran, hasil KPSP, dan catatan makan. Hasil evaluasi engine (z-score, tingkat, kode alasan) tidak disimpan, melainkan dihitung ulang setiap kali diminta.
+
+DDL di bawah adalah acuan untuk migrasi pertama. Backend boleh menyesuaikan tipe, asal bentuk JSON di kontrak tidak berubah. Pilihan nilai memakai `text` + `CHECK`, bukan `ENUM`, supaya menambah nilai tidak perlu migrasi tipe.
+
+```sql
+CREATE TABLE users (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        text NOT NULL,
+  phone       text UNIQUE,
+  email       text UNIQUE,
+  role        text NOT NULL CHECK (role IN ('parent', 'admin')),
+  is_active   boolean NOT NULL DEFAULT true,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE children (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_id        uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name             text NOT NULL CHECK (char_length(name) BETWEEN 1 AND 60),
+  sex              text NOT NULL CHECK (sex IN ('male', 'female')),
+  birth_date       date NOT NULL,
+  birth_weight_kg  numeric(3,2) CHECK (birth_weight_kg BETWEEN 0.5 AND 6.0),
+  birth_length_cm  numeric(4,1) CHECK (birth_length_cm BETWEEN 30 AND 60),
+  is_preterm       boolean NOT NULL DEFAULT false,
+  created_at       timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE measurements (
+  id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  child_id               uuid NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+  measured_at            date NOT NULL,
+  weight_kg              numeric(4,2) NOT NULL CHECK (weight_kg BETWEEN 0.5 AND 40),
+  length_height_cm       numeric(4,1) CHECK (length_height_cm BETWEEN 40 AND 130),
+  position               text CHECK (position IN ('recumbent', 'standing')),
+  head_circumference_cm  numeric(4,1) CHECK (head_circumference_cm BETWEEN 30 AND 60),
+  source                 text NOT NULL CHECK (source IN ('posyandu', 'puskesmas', 'home')),
+  note                   text CHECK (char_length(note) <= 200),
+  created_at             timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (child_id, measured_at),
+  CHECK (length_height_cm IS NULL OR position IS NOT NULL)
+);
+
+CREATE TABLE kpsp_results (
+  id                        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  child_id                  uuid NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+  questionnaire_age_months  smallint NOT NULL
+    CHECK (questionnaire_age_months IN (3,6,9,12,15,18,21,24,30,36,42,48,54,60)),
+  answered_at               date NOT NULL,
+  answers                   jsonb NOT NULL,  -- [{"item_no":1,"answer":true}, ...], tepat 10 butir
+  yes_count                 smallint NOT NULL CHECK (yes_count BETWEEN 0 AND 10),
+  result                    text NOT NULL CHECK (result IN ('sesuai', 'meragukan', 'penyimpangan')),
+  created_at                timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX ON kpsp_results (child_id, answered_at);
+
+CREATE TABLE food_recalls (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  child_id         uuid NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+  recall_date      date NOT NULL,
+  breastfed        boolean NOT NULL,
+  food_groups      text[] NOT NULL DEFAULT '{}',
+  meal_count       smallint NOT NULL CHECK (meal_count BETWEEN 0 AND 10),
+  milk_feed_count  smallint CHECK (milk_feed_count BETWEEN 0 AND 10),
+  created_at       timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (child_id, recall_date)
+);
+```
+
+Aturan yang tidak bisa dijaga oleh `CHECK` dan tetap divalidasi Go: tanggal tidak di masa depan, `measured_at` ≥ `birth_date`, umur anak ≤ 60 bulan, umur 6–23 bulan untuk catatan makan, dan isi `food_groups` hanya dari tujuh nilai di kontrak. Seed berisi satu baris `users` berperan `parent` sebagai orang tua demo.
+
+**Setelah MVP (login) hanya menambah tabel, tidak mengubah yang ada:** `otp_codes` (pemilik, hash kode, kedaluwarsa, jumlah percobaan, waktu dipakai), `audit_logs` (pelaku, tindakan, akun sasaran, waktu), dan nanti tabel persetujuan orang tua bila peran kader atau bidan ditambahkan.
+
 ## Struktur folder
 
 Setiap folder ujung berisi `.gitkeep` agar tetap ter-commit walau masih kosong; hapus `.gitkeep` begitu folder itu berisi berkas pertama. Setiap orang hanya mengisi folder miliknya (lihat AGENTS.md).
 
 ```text
 tumbuh-kembang/
+├── README.md              pintu masuk repo
 ├── AGENTS.md              aturan untuk manusia dan semua asisten AI
 ├── CLAUDE.md              merujuk ke AGENTS.md
 ├── .env.example
 ├── .gitignore
-├── docs/                  semua dokumen proyek
-│   ├── README.md          pintu masuk repo
+├── docs/                  semua dokumen proyek lainnya
 │   ├── CONTRACT.md        protokol komunikasi: data, API publik, API engine
 │   ├── PRD.md             apa yang dibangun dan kapan selesai
 │   ├── CHANGELOG.md       setiap perubahan yang memengaruhi orang lain

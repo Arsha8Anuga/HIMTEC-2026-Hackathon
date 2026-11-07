@@ -10,11 +10,11 @@ lalu tahu apa yang harus dilakukan. Dibuat untuk HIMTEC 2026.
 
 | Berkas | Isi |
 | --- | --- |
-| [AGENTS.md](../AGENTS.md) | aturan kerja untuk manusia dan semua asisten AI |
-| [CONTRACT.md](CONTRACT.md) | protokol komunikasi: data, API publik, API engine (sumber kebenaran) |
-| [PRD.md](PRD.md) | apa yang dibangun dan kapan dianggap selesai |
-| [CHANGELOG.md](CHANGELOG.md) | setiap perubahan yang memengaruhi orang lain |
-| [HANDOFF.md](HANDOFF.md) | serah terima per peran dan status integrasi |
+| [AGENTS.md](AGENTS.md) | aturan kerja untuk manusia dan semua asisten AI |
+| [docs/CONTRACT.md](docs/CONTRACT.md) | protokol komunikasi: data, API publik, API engine (sumber kebenaran) |
+| [docs/PRD.md](docs/PRD.md) | apa yang dibangun dan kapan dianggap selesai |
+| [docs/CHANGELOG.md](docs/CHANGELOG.md) | setiap perubahan yang memengaruhi orang lain |
+| [docs/HANDOFF.md](docs/HANDOFF.md) | serah terima per peran dan status integrasi |
 
 ## Arsitektur
 

@@ -17,7 +17,7 @@ Keduanya diekspor dari dokumen tim: https://claude.ai/artifact/UBPUY3UnFEi8tj1v7
 (tab pertama = kontrak, tab "PRD"). Setiap kali versi kontrak naik, Zena mengekspor ulang
 keduanya ke `docs/` dan mencatatnya di `docs/CHANGELOG.md`.
 
-Semua dokumen proyek ada di `docs/`; hanya AGENTS.md dan CLAUDE.md yang tinggal di akar repo.
+Semua dokumen proyek ada di `docs/`; hanya README.md, AGENTS.md, dan CLAUDE.md yang tinggal di akar repo.
 
 Jika kode berbeda dengan kontrak, **kodenya yang salah**. Jika kontrak tidak menjawab, tanya di grup. Jangan menebak.
 
