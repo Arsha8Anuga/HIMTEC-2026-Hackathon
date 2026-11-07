@@ -25,10 +25,26 @@ type EngineError struct {
 }
 
 func (e *EngineError) Error() string { return e.Code + ": " + e.Message }
+
+// Failure distinguishes engine transport/protocol errors from database errors.
+// It is internal Go state, not an additional field in the public API.
+type Failure struct {
+	Operation string
+	Err       error
+}
+
+func (e *Failure) Error() string { return "engine " + e.Operation + ": " + e.Err.Error() }
+func (e *Failure) Unwrap() error { return e.Err }
+
 func New(baseURL string) *Client {
 	return &Client{BaseURL: strings.TrimRight(baseURL, "/"), HTTP: &http.Client{Timeout: 3 * time.Second}}
 }
-func (c *Client) Do(ctx context.Context, method, path string, payload any, out any) error {
+func (c *Client) Do(ctx context.Context, method, path string, payload any, out any) (err error) {
+	defer func() {
+		if err != nil {
+			err = &Failure{Operation: method + " " + path, Err: err}
+		}
+	}()
 	var reader io.Reader
 	if payload != nil {
 		b, err := json.Marshal(payload)
@@ -49,25 +65,40 @@ func (c *Client) Do(ctx context.Context, method, path string, payload any, out a
 		return fmt.Errorf("panggilan engine: %w", err)
 	}
 	defer resp.Body.Close()
-	b, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
+	const maxResponseBytes = 4 << 20
+	b, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes+1))
 	if err != nil {
 		return err
 	}
+	if len(b) > maxResponseBytes {
+		return errors.New("response engine melebihi 4 MiB")
+	}
 	var envelope struct {
 		Data  json.RawMessage `json:"data"`
-		Error *EngineError    `json:"error"`
+		Error json.RawMessage `json:"error"`
 	}
 	if err = json.Unmarshal(b, &envelope); err != nil {
 		return fmt.Errorf("response engine bukan JSON: %w", err)
 	}
-	if envelope.Error != nil {
-		return envelope.Error
+	if len(envelope.Error) == 0 {
+		return errors.New("response engine tidak punya field error")
+	}
+	if !bytes.Equal(bytes.TrimSpace(envelope.Error), []byte("null")) {
+		var remote EngineError
+		if err = json.Unmarshal(envelope.Error, &remote); err != nil || remote.Code == "" || remote.Message == "" {
+			return errors.New("format error engine tidak valid")
+		}
+		// Only genuine input validation is safe to return as a client error.
+		if resp.StatusCode == http.StatusUnprocessableEntity && remote.Code == "VALIDATION_ERROR" {
+			return &remote
+		}
+		return fmt.Errorf("HTTP engine %d (%s): %s", resp.StatusCode, remote.Code, remote.Message)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("HTTP engine %d", resp.StatusCode)
 	}
-	if len(envelope.Data) == 0 {
-		return errors.New("response engine tidak punya field data")
+	if len(envelope.Data) == 0 || bytes.Equal(bytes.TrimSpace(envelope.Data), []byte("null")) {
+		return errors.New("response engine tidak punya data yang dapat digunakan")
 	}
 	if out != nil {
 		return json.Unmarshal(envelope.Data, out)

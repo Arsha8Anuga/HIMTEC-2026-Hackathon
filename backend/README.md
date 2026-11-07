@@ -1,110 +1,112 @@
 # Backend Go + PostgreSQL — HIMTEC 2026
 
-Mengikuti `docs/CONTRACT.md` v0.4. Fokus: API publik di `:8080/api/v1`, PostgreSQL `:5432`, dan komunikasi HTTP/JSON ke Python FastAPI melalui `ENGINE_URL`. Engine tidak membaca PostgreSQL. **Alat skrining, bukan diagnosis.**
+Acuan: repository `af4193a` (`Document Update`, 7 November 2026), `docs/CONTRACT.md` v0.4 dan PRD terbaru dengan kepemilikan anak. API publik tetap `:8080/api/v1`; PostgreSQL tetap `:5432`. Aplikasi adalah alat skrining, bukan diagnosis.
 
-## Persyaratan (Windows)
+## Isi paket dan pemasangan
 
-1. Go 1.22 atau lebih baru (`go version`).
-2. PostgreSQL 13 atau lebih baru (`psql --version` bila tersedia) yang berjalan di port **5432**.
-3. Saat pertama kali: internet untuk mengunduh driver Go `github.com/lib/pq` (setelah terunduh, demo dapat offline).
-4. Akses hotspot ke laptop Zena yang menjalankan engine FastAPI port **8001**. Untuk menjalankan CRUD saja, engine boleh belum menyala, tetapi endpoint status/growth/KPSP akan mengembalikan 503.
+ZIP berisi folder `backend/` lengkap serta `docs/CHANGELOG.md` dan `docs/HANDOFF.md`. Ekstrak ke akar repository sehingga ada `backend/go.mod` dan `docs/HANDOFF.md`. Gabungkan pembaruan anggota lain yang dibuat setelah commit acuan sebelum menimpa berkas yang sama.
 
-## Langkah menjalankan (PowerShell)
+Hentikan backend lama dengan Ctrl+C. Bila database lama berisi data yang perlu dipertahankan, buat backup melalui pgAdmin sebelum menjalankan migrasi versi ini. File `.env` lokal tetap dipakai; ZIP tidak memuat password, data database, engine, frontend, atau binary.
 
-Dari **akar repo**:
+## Menjalankan di Windows
 
-```powershell
-Copy-Item .env.example .env
-notepad .env
-```
+Persyaratan: Go 1.22+, PostgreSQL 13+, database `tumbuh` sudah dibuat. Saat persiapan pertama diperlukan internet untuk mengunduh dependensi Go. Sesudah dependensi tersedia, demo dapat berjalan offline.
 
-Contoh isi variabel yang **perlu disesuaikan dengan laptop** (jangan meng-commit `.env`):
+Buat `.env` di akar repository berdasarkan `.env.example`. Contoh nilai yang harus diganti sesuai laptop:
 
 ```dotenv
-DATABASE_URL=postgres://postgres:ISI_PASSWORD_POSTGRES@localhost:5432/tumbuh?sslmode=disable
-ENGINE_URL=http://IP_LAPTOP_ZENA:8001/engine/v1
+DATABASE_URL=postgres://postgres:ISI_PASSWORD@localhost:5432/tumbuh?sslmode=disable
+ENGINE_URL=http://IP_LAPTOP_ENGINE:8001/engine/v1
 CORS_ORIGIN=http://localhost:5173
 ```
 
-Buat database satu kali di pgAdmin (Databases → Create → Database → `tumbuh`) **atau** di terminal dengan `psql`:
-
-```powershell
-psql -U postgres -h localhost -p 5432 -c "CREATE DATABASE tumbuh;"
-```
-
-Dari folder `backend/`:
+Dari PowerShell di akar repository:
 
 ```powershell
 cd backend
 go mod download
+go test ./...
 go run ./cmd/server
 ```
 
-Pada startup, Go otomatis menjalankan `migrations/001_init.sql` (idempoten). Server mendengarkan `0.0.0.0:8080` sehingga frontend pada hotspot yang sama dapat mengakses alamat IP laptop backend. Jangan mengubah port/route tanpa kesepakatan kontrak.
+Backend memeriksa ketersediaan port 8080 sebelum mengakses database. Bila port sudah dipakai, pesan menjelaskan konflik dan proses berhenti. Pesan "Backend Go siap" baru dicetak setelah port terikat, koneksi/migrasi database, dan pemuatan data statis berhasil. Gunakan PowerShell kedua untuk mencoba API.
 
-## Uji cepat
+## Database dan orang tua demo
 
-Buka PowerShell kedua saat server menyala:
+Startup menjalankan `001_init.sql` kemudian `003_demo_parent.sql` dalam satu transaksi, dengan advisory lock agar startup bersamaan tidak menerapkan migrasi secara bersamaan. `002_seed_children.sql` adalah seed opsional dan tidak dijalankan otomatis.
 
-```powershell
-# Mendapatkan daftar anak: {"data":[],"error":null} jika kosong
-Invoke-RestMethod http://localhost:8080/api/v1/children
+Hasil akhir: lima tabel `users`, `children`, `measurements`, `kpsp_results`, `food_recalls`.
 
-# Menambah anak fiktif (ubah tanggal lahir sesuai kebutuhan)
-$body = @{name="Anak Demo"; sex="female"; birth_date="2026-01-07"; is_preterm=$false} | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/children -ContentType 'application/json' -Body $body
-```
+- Satu pengguna demo dibuat dengan ID tetap `00000000-0000-4000-8000-000000000001`, nama `Orang Tua Demo`, role `parent`, aktif.
+- `children.parent_id` ditambahkan dan diberi FK ke `users.id`. Anak lama yang belum memiliki pemilik dihubungkan ke orang tua demo. Pemilik yang sudah ada dipertahankan. Riwayat pengukuran, KPSP dan catatan makan tidak dihapus.
+- Semua query anak dan baca/tulis/hapus data turunannya memeriksa pemilik serta role `parent` dan status aktif akun. Akun admin/nonaktif tidak mendapat akses melalui repository ini.
+- Pemilik dipilih oleh server. Field `parent_id` tidak ditambahkan ke JSON publik dan tidak dapat dipilih melalui body request.
+- Jika database dibuat dari DDL PRD dengan `food_groups text[]`, migrasi mengubah penyimpanannya ke JSONB menggunakan `to_jsonb`, mempertahankan isi dan urutan kelompok pangan. JSON publik tetap berupa array string. PRD mengizinkan penyesuaian tipe penyimpanan.
+- Akun demo yang sudah dinonaktifkan atau memiliki role berbeda tidak diaktifkan ulang oleh migrasi; startup gagal agar kondisi tersebut ditinjau secara eksplisit.
 
-Ambil `id` dari respons POST. Untuk menguji status, jalankan engine Python terlebih dulu, lalu:
+MVP tetap tanpa login dan memakai satu konteks orang tua demo. Login OTP dan pengelolaan akun admin merupakan pekerjaan setelah MVP; isolasi query ini adalah persiapannya.
 
-```powershell
-Invoke-RestMethod http://localhost:8080/api/v1/children/ISI_UUID/status
-```
-
-**Menguji koneksi langsung ke engine:**
+Seed identitas fiktif Anisa/Bima/Citra, setelah startup migrasi selesai:
 
 ```powershell
-Invoke-RestMethod http://IP_LAPTOP_ZENA:8001/engine/v1/health
+psql -U postgres -d tumbuh -f migrations/002_seed_children.sql
 ```
 
-Jika gagal, cek IP hotspot, firewall Windows pada laptop Zena, dan bind engine `0.0.0.0:8001`.
+Seed membatasi pengecekan nama berdasarkan pemilik dan dapat dijalankan berulang. Tidak ada angka pengukuran medis yang dibuat untuk seed.
 
-## Skema dan data
+## API publik
 
-- `migrations/001_init.sql`: tabel `children`, `measurements`, `kpsp_results`, `food_recalls`, constraint, relasi FK, indeks.
-- `migrations/002_seed_children.sql`: **opsional**, hanya nama/identitas anak fiktif, tanpa nilai medis. Untuk menjalankan: `psql -U postgres -d tumbuh -f migrations/002_seed_children.sql` dari folder `backend/`.
-- `data/messages.id.json`: teks Indonesia untuk seluruh kode alasan di kontrak (isi dari tindakan pada kontrak; tetap perlu ditinjau tim medis).
-- `data/guides.id.json`: **sengaja `[]`** sampai Zena menyediakan kartu yang disalin dan disitasi dari Buku KIA/SDIDTK. Tidak boleh mengarang panduan medis.
+Semua path di bawah diawali `/api/v1`.
 
-### API yang disediakan
-
-| Metode | Path (`/api/v1` +) | Keterangan |
+| Metode | Path | Fungsi |
 | --- | --- | --- |
-| GET / POST | `/children` | Daftar dan tambah anak |
+| GET / POST | `/children` | Daftar dan tambah anak milik orang tua demo |
 | GET | `/children/{id}` | Detail anak |
-| GET | `/children/{id}/status` | Status engine dengan teks Indonesia |
+| GET | `/children/{id}/status` | Status evaluasi dan teks Indonesia |
 | GET / POST | `/children/{id}/measurements` | Riwayat dan input pengukuran |
 | DELETE | `/children/{id}/measurements/{mid}` | Hapus pengukuran |
-| GET | `/children/{id}/growth?indicator=lhfa` | Titik kurva dan acuan engine |
-| GET | `/children/{id}/kpsp/next` | Jadwal dan pertanyaan dari engine |
-| GET / POST | `/children/{id}/kpsp` | Riwayat dan skor KPSP dari engine |
-| GET | `/guides?category=mpasi&age_months=9` | Kartu panduan yang diizinkan |
-| GET / POST | `/children/{id}/food-recalls` | Catatan makan / status |
+| GET | `/children/{id}/growth?indicator=lhfa` | Titik dan acuan WHO |
+| GET | `/children/{id}/kpsp/next` | Jadwal dan kuesioner |
+| GET / POST | `/children/{id}/kpsp` | Riwayat dan jawaban KPSP |
+| GET | `/guides?category=mpasi&age_months=9` | Kartu panduan |
+| GET / POST | `/children/{id}/food-recalls` | Catatan makan dan riwayat 14 hari |
 
-Semua balasan menggunakan `{ "data": ..., "error": null }`, atau `{ "data": null, "error": {"code": ..., "message": ...} }`. Kode error mengikuti kontrak: `VALIDATION_ERROR` (422), `NOT_FOUND` (404), `ENGINE_UNAVAILABLE` (503), `INTERNAL` (500).
+Amplop sukses: `{ "data": ..., "error": null }`. Amplop gagal: `{ "data": null, "error": { "code": ..., "message": ... } }`.
 
-## Catatan integrasi penting
+## Kesesuaian dengan engine dan penanganan error
 
-- **Bentuk ringkasan `GET /children` belum dicontohkan secara eksplisit dalam kontrak.** Implementasi sekarang hanya mengembalikan daftar objek `Child` tanpa menambah field baru. Minta Zena membekukan bentuk ringkasan sebelum menambahnya.
-- **Body `POST /engine/v1/kpsp/score` dan respons lengkap `GET /engine/v1/reference` belum dicontohkan dalam kontrak**. Implementasi mengikuti field yang sudah disebut di kontrak dan harus dicocokkan dengan engine Python milik Zena.
-- `POST /measurements` dan `POST /food-recalls` **menyimpan data dahulu**, lalu meminta evaluasi Python. Bila Python tidak tersedia, data tetap tersimpan tetapi permintaan membalas HTTP 503 seperti kontrak/PRD; gunakan GET riwayat untuk memastikan data sudah masuk (jangan kirim ulang secara membabi buta).
-- Pastikan **driver Go sudah terunduh sebelum demo tanpa internet**. `go mod download` lalu `go run ./cmd/server` sekali sebelum hotspot diputus dari internet.
-- Tidak ada login (MVP sesuai PRD). Gunakan data fiktif saja selama demo, jangan data asli anak.
+Pada commit acuan, Python baru mendaftarkan `/engine/v1/health`. Matematika pertumbuhan dan hotfix validasi sudah ada, tetapi `/growth/evaluate`, `/reference`, `/kpsp/questionnaire`, dan `/kpsp/score` belum tersedia sebagai endpoint HTTP. Health 200 atau `who_tables_loaded=true` belum membuktikan evaluasi siap.
 
-## Tes
+- Route engine belum tersedia, koneksi gagal, timeout, dan respons engine rusak menjadi 503 `ENGINE_UNAVAILABLE`.
+- HTTP 422 dengan amplop `VALIDATION_ERROR` dari engine diteruskan bersama `fields`. Error database saat evaluasi menjadi 500 `INTERNAL`. Anak/pengukuran lokal yang tidak ada atau milik orang lain menjadi 404 `NOT_FOUND`.
+- POST pengukuran/catatan makan menyimpan data sebelum evaluasi. Jika evaluasi gagal, pesan menyebut **sudah tersimpan** dan log mencatat ID. Periksa GET riwayat sebelum POST ulang; tanggal yang sama tidak boleh diduplikasi.
+- Umur catatan makan dihitung pada `recall_date` menggunakan hari / 30,4375 tanpa pembulatan, dengan rentang 6 sampai kurang dari 24 bulan, selaras dengan hotfix engine. Tanggal KPSP tidak boleh sebelum kelahiran atau setelah hari ini.
+- Titik grafik dengan koordinat opsional kosong disaring. Respons KPSP harus memiliki skor eksplisit dan kuesioner 10 butir.
+
+`GET /api/v1/` memang bukan endpoint terdaftar. Gunakan `GET /api/v1/children` untuk pemeriksaan API:
 
 ```powershell
-go test ./...
+Invoke-RestMethod http://localhost:8080/api/v1/children
 ```
 
-Tes unit tidak memerlukan PostgreSQL aktif; alur database dan engine yang sebenarnya tetap perlu dites di laptop tim. Jangan gunakan hasil tes unit untuk mengklaim z-score/KPSP sudah tervalidasi secara medis.
+## Tes dan bukti validasi
+
+`go test ./...` menjalankan unit/HTTP test server/SQL mock. Tes SQL integrasi dilewati secara normal bila `BACKEND_TEST_DATABASE_URL` tidak diisi.
+
+Untuk menjalankan tes SQL pada database pengujian terpisah yang sudah dibuat:
+
+```powershell
+$env:BACKEND_TEST_DATABASE_URL="postgres://postgres:ISI_PASSWORD@localhost:5432/tumbuh_test?sslmode=disable"
+go test -count=1 ./internal/repository
+Remove-Item Env:BACKEND_TEST_DATABASE_URL
+```
+
+Tes membuat schema unik `backend_test_*` dan menghapus schema miliknya setelah selesai. Akun database tes perlu izin membuat schema. Jangan arahkan tes ke database demo/produksi.
+
+Validasi paket ini: suite `go test -race` lulus, termasuk lima tes SQL integrasi melalui `lib/pq` ke PGlite 0.3.2/PostgreSQL WASM dengan socket 0.0.7; `go vet` lulus; kompilasi Linux dan Windows amd64 lulus dengan `-buildvcs=false`. Smoke HTTP mencakup migrasi startup, tambah/baca anak, POST yang tersimpan saat engine membalas 404, pembacaan riwayat, penolakan duplikasi, tanggal KPSP, dan konflik port.
+
+PGlite dipakai hanya di lingkungan pengujian dan tidak menjadi dependensi paket backend. Pengujian ini belum membuktikan runtime PostgreSQL native/Windows di laptop tim atau ketepatan medis engine Python nyata. Jalankan kembali tes integrasi pada PostgreSQL laptop demo.
+
+## Pekerjaan integrasi yang masih terbuka
+
+`guides.id.json` masih kosong menunggu materi resmi. Bentuk ringkasan daftar anak, body lengkap skor KPSP dan respons reference perlu dikunci bersama pemilik kontrak. Batas umur pengukuran 1856 hari tetap mengikuti kontrak; perbedaan dengan domain tabel WHO 1826 hari perlu diputuskan pemilik kontrak/engine. Riwayat KPSP lama yang sudah berisi tanggal tidak valid tidak dihapus diam-diam oleh patch.

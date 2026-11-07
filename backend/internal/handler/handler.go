@@ -49,6 +49,16 @@ func invalid(w http.ResponseWriter, fields map[string]string) {
 }
 func missing(w http.ResponseWriter) { fail(w, 404, "NOT_FOUND", "Data tidak ditemukan", nil) }
 func unexpected(w http.ResponseWriter, err error) {
+	respondError(w, err, "")
+}
+
+func respondError(w http.ResponseWriter, err error, saved string) {
+	message := func(text string) string {
+		if saved != "" {
+			return saved + " sudah tersimpan. " + text + ". Periksa riwayat sebelum mengirim ulang."
+		}
+		return text
+	}
 	if errors.Is(err, sql.ErrNoRows) {
 		missing(w)
 		return
@@ -57,27 +67,25 @@ func unexpected(w http.ResponseWriter, err error) {
 	if errors.As(err, &e) {
 		switch e.Code {
 		case "VALIDATION_ERROR":
-			fail(w, 422, "VALIDATION_ERROR", e.Message, e.Fields)
-			return
-		case "NOT_FOUND":
-			missing(w)
+			fail(w, 422, "VALIDATION_ERROR", message(e.Message), e.Fields)
 			return
 		}
-		fail(w, 503, "ENGINE_UNAVAILABLE", "Perhitungan sementara tidak tersedia", nil)
+		fail(w, 503, "ENGINE_UNAVAILABLE", message("Perhitungan sementara tidak tersedia"), nil)
 		return
 	}
-	// Semua galat engine diidentifikasi di handler lewat engineFailure().
+	var failure *engineclient.Failure
+	if errors.As(err, &failure) {
+		log.Printf("%v", err)
+		fail(w, 503, "ENGINE_UNAVAILABLE", message("Perhitungan sementara tidak tersedia"), nil)
+		return
+	}
 	log.Printf("backend: %v", err)
-	fail(w, 500, "INTERNAL", "Terjadi kesalahan pada server", nil)
+	fail(w, 500, "INTERNAL", message("Terjadi kesalahan pada server"), nil)
 }
 func engineFailure(w http.ResponseWriter, err error) {
-	var e *engineclient.EngineError
-	if errors.As(err, &e) && (e.Code == "VALIDATION_ERROR" || e.Code == "NOT_FOUND") {
-		unexpected(w, err)
-		return
-	}
-	log.Printf("engine: %v", err)
-	fail(w, 503, "ENGINE_UNAVAILABLE", "Perhitungan sementara tidak tersedia", nil)
+	// Evaluation can also fail while reading PostgreSQL. Classify by the
+	// error's source rather than treating every failure as an engine outage.
+	unexpected(w, err)
 }
 func decode(w http.ResponseWriter, r *http.Request, v any) bool {
 	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
@@ -180,7 +188,7 @@ func validMeasurement(x model.MeasurementInput, ch model.Child) map[string]strin
 	}
 	return f
 }
-func validKpsp(x model.KpspInput) map[string]string {
+func validKpsp(x model.KpspInput, ch model.Child) map[string]string {
 	f := map[string]string{}
 	allowed := map[int]bool{3: true, 6: true, 9: true, 12: true, 15: true, 18: true, 21: true, 24: true, 30: true, 36: true, 42: true, 48: true, 54: true, 60: true}
 	if !allowed[x.QuestionnaireAgeMonths] {
@@ -189,6 +197,10 @@ func validKpsp(x model.KpspInput) map[string]string {
 	d, ok := dateFields("answered_at", x.AnsweredAt, f)
 	if ok {
 		today, _ := service.ParseDate(service.Today())
+		birth, _ := service.ParseDate(ch.BirthDate)
+		if d.Before(birth) {
+			f["answered_at"] = "tidak boleh sebelum birth_date"
+		}
 		if d.After(today) {
 			f["answered_at"] = "tidak boleh di masa depan"
 		}
@@ -218,7 +230,8 @@ func validFood(x model.FoodRecallInput, ch model.Child) map[string]string {
 		if d.After(today) {
 			f["recall_date"] = "tidak boleh di masa depan"
 		}
-		if d.Before(birth.AddDate(0, 6, 0)) || !d.Before(birth.AddDate(0, 24, 0)) {
+		ageMonths := d.Sub(birth).Hours() / 24 / 30.4375
+		if ageMonths < 6 || ageMonths >= 24 {
 			f["recall_date"] = "umur anak saat catatan makan harus 6–23 bulan"
 		}
 	}
@@ -373,7 +386,8 @@ func (h *Handler) addMeasurement(w http.ResponseWriter, r *http.Request) {
 	}
 	st, _, _, err := h.Svc.Status(r.Context(), ch)
 	if err != nil {
-		engineFailure(w, err)
+		log.Printf("pengukuran %s sudah tersimpan; evaluasi gagal: %v", m.ID, err)
+		respondError(w, err, "Pengukuran")
 		return
 	}
 	write(w, 201, map[string]any{"measurement": m, "status": st})
@@ -438,7 +452,7 @@ func (h *Handler) addKpsp(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &x) {
 		return
 	}
-	if f := validKpsp(x); len(f) > 0 {
+	if f := validKpsp(x, ch); len(f) > 0 {
 		invalid(w, f)
 		return
 	}
@@ -515,7 +529,8 @@ func (h *Handler) addFood(w http.ResponseWriter, r *http.Request) {
 	}
 	st, _, _, err := h.Svc.Status(r.Context(), ch)
 	if err != nil {
-		engineFailure(w, err)
+		log.Printf("catatan makan %s sudah tersimpan; evaluasi gagal: %v", food.ID, err)
+		respondError(w, err, "Catatan makan")
 		return
 	}
 	write(w, 201, map[string]any{"food_recall": food, "status": st})
