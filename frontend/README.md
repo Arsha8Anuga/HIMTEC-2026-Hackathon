@@ -40,3 +40,15 @@ Perubahan: normalisasi angka/null pada formulir; pertahankan input ketika simpan
 Verifikasi: 10 uji browser Chrome lokal lulus, termasuk viewport 360/768/1440. Semua API pada tes disimulasikan untuk memeriksa frontend, bukan validasi medis atau bukti integrasi layanan nyata. TypeScript dan build produksi lulus.
 
 Jalankan npm test untuk mengulang tes. Tes memakai Chrome lokal dan server khusus port 5175; tidak menyentuh backend/database. Windows default mendeteksi Chrome di C:/Program Files/Google/Chrome/Application/chrome.exe. Jika berbeda, set CHROME_PATH ke executable Chrome/Chromium milikmu sebelum npm test. Screenshot uji tersimpan di test-results/ dan tidak disertakan dalam patch.
+
+## Patch 003 — status dan kurva
+
+Terapkan setelah Patch 002. Tidak ada dependensi baru; jalankan npm run dev seperti biasa.
+
+- Profil di beranda langsung tampil sambil status dimuat per anak. Pengingat skrining dan catatan makan mengikuti next_kpsp.due dan NO_RECENT_FOOD_RECALL dari backend.
+- Badge tingkat memakai ikon dan teks. Detail z-score hanya menampilkan angka dari API.
+- Kurva: perbaikan SVG yang sebelumnya terkena ukuran ikon 22px; pita mengikuti garis API; legenda berupa checkbox yang dapat digunakan lewat keyboard; tabel menyebut satuan dan z-score.
+- Respons kurva yang bentuknya tidak lengkap ditolak dengan pesan pemulihan. Laporan tanpa data kurva membutuhkan pilihan cetak tanpa kurva.
+- Simpan/hapus yang selesai setelah pengguna berpindah halaman tidak mengalihkan halaman baru.
+
+Verifikasi: TypeScript/build lulus dan 15 uji browser lulus. Grafik ponsel diperiksa secara visual dan media cetak diuji pada browser. Data uji grafik adalah angka simulasi protokol, bukan tabel WHO. PDF A4 lengkap serta backend/engine asli belum diverifikasi. Modul grafik dimuat terpisah saat diperlukan; build memberi peringatan ukuran modul grafik sekitar 504 kB (sebelum kompresi), bukan kegagalan build.

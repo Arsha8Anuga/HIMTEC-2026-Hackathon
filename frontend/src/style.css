@@ -62,7 +62,7 @@ button:disabled {
   background: #fff0ee;
   border-color: #ecc9c5;
 }
-svg {
+.lucide {
   flex-shrink: 0;
   width: 22px;
   height: 22px;
@@ -788,4 +788,53 @@ textarea,
 button,
 a {
   scroll-margin-block: 100px;
+}
+.badge {
+  gap: 6px;
+  align-items: center;
+}
+.badge svg {
+  width: 16px;
+  height: 16px;
+}
+.card-reminder {
+  font-size: 13px;
+  margin: 12px 0 0;
+  color: var(--brand);
+  font-weight: 600;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  border: 0;
+  padding: 0;
+  margin: 12px 0;
+}
+.chart-legend legend {
+  font-size: 13px;
+  color: var(--muted);
+}
+.chart-legend .check {
+  font-size: 13px;
+  gap: 8px;
+}
+.legend-swatch {
+  width: 16px;
+  height: 3px;
+  display: inline-block;
+}
+.status-card > .badge {
+  margin-bottom: 16px;
+}
+@media print {
+  .chart-legend {
+    display: flex !important;
+  }
+  .chart-legend input {
+    display: none;
+  }
+  .card-reminder {
+    color: inherit;
+  }
 }

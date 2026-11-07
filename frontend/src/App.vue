@@ -15,6 +15,8 @@ import {
   Trash2,
 } from "lucide-vue-next";
 import { api, ApiError, today, dateLabel } from "./lib/api";
+import StatusBadge from "./components/StatusBadge.vue";
+import { isGrowthData } from "./lib/growth";
 import { childBody, measurementBody, foodBody } from "./lib/forms";
 const GrowthChart = defineAsyncComponent(
   () => import("./components/GrowthChart.vue"),
@@ -198,6 +200,7 @@ async function load() {
   relatedGuides.value = [];
   reportReady.value = false;
   growthVersion++;
+  deleteId.value = "";
   busy.value = true;
   error.value = "";
   notice.value = "";
@@ -270,12 +273,20 @@ async function load() {
         foods.value = await request(`/children/${id.value}/food-recalls`);
     } else if (page.value === "home") {
       children.value = await request("/children");
+      for (const c of children.value) c.statusLoading = true;
+      busy.value = false;
+      await nextTick();
+      if (version !== loadVersion) throw new StaleLoad();
+      if (version === loadVersion)
+        document.querySelector<HTMLElement>("h1")?.focus();
       await Promise.all(
         children.value.map(async (c) => {
           try {
             c.status = await request(`/children/${c.id}/status`);
           } catch {
             c.unavailable = true;
+          } finally {
+            c.statusLoading = false;
           }
         }),
       );
@@ -286,9 +297,10 @@ async function load() {
       error.value = (e as Error).message;
   } finally {
     if (version === loadVersion) {
+      const focusPage = busy.value;
       busy.value = false;
       await nextTick();
-      document.querySelector<HTMLElement>("h1")?.focus();
+      if (focusPage) document.querySelector<HTMLElement>("h1")?.focus();
     }
   }
 }
@@ -302,6 +314,10 @@ async function loadGrowth() {
     const data = await api(
       `/children/${id.value}/growth?indicator=${selected}`,
     );
+    if (!isGrowthData(data))
+      throw new Error(
+        "Data kurva dari layanan belum lengkap. Coba muat kembali.",
+      );
     if (version === growthVersion && owner === route.path) growth.value = data;
   } catch (e) {
     if (version === growthVersion && owner === route.path) {
@@ -324,6 +340,7 @@ watch(indicator, () => {
   }
 });
 async function submit(kind: string) {
+  const owner = route.path;
   saving.value = true;
   error.value = "";
   fields.value = {};
@@ -351,35 +368,41 @@ async function submit(kind: string) {
       path = `/children/${id.value}/kpsp`;
     }
     const r = await api(path, "POST", body);
+    if (route.path !== owner) return;
     if (kind === "new") await router.push(`/children/${r.id}`);
     else await go("");
     notice.value = "Data berhasil disimpan.";
   } catch (e) {
+    if (route.path !== owner) return;
     const x = e as ApiError;
     error.value = x.message;
     fields.value = x.fields || {};
     if (kind === "food") {
       try {
-        foods.value = await api(`/children/${id.value}/food-recalls`);
+        const updatedFoods = await api(`/children/${id.value}/food-recalls`);
+        if (route.path === owner) foods.value = updatedFoods;
       } catch {
         /* Keep the original save error visible. */
       }
     }
     await nextTick();
-    document.querySelector<HTMLElement>('[role="alert"]')?.focus();
+    if (route.path === owner)
+      document.querySelector<HTMLElement>('[role="alert"]')?.focus();
   } finally {
     saving.value = false;
   }
 }
 async function remove() {
+  const owner = route.path;
   saving.value = true;
   try {
     await api(`/children/${id.value}/measurements/${deleteId.value}`, "DELETE");
+    if (route.path !== owner) return;
     deleteId.value = "";
     await load();
     notice.value = "Pengukuran dihapus.";
   } catch (e) {
-    error.value = (e as Error).message;
+    if (route.path === owner) error.value = (e as Error).message;
   } finally {
     saving.value = false;
   }
@@ -508,9 +531,25 @@ async function remove() {
                 {{ age(c) }} bulan ·
                 {{ c.sex === "female" ? "Perempuan" : "Laki-laki" }}
               </p>
-              <span class="badge" :class="c.status?.level">{{
-                c.status?.level_label || "Status belum tersedia"
-              }}</span>
+              <StatusBadge
+                :level="c.status?.level"
+                :label="
+                  c.statusLoading ? 'Memuat status…' : c.status?.level_label
+                "
+              />
+              <p v-if="c.status?.next_kpsp?.due" class="card-reminder">
+                Skrining perkembangan jatuh tempo
+              </p>
+              <p
+                v-if="
+                  c.status?.reasons?.some(
+                    (r: any) => r.code === 'NO_RECENT_FOOD_RECALL',
+                  )
+                "
+                class="card-reminder"
+              >
+                Isi catatan makan kemarin
+              </p>
               <div class="card-footer">
                 Pengukuran terakhir
                 <strong>{{ dateLabel(c.status?.latest?.measured_at) }}</strong>
@@ -608,6 +647,10 @@ async function remove() {
           ><div class="detail-grid">
             <section class="card status-card" :class="status?.level">
               <span class="eyebrow">STATUS TERKINI</span>
+              <StatusBadge
+                :level="status?.level"
+                :label="status?.level_label"
+              />
               <h2>{{ status?.level_label || "Status belum tersedia" }}</h2>
               <p v-if="status?.latest">
                 Pengukuran {{ dateLabel(status.latest.measured_at) }}
@@ -638,6 +681,15 @@ async function remove() {
                   >
                 </div>
               </div>
+              <details v-if="status?.latest?.z">
+                <summary>Lihat detail pengukuran</summary>
+                <dl class="evidence">
+                  <template v-for="(value, key) in status.latest.z" :key="key"
+                    ><dt>{{ key }} (z-score)</dt>
+                    <dd>{{ value ?? "—" }}</dd></template
+                  >
+                </dl>
+              </details>
               <RouterLink :to="`/children/${id}/report`"
                 >Buka laporan <ArrowUpRight :size="16"
               /></RouterLink>
@@ -651,9 +703,18 @@ async function remove() {
             >
               <summary>
                 {{ reason.title }}
-                <span class="badge" :class="reason.level">{{
-                  reason.level
-                }}</span>
+                <StatusBadge
+                  :level="reason.level"
+                  :label="
+                    (
+                      {
+                        red: 'Segera periksakan',
+                        yellow: 'Perlu perhatian',
+                        info: 'Informasi',
+                      } as Record<string, string>
+                    )[reason.level]
+                  "
+                />
               </summary>
               <p>{{ reason.message }}</p>
               <details>
@@ -692,6 +753,19 @@ async function remove() {
               >Lihat skrining <ArrowUpRight :size="16"
             /></RouterLink>
           </section>
+          <section
+            v-if="
+              status?.reasons?.some(
+                (r: any) => r.code === 'NO_RECENT_FOOD_RECALL',
+              )
+            "
+            class="card"
+          >
+            <h2>Catatan makan kemarin</h2>
+            <RouterLink :to="`/children/${id}/food`" class="button"
+              >Isi catatan makan</RouterLink
+            >
+          </section>
           <section v-if="status?.diet" class="card">
             <h2>Catatan makan · {{ dateLabel(status.diet.recall_date) }}</h2>
             <p>{{ status.diet.group_count }} kelompok pangan tercatat</p>
@@ -713,6 +787,10 @@ async function remove() {
               v-if="growth"
               :data="growth"
               @ready="reportReady = true"
+              @unavailable="
+                growth = null;
+                reportWarning = 'Belum ada data kurva.';
+              "
             /><button v-else class="secondary" @click="reportReady = true">
               Lanjutkan cetak tanpa kurva
             </button></template

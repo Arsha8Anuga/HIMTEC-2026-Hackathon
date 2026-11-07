@@ -20,3 +20,13 @@ Paket ZIP diekstrak dari akar monorepo dan berisi frontend/. Patch berikutnya ha
 - Panduan: API query category/age_months, status memfilter related_codes. Tidak mengarang materi.
 - npm test: 10 tes Playwright dengan Chrome lokal dan API mock; lulus pada sesi ini, viewport 360/768/1440. Bukan end-to-end dengan Go/WHO. npm run build lulus.
 - OTP masih belum diimplementasikan; tetap mode demo. Tidak mengubah engine/backend/kontrak.
+
+## Patch 003 (0.3.0)
+- src/components/StatusBadge.vue: ikon + teks tingkat; tidak menentukan level klinis.
+- src/lib/growth.ts: tipe GrowthData dan pemeriksaan bentuk array/nilai finite, tanpa ambang medis.
+- Kurva memakai SVG dan poligon antara garis API, bukan stack numeric axis (stack dapat menggeser sumbu x). CSS ukuran ikon harus tetap pada .lucide, jangan selector svg global, karena mengecilkan grafik.
+- Beranda menampilkan profil sebelum status selesai. Pengingat hanya dari next_kpsp.due/NO_RECENT_FOOD_RECALL backend. Jangan menyimpulkan jadwal dari umur sendiri.
+- Mutasi menyimpan route pemilik; penyelesaian setelah navigasi tidak mengalihkan halaman pengguna. Refresh makan setelah gagal simpan juga memeriksa pemilik route.
+- Grafik kosong pada laporan memerlukan konfirmasi eksplisit cetak tanpa kurva. Legend checkbox terjangkau keyboard; tabel memiliki unit/z-score. Pita tidak mempunyai arti klasifikasi tambahan.
+- Verifikasi aktual: 15 tes Playwright API simulasi lulus, build/TypeScript lulus. Screenshot grafik 360px diperiksa sesudah perbaikan ukuran SVG; test menegaskan lebar SVG sama dengan wadah, supaya bug tidak lolos hanya dengan keberadaan elemen. Mode print grafik juga diperiksa.
+- Batas sebelumnya tetap: OTP belum ada; guides/questionnaire/domain WHO mengikuti kesiapan API; belum integrasi Go/engine asli. Peringatan bundle grafik sekitar 504 kB; lazy loaded, bukan kegagalan build.
