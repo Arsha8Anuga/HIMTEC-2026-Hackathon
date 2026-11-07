@@ -54,3 +54,15 @@ Pada commit acuan, endpoint Python evaluasi/reference/KPSP belum tersedia; fitur
 ## Tambahan OTP dummy lokal
 
 Pendaftaran email dan login diaktifkan dengan AUTH_MODE=otp_dummy, kode hanya di terminal. Migrasi 004 menambah otp_codes/auth_sessions/audit_logs. Semua data bisnis membutuhkan bearer session dalam mode ini dan Store/Service di-scope per request ke user parent aktif. Kode HMAC sekali pakai 5 menit/5 percobaan, request minimum 60 detik/maksimal 5 per jam/email, session token acak disimpan hashed dan berlaku 24 jam, logout mencabut sesi. Default demo lama tetap tersedia. Lihat AUTH_TESTING.md untuk ekstensi API, 401/429, hasil tes dan perintah PowerShell.
+
+
+## Patch penyelarasan basis 6551237
+
+Tambah client inspection read-only dan cmd/check-engine; server memeriksa health/OpenAPI maksimal 3 detik tanpa menghambat CRUD/login atau memalsukan hasil medis. Error upstream menyimpan HTTPStatus internal agar route hilang dibedakan dari transport error. Loader .env dipakai bersama server/CLI. Tambahkan tes health-only, fake, route terdaftar/hilang, OpenAPI tidak diketahui, invalid health, cancel dan pesan kegagalan setelah penyimpanan.
+
+Dokumentasi diselaraskan: kontrak v0.5 tetap draf (review pemilik diperlukan), OTP lokal/401/429, KPSP >=16 mengikuti keputusan yang sudah tercatat pada Patch 07B; PRD menandai OTP dummy tersedia dan login produksi tetap roadmap. Root README menandai frontend/Compose belum tersedia; handoff diperbarui dari fakta kode 07B tanpa mengklaim validasi klinis. Tidak ada kode engine/frontend atau migrasi DB yang diubah.
+
+
+### Validasi patch penyelarasan
+
+Go test -race ./... dan go vet ./... lulus pada Go 1.22.12/Linux. Suite SQL integrasi dilewati pada pengujian ulang ini karena BACKEND_TEST_DATABASE_URL tidak diisi; kode auth/repository/migrasi tidak diubah oleh patch. Kompilasi server dan check-engine untuk Windows amd64 lulus. CLI yang berjalan terhadap HTTP fixture fake lulus, dan lima tes fake engine Python lulus. PostgreSQL native/Windows runtime serta engine medis asli tetap perlu diuji. Tidak ada kode/ambang/data medis engine yang diubah.

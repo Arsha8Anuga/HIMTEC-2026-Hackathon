@@ -29,8 +29,9 @@ func (e *EngineError) Error() string { return e.Code + ": " + e.Message }
 // Failure distinguishes engine transport/protocol errors from database errors.
 // It is internal Go state, not an additional field in the public API.
 type Failure struct {
-	Operation string
-	Err       error
+	Operation  string
+	Err        error
+	HTTPStatus int
 }
 
 func (e *Failure) Error() string { return "engine " + e.Operation + ": " + e.Err.Error() }
@@ -40,9 +41,10 @@ func New(baseURL string) *Client {
 	return &Client{BaseURL: strings.TrimRight(baseURL, "/"), HTTP: &http.Client{Timeout: 3 * time.Second}}
 }
 func (c *Client) Do(ctx context.Context, method, path string, payload any, out any) (err error) {
+	status := 0
 	defer func() {
 		if err != nil {
-			err = &Failure{Operation: method + " " + path, Err: err}
+			err = &Failure{Operation: method + " " + path, Err: err, HTTPStatus: status}
 		}
 	}()
 	var reader io.Reader
@@ -64,6 +66,7 @@ func (c *Client) Do(ctx context.Context, method, path string, payload any, out a
 	if err != nil {
 		return fmt.Errorf("panggilan engine: %w", err)
 	}
+	status = resp.StatusCode
 	defer resp.Body.Close()
 	const maxResponseBytes = 4 << 20
 	b, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes+1))

@@ -51,15 +51,17 @@ cd backend
 go run ./cmd/server
 ```
 
-**Frontend** (laptop teman):
+**Diagnostik engine** (dari backend/):
 
 ```bash
-cd frontend
-npm install
-npm run dev             # demo: npm run build && npm run preview
+go run ./cmd/check-engine
 ```
 
-**Mode cadangan satu laptop:** `docker-compose up` dengan `ENGINE_URL=http://engine:8001/engine/v1`.
+Health berhasil tidak berarti endpoint evaluasi siap. Pada snapshot ini main.py engine masih hanya mendaftarkan health; Go melaporkan route yang belum ada melalui diagnostik OpenAPI. Backend CRUD/login tetap dapat berjalan. Pengujian fixture lokal tersedia di backend/testing/README.md; tidak ada fallback medis otomatis.
+
+**Frontend dan Docker:** frontend masih kerangka folder; package.json/aplikasi Vite dan konfigurasi Compose belum tersedia pada snapshot ini. Perintah npm/Docker untuk seluruh stack adalah rencana, belum langkah yang dapat dijalankan. Gunakan API Go melalui PowerShell sampai aplikasi frontend dan Compose disediakan.
+
+**Mode OTP lokal:** set AUTH_MODE=otp_dummy di terminal Go sebelum startup. Gunakan Authorization Bearer saat menguji data anak; panduan lengkap di backend/AUTH_TESTING.md. Mode demo default tetap tersedia. Tidak ada email/SMS nyata pada OTP dummy.
 
 ## Tim
 

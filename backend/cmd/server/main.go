@@ -1,50 +1,24 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"log"
 	"net"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/auth"
+	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/config"
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/engineclient"
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/handler"
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/repository"
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/service"
 )
 
-func loadEnv(path string) {
-	f, err := os.Open(path)
-	if err != nil {
-		return
-	}
-	defer f.Close()
-	sc := bufio.NewScanner(f)
-	for sc.Scan() {
-		line := strings.TrimSpace(sc.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		k, v, ok := strings.Cut(line, "=")
-		if !ok {
-			continue
-		}
-		k = strings.TrimSpace(k)
-		v = strings.Trim(strings.TrimSpace(v), "\"'")
-		if os.Getenv(k) == "" {
-			_ = os.Setenv(k, v)
-		}
-	}
-}
 func main() {
 	// Jalankan dari backend/: go run ./cmd/server. File .env disimpan di akar repository.
-	loadEnv(filepath.Join("..", ".env"))
-	loadEnv(".env")
+	config.Load()
 	databaseURL := os.Getenv("DATABASE_URL")
 	engineURL := os.Getenv("ENGINE_URL")
 	if databaseURL == "" {
@@ -76,7 +50,8 @@ func main() {
 	if err := store.Migrate(ctx, "migrations"); err != nil {
 		log.Fatalf("migrasi PostgreSQL gagal: %v", err)
 	}
-	svc, err := service.New(store, engineclient.New(engineURL), "data")
+	engine := engineclient.New(engineURL)
+	svc, err := service.New(store, engine, "data")
 	if err != nil {
 		log.Fatalf("memuat data statis: %v", err)
 	}
@@ -96,6 +71,9 @@ func main() {
 	} else {
 		log.Print("AUTH_MODE=demo: tanpa login; gunakan AUTH_MODE=otp_dummy untuk autentikasi")
 	}
+	probeCtx, probeCancel := context.WithTimeout(context.Background(), 3*time.Second)
+	log.Print(engine.Inspect(probeCtx).Summary())
+	probeCancel()
 	routes := (&handler.Handler{Svc: svc, CORSOrigin: cors, Auth: authentication}).Routes()
 	server := &http.Server{Addr: ":8080", Handler: routes, ReadHeaderTimeout: 5 * time.Second}
 	log.Printf("Backend Go siap pada http://localhost:8080/api/v1 (engine: %s)", engineURL)

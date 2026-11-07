@@ -4,7 +4,7 @@ Nov 7, 2026 · @Zenacia
 
 ## Tujuan dan aturan main
 
-Kontrak ini mengikat bentuk data dan API antara frontend, backend Go, dan engine Python. Kode yang tidak cocok dengan kontrak dianggap salah, bukan kontraknya. Versi saat ini (v0.4 menambah Catatan Makan Kemarin; v0.3 jaringan demo dan kartu panduan): **v0.4 (draf)**, dibekukan menjadi v1.0 paling lambat satu jam setelah mulai.
+Kontrak ini mengikat bentuk data dan API antara frontend, backend Go, dan engine Python. Kode yang tidak cocok dengan kontrak dianggap salah, bukan kontraknya. Versi saat ini (v0.5 menyelaraskan mode OTP lokal dan klarifikasi KPSP Patch 07B; v0.4 menambah Catatan Makan Kemarin): **v0.5 (draf sinkronisasi; perlu review pemilik kontrak)**, dibekukan menjadi v1.0 paling lambat satu jam setelah mulai.
 
 **Masalah.** Orang tua balita 6–24 bulan menerima angka penimbangan Posyandu setiap bulan, tetapi tidak memahami artinya. Perlambatan pertumbuhan baru ketahuan setelah anak melewati −2 SD, ketika jendela intervensi hampir tertutup. Kemenkes menyebut usia 12–24 bulan sebagai tantangan terbesar, saat anak masuk fase MPASI ([InfoPublik, Mei 2026](https://infopublik.id/kategori/nasional-sosial-budaya/970585/intervensi-masa-krusial-jadi-fokus-kemenkes-tekan-angka-stunting)). Prevalensi nasional 19,8% (SSGI 2024), target 17,5% pada 2026.
 
@@ -88,6 +88,8 @@ Semua JSON memakai snake\_case, satuan metrik, tanggal ISO, dan satu bentuk ampl
 | `NOT_FOUND` | 404 | anak/pengukuran tidak ada |
 | `ENGINE_UNAVAILABLE` | 503 | Go gagal memanggil engine Python |
 | `INTERNAL` | 500 | selain di atas |
+| `UNAUTHORIZED` | 401 | kode/sesi tidak valid, expired, sudah dipakai, atau parent tidak aktif pada mode OTP |
+| `RATE_LIMITED` | 429 | batas permintaan OTP tercapai pada mode OTP |
 
 ## Model data
 
@@ -187,7 +189,7 @@ Nilai enum klasifikasi di JSON: `severely_underweight`, `underweight`, `normal`,
 **KPSP**
 
 1. Jadwal umur kuesioner: 3, 6, 9, 12, 15, 18, 21, 24, 30, 36, 42, 48, 54, 60 bulan.
-2. Pembulatan umur: sisa lebih dari 16 hari dibulatkan ke atas satu bulan.
+2. Pembulatan umur KPSP: sisa **16 hari atau lebih** dibulatkan ke atas satu bulan, selaras klarifikasi pengguna yang tercatat pada `engine/debug/PATCH_07B.md` dan `engine/data/kpsp/rules.json`. Komponen umur KPSP mengikuti peminjaman 30 hari yang diterapkan Patch 07B, terpisah dari umur tampilan pertumbuhan hari/30,4375. Tidak ada perhitungan KPSP tambahan di Go.
 3. Umur di luar jadwal memakai kuesioner umur jadwal terdekat yang lebih muda.
 4. Skor dari jumlah jawaban "Ya": 9–10 = `sesuai`; 7–8 = `meragukan` (stimulasi, ulangi 2 minggu lagi); ≤ 6 = `penyimpangan` (rujuk).
 5. Butir pertanyaan diketik dari Buku Pedoman SDIDTK Kemenkes, disimpan engine sebagai JSON statis.
@@ -253,7 +255,7 @@ Bila kode pola makan muncul bersamaan dengan `CROSSING_DOWN`, `WEIGHT_NOT_GAININ
 
 ## API publik (frontend ↔ Go)
 
-Frontend hanya berbicara dengan Go di `http://localhost:8080/api/v1`. MVP tanpa login: satu akun orang tua demo di-seed. Go mengizinkan CORS dari `http://localhost:5173`.
+Frontend hanya berbicara dengan Go di `http://localhost:8080/api/v1`. Mode `demo` (default) memakai satu akun orang tua demo tanpa login. Mode lokal opsional `AUTH_MODE=otp_dummy` menyediakan daftar/login parent dan mewajibkan bearer token pada route bisnis; Go bind loopback. Mode dummy bukan autentikasi untuk deployment publik. Go mengizinkan CORS dari `http://localhost:5173`.
 
 | Metode | Path | Fungsi |
 | --- | --- | --- |
@@ -467,7 +469,7 @@ Demo harus menunjukkan satu hal: sistem menangkap perlambatan pertumbuhan sebelu
 
 Angka pengukurannya disusun setelah engine jadi dan dicek dengan engine itu sendiri, bukan dikarang di slide.
 
-**Di luar cakupan MVP** (cukup disebut di slide sebagai pengembangan lanjutan): login dan banyak pengguna, dashboard kader, peta sebaran, LLM penjelas, koreksi umur prematur, pengukuran lewat kamera, notifikasi push, integrasi data Posyandu sungguhan.
+**Di luar cakupan MVP** (cukup disebut di slide sebagai pengembangan lanjutan): login produksi/OTP email atau SMS nyata dan pengelolaan multi-pengguna produksi, dashboard kader, peta sebaran, LLM penjelas, koreksi umur prematur, pengukuran lewat kamera, notifikasi push, integrasi data Posyandu sungguhan.
 
 Jika waktu tersisa, LLM penjelas masuk sebagai `POST /children/{id}/explain`. Ia hanya menerima output `/growth/evaluate` dan tidak pernah menghitung atau memutuskan tingkat.
 
@@ -480,3 +482,24 @@ Jika waktu tersisa, LLM penjelas masuk sebagai `POST /children/{id}/explain`. Ia
 5. H+10 — data demo di-seed; gladi alur demo pertama.
 6. H+11 — slide dan laporan, masing-masing menulis bagiannya.
 7. H+12 — gladi akhir; rekam video demo sebagai cadangan.
+
+
+## Tambahan v0.5 — autentikasi dummy lokal dan alamat dasar
+
+Draf ini menyatukan implementasi yang diminta pengguna dengan klarifikasi Patch 07B; belum menyatakan persetujuan akhir pemilik kontrak atau validasi medis. Endpoint medis yang sudah ada tetap memakai bentuk v0.4.
+
+GET/HEAD `/api/v1` dan `/api/v1/` mengarahkan HTTP 307 ke `/api/v1/children`. Path yang tidak dikenal tetap JSON 404. Mode OTP mewajibkan Authorization untuk daftar anak; redirect bukan health check.
+
+| Metode/path di bawah /api/v1 | Request | Data respons sukses |
+| --- | --- | --- |
+| POST /auth/register | name, email | 202: challenge_id, expires_in=300 |
+| POST /auth/login | email | 202: challenge_id, expires_in=300 |
+| POST /auth/verify | challenge_id, code string 6 digit | 200: access_token, token_type=Bearer, expires_in=86400, user |
+| GET /auth/me | Authorization: Bearer token | 200: user |
+| POST /auth/logout | Authorization: Bearer token | 200: logged_out=true |
+
+User: `{id,name,email,role}`; pendaftaran selalu role parent. Tidak ada pemilihan role/parent_id oleh client. Akun baru kosong; data demo tidak dipindahkan. OTP terminal berlaku 5 menit, sekali pakai, maksimum 5 percobaan; request 60 detik dan 5 per jam/email. Sesi hashed 24 jam, logout mencabut sesi. Kode/token tidak ditulis ke audit. Lihat `backend/AUTH_TESTING.md`.
+
+Seluruh endpoint bisnis memeriksa sesi parent aktif dalam mode OTP. Request-local Store/Service memakai ID parent dari sesi. Akses anak lain menghasilkan 404. CORS mengizinkan Content-Type dan Authorization dari CORS_ORIGIN.
+
+Status implementasi engine pada basis 6551237: main.py hanya mendaftarkan health. Health/tabel WHO termuat tidak menjamin endpoint evaluasi tersedia. Backend membalas ENGINE_UNAVAILABLE bila route evaluasi Python belum tersedia; tidak mengganti hasil dengan fake otomatis. Fake engine testing harus dipilih eksplisit melalui ENGINE_URL dan tidak menghasilkan penilaian medis.

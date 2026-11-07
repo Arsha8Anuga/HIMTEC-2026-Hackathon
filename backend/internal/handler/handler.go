@@ -78,7 +78,14 @@ func respondError(w http.ResponseWriter, err error, saved string) {
 	var failure *engineclient.Failure
 	if errors.As(err, &failure) {
 		log.Printf("%v", err)
-		fail(w, 503, "ENGINE_UNAVAILABLE", message("Perhitungan sementara tidak tersedia"), nil)
+		text := "Perhitungan sementara tidak tersedia"
+		if failure.HTTPStatus == http.StatusNotFound {
+			text = "Endpoint perhitungan yang diminta belum tersedia pada engine"
+		}
+		if failure.HTTPStatus == 0 && (strings.HasPrefix(failure.Operation, "GET ") || strings.HasPrefix(failure.Operation, "POST ")) {
+			text = "Engine tidak dapat dihubungi atau responsnya tidak selesai; periksa ENGINE_URL dan proses Python"
+		}
+		fail(w, 503, "ENGINE_UNAVAILABLE", message(text), nil)
 		return
 	}
 	log.Printf("backend: %v", err)

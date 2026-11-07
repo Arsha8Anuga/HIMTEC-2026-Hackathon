@@ -47,7 +47,7 @@ Enam usulan fitur dilebur menjadi tiga fitur wajib dan tiga fitur pendukung yang
 | Laporan untuk Posyandu (bagian Posyandu Connect) | sebaiknya | halaman laporan ramah cetak: identitas anak, tabel pengukuran, kurva, status, riwayat KPSP; tombol unduh memakai cetak-ke-PDF peramban | frontend |
 | Penjelasan status (LLM lokal) | tambahan, setelah H+7 | ringkasan status dalam bahasa sehari-hari dari output engine | Zena |
 
-**Tidak dibangun:** jadwal imunisasi dan pengingat Posyandu, notifikasi push, login banyak pengguna, dashboard kader, pembacaan foto Buku KIA (OCR), pembuat menu otomatis, koreksi umur prematur. Semuanya disebut di slide sebagai pengembangan lanjutan.
+**Tidak dibangun:** jadwal imunisasi dan pengingat Posyandu, notifikasi push, login produksi/multi-pengguna produksi, dashboard kader, pembacaan foto Buku KIA (OCR), pembuat menu otomatis, koreksi umur prematur. Semuanya disebut di slide sebagai pengembangan lanjutan.
 
 Kartu GiziCerdas dan Stimulasi disajikan Go lewat `GET /api/v1/guides`, sehingga aturan "frontend tidak menyusun kalimat medis" tetap berlaku (lihat kontrak v0.3).
 
@@ -59,7 +59,7 @@ Kartu GiziCerdas dan Stimulasi disajikan Go lewat `GET /api/v1/guides`, sehingga
 
 **Peta jalan setelah MVP.** Fase 2: pencatatan porsi memakai Ukuran Rumah Tangga dan Tabel Komposisi Pangan Indonesia, dengan takaran bergambar khusus balita. Fase 3: estimasi porsi dari foto makanan, satu-satunya bagian yang membutuhkan machine learning, dilatih dari data yang terkumpul di fase 2.
 
-**Login dan peran (setelah MVP).** Masuk memakai kode sekali pakai (OTP) yang dikirim ke nomor ponsel atau email pemilik akun. Akses ditolak secara bawaan; setiap endpoint menyebut peran yang diizinkan.
+**Login dan peran (produksi setelah MVP; OTP dummy lokal tersedia untuk pengujian).** Masuk memakai kode sekali pakai (OTP) yang dikirim ke nomor ponsel atau email pemilik akun. Akses ditolak secara bawaan; setiap endpoint menyebut peran yang diizinkan.
 
 | Peran | Boleh | Tidak boleh |
 | --- | --- | --- |
@@ -70,6 +70,8 @@ Kartu GiziCerdas dan Stimulasi disajikan Go lewat `GET /api/v1/guides`, sehingga
 Kode disimpan dalam bentuk hash, sekali pakai, kedaluwarsa dalam beberapa menit, dan jumlah percobaannya dibatasi. Setiap tindakan admin dicatat di log audit.
 
 **Persiapan yang dikerjakan di MVP:** tabel `users` dengan kolom `role` (`parent`, `admin`), kolom `children.parent_id` yang mengarah ke `users.id`, dan satu orang tua demo di-seed. Semua query anak difilter dengan ID orang tua tersebut. Kontrak API tidak berubah.
+
+**Status implementasi pengujian saat ini.** OTP dummy lokal telah tersedia atas permintaan pengguna: pendaftaran email, kode terminal, verifikasi, sesi bearer, me dan logout. Mode ini opsional melalui AUTH_MODE=otp_dummy dan hanya bind loopback. Default/demo tetap tanpa login. Tiga tabel tambahan otp_codes/auth_sessions/audit_logs ditambahkan oleh migrasi 004; total delapan tabel (lima bisnis, tiga auth). Pengiriman email/SMS nyata dan pengelolaan akun admin tetap roadmap. Spesifikasi API dummy tercatat pada draf kontrak v0.5 dan backend/AUTH_TESTING.md.
 
 ## Alur utama
 

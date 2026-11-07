@@ -1,6 +1,6 @@
 # Backend Go + PostgreSQL — HIMTEC 2026
 
-Acuan: repository `af4193a` (`Document Update`, 7 November 2026), `docs/CONTRACT.md` v0.4 dan PRD terbaru dengan kepemilikan anak. API publik tetap `:8080/api/v1`; PostgreSQL tetap `:5432`. Aplikasi adalah alat skrining, bukan diagnosis.
+Acuan: repository `af4193a` (`Document Update`, 7 November 2026), `docs/CONTRACT.md` v0.5 (draf sinkronisasi) dan PRD terbaru dengan kepemilikan anak. API publik tetap `:8080/api/v1`; PostgreSQL tetap `:5432`. Aplikasi adalah alat skrining, bukan diagnosis.
 
 ## Daftar/login OTP dummy lokal
 
@@ -114,3 +114,22 @@ PGlite dipakai hanya di lingkungan pengujian dan tidak menjadi dependensi paket 
 ## Pekerjaan integrasi yang masih terbuka
 
 `guides.id.json` masih kosong menunggu materi resmi. Bentuk ringkasan daftar anak, body lengkap skor KPSP dan respons reference perlu dikunci bersama pemilik kontrak. Batas umur pengukuran 1856 hari tetap mengikuti kontrak; perbedaan dengan domain tabel WHO 1826 hari perlu diputuskan pemilik kontrak/engine. Riwayat KPSP lama yang sudah berisi tanggal tidak valid tidak dihapus diam-diam oleh patch.
+
+
+## Diagnostik integrasi engine
+
+Dari folder backend, jalankan `go run ./cmd/check-engine`. Perintah memakai ENGINE_URL dari environment/.env yang sama dengan server, tanpa DATABASE_URL dan tanpa mengirim data anak.
+
+- Health tidak terhubung/invalid: periksa IP, port, proses Python dan bind.
+- Health OK + missing_routes: proses hidup tetapi OpenAPI belum mendaftarkan metode/path yang dipanggil Go.
+- Fake terdeteksi lewat header X-Fake-Engine: yang diuji hanya fixture; bukan hasil medis.
+- OpenAPI unknown: pemeriksaan route tidak dapat disimpulkan (misalnya docs dinonaktifkan atau reverse proxy). Ini bukan bukti semua route hilang.
+- Route terdaftar dan WHO true pun belum membuktikan perhitungan medis tervalidasi.
+
+Exit code program: 0 berarti diagnostik dasar lolos atau fake terdeteksi; 1 berarti health gagal/route diketahui hilang/data WHO real false; 2 konfigurasi ENGINE_URL kosong; 3 health OK tetapi daftar route tidak diketahui. `go run` dapat mencetak exit status saat diagnostik menemukan masalah; ini hasil pemeriksaan yang perlu dibaca, bukan bukti Go gagal dikompilasi.
+
+Server menjalankan pemeriksaan read-only terbatas 3 detik saat startup, lalu tetap melayani CRUD/login. Tidak melakukan cache permanen atau memblokir request berdasarkan OpenAPI; hasil diagnostik bisa berubah setelah Python diperbarui. Semua evaluasi tetap memanggil engine pada saat request.
+
+Jika Python membalas 404, pesan Go menjelaskan endpoint perhitungan belum tersedia. Gangguan koneksi/respons tidak selesai menjelaskan pemeriksaan ENGINE_URL/proses Python. Kode publik tetap ENGINE_UNAVAILABLE (503), dan pesan data sudah tersimpan tetap dipertahankan setelah POST.
+
+Draf kontrak v0.5 menambahkan mode OTP dan menjelaskan >=16 hari KPSP sesuai Patch 07B. Go tidak menghitung umur formulir/ambang KPSP sendiri. Engine asli tidak dimodifikasi dalam patch backend ini; router medis, gambar/review bank KPSP dan pengujian klinis tetap pekerjaan engine.

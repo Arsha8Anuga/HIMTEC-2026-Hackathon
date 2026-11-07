@@ -147,3 +147,11 @@ func TestParentCannotBeSelectedThroughPublicJSON(t *testing.T) {
 		t.Fatalf("parent_id must be rejected: %d %s", r.Code, r.Body.String())
 	}
 }
+
+func TestMissingEngineRouteHasActionableMessage(t *testing.T) {
+	rec := httptest.NewRecorder()
+	respondError(rec, &engineclient.Failure{Operation: "POST /growth/evaluate", Err: errors.New("HTTP engine 404"), HTTPStatus: 404}, "Pengukuran")
+	if rec.Code != 503 || !strings.Contains(rec.Body.String(), "Endpoint perhitungan") || !strings.Contains(rec.Body.String(), "sudah tersimpan") {
+		t.Fatalf("wrong failure: %d %s", rec.Code, rec.Body.String())
+	}
+}
