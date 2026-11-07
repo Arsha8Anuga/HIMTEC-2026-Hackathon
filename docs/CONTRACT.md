@@ -4,7 +4,7 @@ Nov 7, 2026 · @Zenacia
 
 ## Tujuan dan aturan main
 
-Kontrak ini mengikat bentuk data dan API antara frontend, backend Go, dan engine Python. Kode yang tidak cocok dengan kontrak dianggap salah, bukan kontraknya. Versi saat ini (v0.7 menayangkan KPSP 15/18/24 berlabel dan memilih tabel BB/PB atau BB/TB di Go, lihat "Penegasan v0.7"; v0.6 menetapkan batas umur pengukuran 1826 hari dan menuntaskan tiga isu terbuka, lihat "Penegasan v0.6"; v0.5 memperjelas umur/jadwal KPSP sesuai keputusan pengguna; v0.4 menambah Catatan Makan Kemarin; v0.3 jaringan demo dan kartu panduan): **v0.7 (draf)**, dibekukan menjadi v1.0 paling lambat satu jam setelah mulai.
+Kontrak ini mengikat bentuk data dan API antara frontend, backend Go, dan engine Python. Kode yang tidak cocok dengan kontrak dianggap salah, bukan kontraknya. Versi saat ini (v0.8 menambah asisten LLM, lihat "Penegasan v0.8"; v0.7 menayangkan KPSP 15/18/24 berlabel dan memilih tabel BB/PB atau BB/TB di Go, lihat "Penegasan v0.7"; v0.6 menetapkan batas umur pengukuran 1826 hari dan menuntaskan tiga isu terbuka, lihat "Penegasan v0.6"; v0.5 memperjelas umur/jadwal KPSP sesuai keputusan pengguna; v0.4 menambah Catatan Makan Kemarin; v0.3 jaringan demo dan kartu panduan): **v0.8 (draf)**, dibekukan menjadi v1.0 paling lambat satu jam setelah mulai.
 
 **Masalah.** Orang tua balita 6–24 bulan menerima angka penimbangan Posyandu setiap bulan, tetapi tidak memahami artinya. Perlambatan pertumbuhan baru ketahuan setelah anak melewati −2 SD, ketika jendela intervensi hampir tertutup. Kemenkes menyebut usia 12–24 bulan sebagai tantangan terbesar, saat anak masuk fase MPASI ([InfoPublik, Mei 2026](https://infopublik.id/kategori/nasional-sosial-budaya/970585/intervensi-masa-krusial-jadi-fokus-kemenkes-tekan-angka-stunting)). Prevalensi nasional 19,8% (SSGI 2024), target 17,5% pada 2026.
 
@@ -490,6 +490,19 @@ Publik `GET /children/{id}/kpsp/next` menambah dua field: `review_status` (diter
 **Kurva BB/PB-TB.** Enum `indicator` pada `GET /reference` internal menjadi `wfa`, `lhfa`, `hcfa`, `wfl`, `wfh`; `wfl_wfh` tidak lagi diterima engine (422). Untuk `wfl`/`wfh`, `x_from`/`x_to` adalah cm bulat dan respons memakai grid 0,1 cm tabel WHO; di luar domain tabel (`wfl` 45–110, `wfh` 65–120) engine membalas 503 tanpa ekstrapolasi. Go memilih `wfl` bila umur anak hari ini < 731 hari, selainnya `wfh`, dan meminta seluruh domain tabel itu. API publik tetap `indicator=wfl_wfh`, `x_unit` = `"cm"`.
 
 Batas yang diketahui: anak ≥ 731 hari yang punya pengukuran sebelum 731 hari tetap digambar di atas garis BB/TB; z-score titik itu sendiri tetap dihitung engine dengan tabel yang benar.
+
+## Penegasan v0.8
+
+Disetujui Zena, 7 November 2026, sebagai fitur sesudah H+9 atas keputusan pemilik kontrak (F-14).
+
+**Asisten LLM.** Go memanggil Ollama lokal; engine tidak terlibat. Dua endpoint publik baru:
+
+- `GET /assistant` → `{ "enabled": true }`. Frontend menampilkan asisten hanya bila `enabled`.
+- `POST /children/{id}/assistant`, body `{ "message": "…", "history": [ { "role": "user" | "assistant", "content": "…" } ] }` (pesan 1–500 karakter, paling banyak 10 riwayat, isi riwayat ≤ 2000 karakter) → `{ "reply": "…", "grounded": true }`.
+
+Kode error baru: `LLM_UNAVAILABLE` (503), bila `LLM_ENABLED` bukan `true` atau Ollama gagal/lambat. Masukan model hanya data anak yang sama dengan `/status`, riwayat pengukuran, riwayat KPSP, dan kartu panduan yang terkait alasan, tanpa ID. Bila jawaban memuat angka atau tanggal yang tidak ada di data itu, Go mengganti jawaban dengan kalimat penolakan tetap dan `grounded` = `false`. Pemeriksaan ini hanya memastikan angka *ada* di data, bukan dipakai dengan arti yang benar.
+
+**Mode `AUTH_MODE=otp_email`.** Sama dengan `otp_dummy` (endpoint `/auth/*`, 401/429) tetapi kode dikirim lewat SMTP dan server tidak dibatasi ke 127.0.0.1. Tetap ekstensi di luar kontrak inti; demo tetap mode `demo`.
 
 ## Demo, batas cakupan, dan jadwal
 

@@ -11,6 +11,7 @@ export async function api<T = any>(
   path: string,
   method = "GET",
   body?: unknown,
+  timeoutMs = 12000,
 ): Promise<T> {
   const base = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
   if (!base)
@@ -19,7 +20,7 @@ export async function api<T = any>(
       0,
     );
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(base + path, {
       method,

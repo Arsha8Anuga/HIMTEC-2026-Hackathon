@@ -107,7 +107,7 @@ Sebuah fitur dianggap selesai hanya jika kriteria penerimaannya terbukti di demo
 | F-11 | Hapus pengukuran | ada konfirmasi; status dan kurva langsung dihitung ulang |
 | F-12 | Penafian | setiap layar status menyebut "alat skrining, bukan diagnosis" |
 | F-13 | Engine tidak terjangkau | data tetap tersimpan; layar menampilkan "perhitungan sementara tidak tersedia" tanpa merusak halaman |
-| F-14 | Penjelasan LLM (tambahan) | hanya memakai output engine; bisa dimatikan lewat variabel lingkungan; bila gagal, bagian itu tidak muncul tanpa pesan error |
+| F-14 | Penjelasan LLM (tambahan) | hanya memakai output engine; bisa dimatikan lewat variabel lingkungan; bila gagal, bagian itu tidak muncul tanpa pesan error. v0.8: dibangun sebagai "Tanya asisten" di ringkasan anak (Ollama lokal); bila dimatikan, bagian itu tidak muncul; bila gagal di tengah percakapan, muncul catatan tenang dan pertanyaan tidak hilang |
 
 ## Layar dan kebutuhan non-fungsional
 

@@ -18,6 +18,7 @@ import { api, ApiError, today, dateLabel } from "./lib/api";
 import KpspQuestionnaire from "./components/KpspQuestionnaire.vue";
 import FieldError from "./components/FieldError.vue";
 import StatusBadge from "./components/StatusBadge.vue";
+import AssistantChat from "./components/AssistantChat.vue";
 import { isGrowthData } from "./lib/growth";
 import { childBody, measurementBody, foodBody } from "./lib/forms";
 const GrowthChart = defineAsyncComponent(
@@ -799,6 +800,7 @@ async function remove() {
             </div>
             <RouterLink to="/guides">Lihat semua panduan</RouterLink>
           </section>
+          <AssistantChat v-if="status" :child-id="id" :child-name="child?.name" />
           <section v-if="status?.next_kpsp" class="card">
             <h2>Skrining perkembangan</h2>
             <p>

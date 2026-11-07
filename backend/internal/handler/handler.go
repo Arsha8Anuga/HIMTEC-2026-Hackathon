@@ -316,6 +316,8 @@ func (h *Handler) Routes() http.Handler {
 	mux.HandleFunc("GET /api/v1/guides", h.guides)
 	mux.HandleFunc("POST /api/v1/children/{id}/food-recalls", h.addFood)
 	mux.HandleFunc("GET /api/v1/children/{id}/food-recalls", h.foods)
+	mux.HandleFunc("GET /api/v1/assistant", h.assistantInfo)
+	mux.HandleFunc("POST /api/v1/children/{id}/assistant", h.assistant)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin != "" && origin == h.CORSOrigin {

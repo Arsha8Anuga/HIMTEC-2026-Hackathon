@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/engineclient"
+	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/llm"
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/model"
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/repository"
 )
@@ -37,6 +38,7 @@ type Service struct {
 	Engine   *engineclient.Client
 	Messages map[string]Text
 	Guides   []Guide
+	LLM      *llm.Client // nil bila LLM_ENABLED bukan true (kontrak v0.8)
 }
 
 func New(s *repository.Store, e *engineclient.Client, dir string) (*Service, error) {

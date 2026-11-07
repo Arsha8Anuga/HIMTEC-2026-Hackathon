@@ -209,6 +209,73 @@ Harus berakhir `0 kegagalan`.
 | Formulir KPSP berlabel "Transkripsi … belum ditinjau klinis" | butir diketik ulang dari pedoman SDIDTK 2022, belum ditinjau tenaga kesehatan | sebut terus terang saat demo |
 | Kartu panduan hanya untuk 6–23 bulan (GiziCerdas) dan 6–35 bulan (Stimulasi) | isi disalin dari Buku KIA 2024 dan SDIDTK 2022 untuk rentang sasaran aplikasi | anak demo semuanya di rentang ini |
 
+## Asisten LLM (Ollama, opsional)
+
+Asisten "Tanya asisten" di ringkasan anak menjawab pertanyaan orang tua dari data anak di aplikasi.
+Go yang memanggil Ollama; engine tidak terlibat. Mati secara bawaan.
+
+1. **Di laptop yang menjalankan Ollama**, lihat nama model yang terpasang dan coba sekali:
+
+   ```powershell
+   ollama list
+   ollama run <nama-model> "Jawab satu kalimat: apa itu Posyandu?"
+   ```
+
+   Pakai nama persis dari kolom NAME (misalnya qwen atau gemma dengan tag ukurannya). Pilih yang menjawab
+   paling cepat; laptop dengan GPU kecil sebaiknya memakai model kecil. Model qwen3 menulis bagian
+   "berpikir" lebih dulu; Go membuangnya, tetapi jawaban jadi lebih lambat.
+
+2. **Isi `.env` di akar repo** (laptop yang menjalankan Go):
+
+   ```
+   LLM_ENABLED=true
+   LLM_MODEL=<nama-model persis dari ollama list>
+   OLLAMA_URL=http://127.0.0.1:11434
+   LLM_TIMEOUT=90
+   ```
+
+   Bila Ollama ada di laptop lain (mis. laptop Zena, Go di laptop teman): di laptop Ollama set variabel
+   lingkungan Windows `OLLAMA_HOST=0.0.0.0`, mulai ulang Ollama, izinkan port 11434 di firewall, lalu
+   `OLLAMA_URL=http://<IP laptop Ollama>:11434`.
+
+3. **Mulai ulang Go.** Log harus memuat `Asisten LLM aktif: model … di …`. Periksa:
+
+   ```powershell
+   curl.exe http://localhost:8080/api/v1/assistant
+   ```
+
+   Harus `"enabled":true`. Di peramban, kartu "Tanya asisten" muncul di bawah "Hal yang perlu diperhatikan".
+
+**Batas yang perlu disampaikan saat demo.** Jawaban dibuat model bahasa dan bisa keliru. Go menolak jawaban
+yang memuat angka atau tanggal yang tidak ada di data anak (kartu bergaris putus-putus), tetapi tidak bisa
+memeriksa apakah angka yang ada dipakai dengan arti yang benar. Respons pertama setelah Ollama menyala
+biasanya lambat karena model dimuat ke memori; ajukan satu pertanyaan sebelum demo.
+
+| Gejala | Penyebab | Perbaikan |
+| --- | --- | --- |
+| Kartu "Tanya asisten" tidak muncul | `LLM_ENABLED` bukan `true` atau Go belum dimulai ulang | periksa log Go dan `/api/v1/assistant` |
+| "Asisten sementara tidak tersedia" | Ollama mati, nama model salah, atau melewati `LLM_TIMEOUT` | `ollama list`, samakan `LLM_MODEL`, naikkan `LLM_TIMEOUT` |
+| Go berhenti: `LLM_ENABLED=true butuh LLM_MODEL` | `LLM_MODEL` kosong | isi nama model |
+
+## Login dengan email (opsional, belum untuk demo)
+
+Backend mendukung `AUTH_MODE=otp_email`: daftar/masuk dengan kode 6 angka yang dikirim ke email.
+**Frontend belum punya layar login**, jadi dengan mode ini semua halaman menerima 401. Demo tetap tanpa `AUTH_MODE`.
+
+```
+AUTH_MODE=otp_email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=<alamat gmail pengirim>
+SMTP_PASSWORD=<App Password Google, bukan sandi akun>
+SMTP_FROM=<alamat gmail pengirim>
+```
+
+Gmail butuh verifikasi 2 langkah aktif lalu App Password (Akun Google → Keamanan → Sandi aplikasi).
+Hanya port 587 (STARTTLS) yang didukung. Jangan pernah commit `.env`. Kode tidak dicetak di log; bila email
+gagal terkirim, log hanya mencatat ID permintaan, dan pengguna dapat meminta kode lagi setelah 60 detik.
+Endpoint dan batasnya sama dengan `otp_dummy` (`backend/AUTH_TESTING.md`).
+
 ## Mode satu laptop (Docker Compose)
 
 Cadangan bila hotspot gagal. **Bangun image saat masih ada internet**; setelah itu `up` berjalan tanpa internet.
