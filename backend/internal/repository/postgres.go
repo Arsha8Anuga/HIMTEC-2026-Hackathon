@@ -7,13 +7,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/Arsha8Anuga/HIMTEC-2026-Hackathon/backend/internal/model"
 	_ "github.com/lib/pq"
 )
 
-type Store struct{ DB *sql.DB }
+// DemoParentID is server-owned MVP context, never accepted from public JSON.
+const DemoParentID = "00000000-0000-4000-8000-000000000001"
+
+type Store struct {
+	DB       *sql.DB
+	ParentID string
+}
+
+func (s *Store) parentID() string {
+	if s.ParentID != "" {
+		return s.ParentID
+	}
+	return DemoParentID
+}
 
 func Open(databaseURL string) (*Store, error) {
 	db, err := sql.Open("postgres", databaseURL)
@@ -29,15 +43,34 @@ func Open(databaseURL string) (*Store, error) {
 		db.Close()
 		return nil, fmt.Errorf("koneksi PostgreSQL: %w", err)
 	}
-	return &Store{DB: db}, nil
+	return &Store{DB: db, ParentID: DemoParentID}, nil
 }
-func (s *Store) Migrate(ctx context.Context, path string) error {
-	b, err := os.ReadFile(path)
+func (s *Store) Migrate(ctx context.Context, directory string) error {
+	// 002 is an optional demo seed, not a startup migration.
+	names := []string{"001_init.sql", "003_demo_parent.sql"}
+	scripts := make([][]byte, 0, len(names))
+	for _, name := range names {
+		b, err := os.ReadFile(filepath.Join(directory, name))
+		if err != nil {
+			return err
+		}
+		scripts = append(scripts, b)
+	}
+	tx, err := s.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
-	_, err = s.DB.ExecContext(ctx, string(b))
-	return err
+	defer tx.Rollback()
+	// Serialize concurrent startup migrations within this database.
+	if _, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtext('himtec_backend_schema'))`); err != nil {
+		return err
+	}
+	for i, script := range scripts {
+		if _, err := tx.ExecContext(ctx, string(script)); err != nil {
+			return fmt.Errorf("%s: %w", names[i], err)
+		}
+	}
+	return tx.Commit()
 }
 func UUID() (string, error) {
 	var b [16]byte
@@ -83,7 +116,7 @@ func scanChild(s interface{ Scan(...any) error }) (model.Child, error) {
 	return x, err
 }
 func (s *Store) Children(ctx context.Context) ([]model.Child, error) {
-	rows, err := s.DB.QueryContext(ctx, `SELECT `+childColumns+` FROM children ORDER BY created_at, name`)
+	rows, err := s.DB.QueryContext(ctx, `SELECT `+childColumns+` FROM children WHERE parent_id=$1 AND EXISTS (SELECT 1 FROM users WHERE id=$1 AND role='parent' AND is_active) ORDER BY created_at, name`, s.parentID())
 	if err != nil {
 		return nil, err
 	}
@@ -99,15 +132,15 @@ func (s *Store) Children(ctx context.Context) ([]model.Child, error) {
 	return out, rows.Err()
 }
 func (s *Store) Child(ctx context.Context, id string) (model.Child, error) {
-	return scanChild(s.DB.QueryRowContext(ctx, `SELECT `+childColumns+` FROM children WHERE id=$1`, id))
+	return scanChild(s.DB.QueryRowContext(ctx, `SELECT `+childColumns+` FROM children WHERE id=$1 AND parent_id=$2 AND EXISTS (SELECT 1 FROM users WHERE id=$2 AND role='parent' AND is_active)`, id, s.parentID()))
 }
 func (s *Store) AddChild(ctx context.Context, x model.ChildInput) (model.Child, error) {
 	id, err := UUID()
 	if err != nil {
 		return model.Child{}, err
 	}
-	return scanChild(s.DB.QueryRowContext(ctx, `INSERT INTO children(id,name,sex,birth_date,birth_weight_kg,birth_length_cm,is_preterm) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING `+childColumns,
-		id, x.Name, x.Sex, x.BirthDate, x.BirthWeightKg, x.BirthLengthCm, sqlBool(x.IsPreterm)))
+	return scanChild(s.DB.QueryRowContext(ctx, `INSERT INTO children(id,name,sex,birth_date,birth_weight_kg,birth_length_cm,is_preterm,parent_id) SELECT $1,$2,$3,$4,$5,$6,$7,id FROM users WHERE id=$8 AND role='parent' AND is_active RETURNING `+childColumns,
+		id, x.Name, x.Sex, x.BirthDate, x.BirthWeightKg, x.BirthLengthCm, sqlBool(x.IsPreterm), s.parentID()))
 }
 
 const measurementColumns = `id, child_id, measured_at::text, weight_kg, length_height_cm, position, head_circumference_cm, source, note, created_at`
@@ -126,7 +159,7 @@ func scanMeasurement(s interface{ Scan(...any) error }) (model.Measurement, erro
 	return m, err
 }
 func (s *Store) Measurements(ctx context.Context, childID string) ([]model.Measurement, error) {
-	rows, err := s.DB.QueryContext(ctx, `SELECT `+measurementColumns+` FROM measurements WHERE child_id=$1 ORDER BY measured_at DESC,created_at DESC`, childID)
+	rows, err := s.DB.QueryContext(ctx, `SELECT `+measurementColumns+` FROM measurements WHERE child_id=$1 AND EXISTS (SELECT 1 FROM children c JOIN users u ON u.id=c.parent_id WHERE c.id=$1 AND c.parent_id=$2 AND u.role='parent' AND u.is_active) ORDER BY measured_at DESC,created_at DESC`, childID, s.parentID())
 	if err != nil {
 		return nil, err
 	}
@@ -146,11 +179,11 @@ func (s *Store) AddMeasurement(ctx context.Context, childID string, x model.Meas
 	if err != nil {
 		return model.Measurement{}, err
 	}
-	return scanMeasurement(s.DB.QueryRowContext(ctx, `INSERT INTO measurements(id,child_id,measured_at,weight_kg,length_height_cm,position,head_circumference_cm,source,note) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING `+measurementColumns,
-		id, childID, x.MeasuredAt, x.WeightKg, x.LengthHeightCm, x.Position, x.HeadCircumferenceCm, x.Source, x.Note))
+	return scanMeasurement(s.DB.QueryRowContext(ctx, `INSERT INTO measurements(id,child_id,measured_at,weight_kg,length_height_cm,position,head_circumference_cm,source,note) SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9 FROM children c JOIN users u ON u.id=c.parent_id WHERE c.id=$2 AND c.parent_id=$10 AND u.role='parent' AND u.is_active RETURNING `+measurementColumns,
+		id, childID, x.MeasuredAt, x.WeightKg, x.LengthHeightCm, x.Position, x.HeadCircumferenceCm, x.Source, x.Note, s.parentID()))
 }
 func (s *Store) DeleteMeasurement(ctx context.Context, childID, measurementID string) (bool, error) {
-	r, err := s.DB.ExecContext(ctx, `DELETE FROM measurements WHERE id=$1 AND child_id=$2`, measurementID, childID)
+	r, err := s.DB.ExecContext(ctx, `DELETE FROM measurements WHERE id=$1 AND child_id=$2 AND EXISTS (SELECT 1 FROM children c JOIN users u ON u.id=c.parent_id WHERE c.id=$2 AND c.parent_id=$3 AND u.role='parent' AND u.is_active)`, measurementID, childID, s.parentID())
 	if err != nil {
 		return false, err
 	}
@@ -172,7 +205,7 @@ func scanKpsp(s interface{ Scan(...any) error }) (model.KpspResult, error) {
 	return k, err
 }
 func (s *Store) Kpsp(ctx context.Context, childID string) ([]model.KpspResult, error) {
-	rows, err := s.DB.QueryContext(ctx, `SELECT `+kpspColumns+` FROM kpsp_results WHERE child_id=$1 ORDER BY answered_at DESC,created_at DESC`, childID)
+	rows, err := s.DB.QueryContext(ctx, `SELECT `+kpspColumns+` FROM kpsp_results WHERE child_id=$1 AND EXISTS (SELECT 1 FROM children c JOIN users u ON u.id=c.parent_id WHERE c.id=$1 AND c.parent_id=$2 AND u.role='parent' AND u.is_active) ORDER BY answered_at DESC,created_at DESC`, childID, s.parentID())
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +229,7 @@ func (s *Store) AddKpsp(ctx context.Context, childID string, x model.KpspInput, 
 	if err != nil {
 		return model.KpspResult{}, err
 	}
-	return scanKpsp(s.DB.QueryRowContext(ctx, `INSERT INTO kpsp_results(id,child_id,questionnaire_age_months,answered_at,answers,yes_count,result) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7) RETURNING `+kpspColumns, id, childID, x.QuestionnaireAgeMonths, x.AnsweredAt, string(b), yesCount, result))
+	return scanKpsp(s.DB.QueryRowContext(ctx, `INSERT INTO kpsp_results(id,child_id,questionnaire_age_months,answered_at,answers,yes_count,result) SELECT $1,$2,$3,$4,$5::jsonb,$6,$7 FROM children c JOIN users u ON u.id=c.parent_id WHERE c.id=$2 AND c.parent_id=$8 AND u.role='parent' AND u.is_active RETURNING `+kpspColumns, id, childID, x.QuestionnaireAgeMonths, x.AnsweredAt, string(b), yesCount, result, s.parentID()))
 }
 
 const foodColumns = `id, child_id, recall_date::text, breastfed, food_groups, meal_count, milk_feed_count, created_at`
@@ -215,7 +248,7 @@ func scanFood(s interface{ Scan(...any) error }) (model.FoodRecall, error) {
 	return f, err
 }
 func (s *Store) Foods(ctx context.Context, childID string) ([]model.FoodRecall, error) {
-	rows, err := s.DB.QueryContext(ctx, `SELECT `+foodColumns+` FROM food_recalls WHERE child_id=$1 AND recall_date >= CURRENT_DATE-13 ORDER BY recall_date DESC`, childID)
+	rows, err := s.DB.QueryContext(ctx, `SELECT `+foodColumns+` FROM food_recalls WHERE child_id=$1 AND recall_date >= CURRENT_DATE-13 AND recall_date <= CURRENT_DATE AND EXISTS (SELECT 1 FROM children c JOIN users u ON u.id=c.parent_id WHERE c.id=$1 AND c.parent_id=$2 AND u.role='parent' AND u.is_active) ORDER BY recall_date DESC`, childID, s.parentID())
 	if err != nil {
 		return nil, err
 	}
@@ -239,5 +272,5 @@ func (s *Store) AddFood(ctx context.Context, childID string, x model.FoodRecallI
 	if err != nil {
 		return model.FoodRecall{}, err
 	}
-	return scanFood(s.DB.QueryRowContext(ctx, `INSERT INTO food_recalls(id,child_id,recall_date,breastfed,food_groups,meal_count,milk_feed_count) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7) RETURNING `+foodColumns, id, childID, x.RecallDate, sqlBool(x.Breastfed), string(b), x.MealCount, x.MilkFeedCount))
+	return scanFood(s.DB.QueryRowContext(ctx, `INSERT INTO food_recalls(id,child_id,recall_date,breastfed,food_groups,meal_count,milk_feed_count) SELECT $1,$2,$3,$4,$5::jsonb,$6,$7 FROM children c JOIN users u ON u.id=c.parent_id WHERE c.id=$2 AND c.parent_id=$8 AND u.role='parent' AND u.is_active RETURNING `+foodColumns, id, childID, x.RecallDate, sqlBool(x.Breastfed), string(b), x.MealCount, x.MilkFeedCount, s.parentID()))
 }

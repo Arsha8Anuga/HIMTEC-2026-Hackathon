@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -51,6 +52,11 @@ func main() {
 	if engineURL == "" {
 		log.Fatal("ENGINE_URL wajib diisi; lihat ../.env.example")
 	}
+	listener, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		log.Fatalf("tidak dapat memakai port 8080; periksa backend lama/proses lain yang masih berjalan: %v", err)
+	}
+	defer listener.Close()
 	store, err := repository.Open(databaseURL)
 	if err != nil {
 		log.Fatal(err)
@@ -58,7 +64,7 @@ func main() {
 	defer store.DB.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := store.Migrate(ctx, filepath.Join("migrations", "001_init.sql")); err != nil {
+	if err := store.Migrate(ctx, "migrations"); err != nil {
 		log.Fatalf("migrasi PostgreSQL gagal: %v", err)
 	}
 	svc, err := service.New(store, engineclient.New(engineURL), "data")
@@ -72,5 +78,5 @@ func main() {
 	routes := (&handler.Handler{Svc: svc, CORSOrigin: cors}).Routes()
 	server := &http.Server{Addr: ":8080", Handler: routes, ReadHeaderTimeout: 5 * time.Second}
 	log.Printf("Backend Go siap pada http://localhost:8080/api/v1 (engine: %s)", engineURL)
-	log.Fatal(server.ListenAndServe())
+	log.Fatal(server.Serve(listener))
 }

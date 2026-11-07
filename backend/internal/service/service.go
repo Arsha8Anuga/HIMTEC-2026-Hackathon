@@ -128,7 +128,7 @@ func (s *Service) Status(ctx context.Context, ch model.Child) (model.Status, mod
 	}
 	label, err := levelLabel(eval.Level)
 	if err != nil {
-		return model.Status{}, eval, ms, err
+		return model.Status{}, eval, ms, invalidEngineResponse(err)
 	}
 	age, err := AgeDays(ch.BirthDate, Today())
 	if err != nil {
@@ -139,7 +139,7 @@ func (s *Service) Status(ctx context.Context, ch model.Child) (model.Status, mod
 	for _, r := range eval.Reasons {
 		text, ok := s.Messages[r.Code]
 		if !ok {
-			return model.Status{}, eval, ms, fmt.Errorf("kode alasan tidak terdaftar pada messages.id.json: %s", r.Code)
+			return model.Status{}, eval, ms, invalidEngineResponse(fmt.Errorf("kode alasan tidak terdaftar pada messages.id.json: %s", r.Code))
 		}
 		r.Title = text.Title
 		r.Message = strings.ReplaceAll(text.Message, "{{name}}", ch.Name)
@@ -190,10 +190,19 @@ func (s *Service) Growth(ctx context.Context, ch model.Child, indicator string) 
 		case "wfa":
 			val = m.WeightKg
 		case "lhfa":
+			if p.CorrectedLengthCm == nil {
+				continue
+			}
 			val = p.CorrectedLengthCm
 		case "hcfa":
+			if m.HeadCircumferenceCm == nil {
+				continue
+			}
 			val = m.HeadCircumferenceCm
 		case "wfl_wfh":
+			if p.CorrectedLengthCm == nil {
+				continue
+			}
 			x = p.CorrectedLengthCm
 			val = m.WeightKg
 		}
@@ -239,7 +248,10 @@ func (s *Service) NextKpsp(ctx context.Context, ch model.Child) (map[string]any,
 		Due                    bool `json:"due"`
 	}
 	if err = json.Unmarshal(eval.NextKpsp, &next); err != nil {
-		return nil, fmt.Errorf("engine tidak mengembalikan jadwal KPSP: %w", err)
+		return nil, invalidEngineResponse(fmt.Errorf("engine tidak mengembalikan jadwal KPSP: %w", err))
+	}
+	if !validQuestionnaireAge(next.QuestionnaireAgeMonths) {
+		return nil, invalidEngineResponse(errors.New("engine tidak mengembalikan umur jadwal KPSP yang valid"))
 	}
 	var questionnaire struct {
 		Items json.RawMessage `json:"items"`
@@ -248,26 +260,40 @@ func (s *Service) NextKpsp(ctx context.Context, ch model.Child) (map[string]any,
 	if err = s.Engine.Get(ctx, path, &questionnaire); err != nil {
 		return nil, err
 	}
-	if len(questionnaire.Items) == 0 {
-		return nil, errors.New("engine tidak mengembalikan butir KPSP")
+	var items []json.RawMessage
+	if err = json.Unmarshal(questionnaire.Items, &items); err != nil || len(items) != 10 {
+		return nil, invalidEngineResponse(errors.New("engine tidak mengembalikan 10 butir KPSP"))
 	}
 	return map[string]any{"questionnaire_age_months": next.QuestionnaireAgeMonths, "due": next.Due, "items": questionnaire.Items}, nil
 }
 func (s *Service) ScoreKpsp(ctx context.Context, input model.KpspInput) (int, string, error) {
 	var score struct {
-		YesCount int    `json:"yes_count"`
+		YesCount *int   `json:"yes_count"`
 		Result   string `json:"result"`
 	}
 	if err := s.Engine.Post(ctx, "/kpsp/score", map[string]any{"questionnaire_age_months": input.QuestionnaireAgeMonths, "answers": input.Answers}, &score); err != nil {
 		return 0, "", err
 	}
-	if score.YesCount < 0 || score.YesCount > 10 {
-		return 0, "", errors.New("skor engine di luar rentang")
+	if score.YesCount == nil || *score.YesCount < 0 || *score.YesCount > 10 {
+		return 0, "", invalidEngineResponse(errors.New("skor engine hilang atau di luar rentang"))
 	}
 	if score.Result != "sesuai" && score.Result != "meragukan" && score.Result != "penyimpangan" {
-		return 0, "", errors.New("hasil KPSP engine tidak dikenal")
+		return 0, "", invalidEngineResponse(errors.New("hasil KPSP engine tidak dikenal"))
 	}
-	return score.YesCount, score.Result, nil
+	return *score.YesCount, score.Result, nil
+}
+
+func invalidEngineResponse(err error) error {
+	return &engineclient.Failure{Operation: "validasi response", Err: err}
+}
+
+func validQuestionnaireAge(age int) bool {
+	switch age {
+	case 3, 6, 9, 12, 15, 18, 21, 24, 30, 36, 42, 48, 54, 60:
+		return true
+	default:
+		return false
+	}
 }
 func (s *Service) FilterGuides(category string, age *int, aspect string) []Guide {
 	out := make([]Guide, 0)
